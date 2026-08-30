@@ -3,21 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>APEX BOXING // CombatOS Pro</title>
-  <!-- MediaPipe Pose & Camera Utils -->
+  <title>APEX BOXING // Biomechanical Engine</title>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
   <style>
     :root {
-      --bg: #050505;
-      --card-bg: rgba(18, 18, 18, 0.75);
-      --card-border: rgba(255, 255, 255, 0.08);
+      --bg: #000000;
+      --card-bg: rgba(10, 10, 10, 0.85);
+      --card-border: rgba(255, 255, 255, 0.12);
       --text: #ffffff;
-      --dim: #888888;
+      --dim: #777777;
       --red: #ff2a2a;
       --green: #00ff66;
       --cyan: #00f0ff;
-      --accent: #141414;
     }
     * {
       box-sizing: border-box;
@@ -34,46 +32,43 @@
       min-height: 100vh;
     }
 
-    /* GLASSMORPHISM CARDS */
+    /* ESTÉTICA NOIR MINIMALISTA */
     .apex-card {
       background: var(--card-bg);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--card-border);
-      border-radius: 12px;
+      border-radius: 8px;
       padding: 16px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     }
     .card-title {
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 900;
-      letter-spacing: 1.2px;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
-      border-left: 3px solid var(--text);
-      padding-left: 10px;
+      border-left: 2px solid var(--text);
+      padding-left: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    /* INPUTS & BUTTONS */
     .input-field {
       width: 100%;
-      background: rgba(0, 0, 0, 0.6);
+      background: #050505;
       border: 1px solid var(--card-border);
       padding: 12px;
-      border-radius: 6px;
+      border-radius: 4px;
       color: #fff;
       font-size: 13px;
-      transition: border 0.2s ease;
     }
     .input-field:focus {
       outline: none;
-      border-color: rgba(255, 255, 255, 0.3);
+      border-color: #ffffff;
     }
     .row-2 {
       display: grid;
@@ -86,35 +81,32 @@
       gap: 8px;
     }
     .btn {
-      background: var(--text);
-      color: #000;
-      border: none;
+      background: #ffffff;
+      color: #000000;
+      border: 1px solid #ffffff;
       padding: 12px;
       font-weight: 900;
-      font-size: 11px;
+      font-size: 10.5px;
       letter-spacing: 1.2px;
       text-transform: uppercase;
-      border-radius: 6px;
+      border-radius: 4px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      transition: all 0.2s ease;
+      transition: opacity 0.2s ease;
     }
-    .btn:active {
-      transform: scale(0.98);
-    }
-    .btn-red { background: var(--red); color: #fff; box-shadow: 0 0 15px rgba(255, 42, 42, 0.3); }
-    .btn-green { background: var(--green); color: #000; }
-    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--card-border); }
+    .btn:active { opacity: 0.7; }
+    .btn-red { background: transparent; color: var(--red); border-color: var(--red); }
+    .btn-green { background: transparent; color: var(--green); border-color: var(--green); }
+    .btn-outline { background: transparent; color: var(--text); border-color: var(--card-border); }
 
-    /* VISOR CANVAS */
     .canvas-container {
       width: 100%;
       background: #000;
       border: 1px solid var(--card-border);
-      border-radius: 10px;
+      border-radius: 6px;
       position: relative;
       display: flex;
       align-items: center;
@@ -124,19 +116,19 @@
     video { display: none; }
     canvas { width: 100%; height: auto; max-height: 480px; object-fit: contain; }
 
-    /* BOTTOM NAV BAR */
+    /* NAVEGACIÓN INFERIOR MINIMALISTA */
     .bottom-nav {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(10, 10, 10, 0.88);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-top: 1px solid var(--card-border);
       display: flex;
       justify-content: space-around;
-      padding: 8px 6px;
+      padding: 8px 4px;
       z-index: 9000;
     }
     .nav-item {
@@ -147,28 +139,28 @@
       flex-direction: column;
       align-items: center;
       gap: 4px;
-      font-size: 8.5px;
-      font-weight: 800;
+      font-size: 8px;
+      font-weight: 900;
       text-transform: uppercase;
       cursor: pointer;
-      padding: 6px;
-      border-radius: 6px;
+      padding: 6px 2px;
       flex: 1;
-      transition: color 0.2s;
     }
     .nav-item.active {
       color: #ffffff;
-      background: rgba(255, 255, 255, 0.05);
     }
-    .nav-item span.icon {
-      font-size: 16px;
+    .nav-item svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.5;
     }
 
-    /* PREVIEWS */
     .preview-box {
-      background: rgba(0, 0, 0, 0.6);
+      background: #050505;
       border: 1px solid var(--card-border);
-      border-radius: 8px;
+      border-radius: 6px;
       padding: 12px;
       display: flex;
       flex-direction: column;
@@ -178,11 +170,10 @@
     .preview-media {
       width: 100%;
       max-height: 380px;
-      border-radius: 6px;
+      border-radius: 4px;
       background: #000;
     }
 
-    /* TABLAS DE GESTIÓN */
     .user-table {
       width: 100%;
       border-collapse: collapse;
@@ -196,181 +187,194 @@
     }
     .user-table td {
       padding: 10px 8px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
     .badge {
-      padding: 3px 6px;
-      border-radius: 4px;
-      font-size: 8.5px;
+      padding: 2px 6px;
+      border-radius: 2px;
+      font-size: 8px;
       font-weight: 900;
       text-transform: uppercase;
     }
-    .badge-active { background: rgba(0, 255, 102, 0.15); color: var(--green); }
-    .badge-paused { background: rgba(255, 42, 42, 0.15); color: var(--red); }
+    .badge-active { border: 1px solid var(--green); color: var(--green); }
+    .badge-paused { border: 1px solid var(--red); color: var(--red); }
   </style>
 </head>
 <body>
 
   <!-- LOGIN -->
   <div id="authModal" class="auth-overlay">
-    <div class="auth-card">
+    <div class="auth-card" style="background:#000; border:1px solid rgba(255,255,255,0.15);">
       <div style="text-align:center;">
-        <div style="font-size:22px; font-weight:900; letter-spacing:3px;">APEX BOXING</div>
-        <div style="font-size:10px; font-weight:700; color:var(--dim); letter-spacing:2px; text-transform:uppercase;">Escuela de Strikers</div>
+        <!-- LOGO NOIR VECTORIAL MINIMALISTA -->
+        <svg width="60" height="60" viewBox="0 0 100 100" style="margin-bottom:6px;">
+          <polygon points="50,10 90,85 10,85" fill="none" stroke="#ffffff" stroke-width="3"/>
+          <polygon points="50,28 78,80 22,80" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+          <circle cx="50" cy="55" r="8" fill="#ffffff"/>
+        </svg>
+        <div style="font-size:18px; font-weight:900; letter-spacing:4px;">APEX BOXING</div>
+        <div style="font-size:9px; font-weight:700; color:var(--dim); letter-spacing:2px; text-transform:uppercase;">Escuela de Strikers</div>
       </div>
-      <div style="font-size:10px; text-align:center; color:var(--dim); font-weight:900; border-bottom:1px solid var(--card-border); padding-bottom:8px;">COMBAT OS PRO // AUTH</div>
       <div>
-        <label style="font-size:10px; color:var(--dim); font-weight:700;">USUARIO</label>
+        <label style="font-size:9px; color:var(--dim); font-weight:900; letter-spacing:1px;">USUARIO</label>
         <input type="text" id="loginUser" class="input-field" placeholder="admin" value="admin">
       </div>
       <div>
-        <label style="font-size:10px; color:var(--dim); font-weight:700;">CONTRASEÑA</label>
+        <label style="font-size:9px; color:var(--dim); font-weight:900; letter-spacing:1px;">CONTRASEÑA</label>
         <input type="password" id="loginPass" class="input-field" placeholder="••••••••" value="apex2026">
       </div>
-      <button class="btn" onclick="handleLogin()">Acceder al Sistema</button>
-      <div id="loginError" style="font-size:11px; color:var(--red); text-align:center; display:none;">Credenciales inválidas o cuenta pausada</div>
+      <button class="btn" onclick="handleLogin()">ACCEDER AL SISTEMA</button>
+      <div id="loginError" style="font-size:10px; color:var(--red); text-align:center; display:none; font-weight:bold;">Credenciales inválidas o cuenta pausada</div>
     </div>
   </div>
 
-  <!-- VISOR GLOBAL PERSISTENTE -->
+  <!-- VISOR GLOBAL -->
   <div class="apex-card" id="globalVisionCard" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <div>
-        <div class="card-title" id="visorTitle">APEX BOXING // Cinemática en Vivo</div>
-        <div style="font-size:9px; color:var(--dim); font-weight:700; margin-left:10px; margin-top:2px;">Escuela de Strikers</div>
+        <div class="card-title" id="visorTitle">APEX BOXING // MOTOR CINEMÁTICO</div>
+        <div style="font-size:8.5px; color:var(--dim); font-weight:700; margin-left:8px; margin-top:2px;">Escuela de Strikers</div>
       </div>
       <div style="display:flex; gap:6px;">
-        <button class="btn btn-outline" style="padding:5px 8px; font-size:9.5px;" onclick="switchCameraFacing()">🔄 Girar</button>
-        <button class="btn btn-outline" style="padding:5px 8px; font-size:9.5px;" id="btnCamPower" onclick="toggleCameraPower()">📷 Cámara</button>
+        <button class="btn btn-outline" style="padding:4px 8px; font-size:9px;" onclick="switchCameraFacing()">GIRAR</button>
+        <button class="btn btn-outline" style="padding:4px 8px; font-size:9px;" id="btnCamPower" onclick="toggleCameraPower()">CÁMARA</button>
       </div>
     </div>
     
-    <div class="canvas-container" style="margin-top:6px;">
+    <div class="canvas-container" style="margin-top:4px;">
       <video id="webcamVideo" playsinline autoplay muted></video>
       <canvas id="gamingCanvas" width="480" height="640"></canvas>
     </div>
   </div>
 
-  <!-- 1. MÓDULO 1: ANÁLISIS LIBRE (FICHA WHATSAPP) -->
+  <!-- 1. MÓDULO 1: ANÁLISIS LIBRE (FICHA WHATSAPP DESCARGABLE) -->
   <div id="tab-m1" class="tab-content active" style="display:none;">
     <div class="apex-card">
-      <div class="card-title">Módulo 1 // Escáner Libre & Ficha WhatsApp</div>
-      <p style="font-size:11px; color:var(--dim);">Evalúa tu sombra durante el tiempo elegido. La IA detectará movimientos peligrosos y virtudes, generando una ficha PNG sobre tu último fotograma lista para compartir.</p>
+      <div class="card-title">1. ANÁLISIS LIBRE // FICHA WHATSAPP</div>
+      <p style="font-size:10.5px; color:var(--dim); line-height:1.4;">Filtro de ventana temporal y validación estricta de 3 fases. Al finalizar genera una ficha PNG sobre tu último fotograma descargable.</p>
       
       <div>
-        <label style="font-size:10px; color:var(--dim); font-weight:700;">DURACIÓN DEL ANÁLISIS (SEGUNDOS)</label>
+        <label style="font-size:9px; color:var(--dim); font-weight:900;">DURACIÓN DEL MUESTREO (SEG)</label>
         <input type="number" id="m1_duration" class="input-field" value="15" min="5" max="60">
       </div>
 
-      <button class="btn btn-red" id="btnStartM1" onclick="startModule1Analysis()">🔍 Iniciar Escáner Libre</button>
-      <div id="m1StatusMsg" style="font-size:12px; font-weight:900; color:#00ff66; text-align:center; display:none;">ESCANEO ACTIVO</div>
+      <button class="btn btn-outline" id="btnStartM1" onclick="startModule1Analysis()">INICIAR ANÁLISIS LIBRE</button>
+      <div id="m1StatusMsg" style="font-size:11px; font-weight:900; color:var(--green); text-align:center; display:none;">ESCANEO ACTIVO</div>
 
       <div id="m1PreviewBox" class="preview-box" style="display:none;">
-        <span style="font-size:10px; color:var(--dim); font-weight:700;">FICHA PNG GENERADA // WHATSAPP READY</span>
-        <img id="m1PreviewImg" class="preview-media" src="" alt="Ficha WhatsApp">
+        <span style="font-size:9px; color:var(--dim); font-weight:900;">FICHA WHATSAPP // ALTA RESOLUCIÓN</span>
+        <img id="m1PreviewImg" class="preview-media" src="" alt="Ficha PNG">
         <div class="row-2">
-          <button class="btn btn-red" onclick="downloadM1Image()">⬇️ Descargar Ficha</button>
-          <button class="btn btn-outline" onclick="discardM1Image()">🗑️ Repetir</button>
+          <button class="btn" onclick="downloadM1Image()">⬇️ DESCARGAR FICHA</button>
+          <button class="btn btn-outline" onclick="discardM1Image()">DESCARTAR</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 2. MÓDULO 2: VIDEO 10s CON AUDIO & POST-PROCESADO -->
+  <!-- 2. MÓDULO 2: VIDEO 10s CON AUDIO INTEGRADO -->
   <div id="tab-m2" class="tab-content" style="display:none;">
     <div class="apex-card">
-      <div class="card-title">Módulo 2 // Captura 10s & Video con Audio Sincronizado</div>
-      <p style="font-size:11px; color:var(--dim);">Graba 10 segundos continuos en crudo. La IA procesará los vectores dinámicos (rojo en fallos, cadena cinética cian) e insertará el audio de voz en el archivo exportable.</p>
+      <div class="card-title">2. VIDEO 10s // AUDIO DE VOZ & CADENA CINÉTICA</div>
+      <p style="font-size:10.5px; color:var(--dim); line-height:1.4;">Grabación en crudo y post-procesado con vectores dinámicos (rojo en fallos, cian en cadena cinética) con voz grave incrustada en el archivo.</p>
       
-      <button class="btn btn-red" id="btnStartM2" onclick="startModule2VideoPipeline()">🎬 Grabar 10s & Procesar con Audio</button>
-      <div id="m2StatusMsg" style="font-size:12px; font-weight:900; color:#00ff66; text-align:center; display:none;">GRABANDO: 10s</div>
+      <button class="btn btn-outline" id="btnStartM2" onclick="startModule2VideoPipeline()">GRABAR Y PROCESAR 10s</button>
+      <div id="m2StatusMsg" style="font-size:11px; font-weight:900; color:var(--green); text-align:center; display:none;">GRABANDO: 10s</div>
 
       <div id="m2PreviewBox" class="preview-box" style="display:none;">
-        <span style="font-size:10px; color:var(--dim); font-weight:700;">VIDEO ANALIZADO // REPRODUCE ANTES DE DESCARGAR</span>
+        <span style="font-size:9px; color:var(--dim); font-weight:900;">VIDEO ANALIZADO // DESCARGABLE</span>
         <video id="m2PreviewVideo" class="preview-media" playsinline controls></video>
         <div class="row-3">
-          <button class="btn btn-outline" onclick="playPausePreviewVideo()">▶️ / ⏸️ Play</button>
-          <button class="btn btn-red" onclick="downloadM2Video()">⬇️ Descargar</button>
-          <button class="btn btn-outline" onclick="discardM2Video()">🗑️ Descartar</button>
+          <button class="btn btn-outline" onclick="playPausePreviewVideo()">PLAY / PAUSE</button>
+          <button class="btn" onclick="downloadM2Video()">⬇️ DESCARGAR</button>
+          <button class="btn btn-outline" onclick="discardM2Video()">DESCARTAR</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 3. MÓDULO 3: CARGA & ANÁLISIS DE VIDEO EXTERNO -->
+  <!-- 3. MÓDULO 3: CARGAR VIDEO & ANALIZAR -->
   <div id="tab-m3" class="tab-content" style="display:none;">
     <div class="apex-card">
-      <div class="card-title">Módulo 3 // Cargar Video & Renderizar Biomecánica</div>
-      <p style="font-size:11px; color:var(--dim);">Carga un video grabado desde tu galería. La IA analizará cada fotograma, dibujará el esqueleto vectorial, estampará la marca Apex y te devolverá el video listo con su ficha.</p>
+      <div class="card-title">3. CARGAR VIDEO EXTERNO // RENDER COMPLETO</div>
+      <p style="font-size:10.5px; color:var(--dim); line-height:1.4;">Sube un video de la galería. La IA analizará los fotogramas, trazará los vectores cinéticos y te entregará el video procesado con botón de descarga.</p>
       
       <div>
-        <label style="font-size:10px; color:var(--dim); font-weight:700;">SELECCIONAR ARCHIVO DE VIDEO</label>
+        <label style="font-size:9px; color:var(--dim); font-weight:900;">ARCHIVO DE VIDEO</label>
         <input type="file" id="m3_video_file" accept="video/*" class="input-field" onchange="loadModule3File(this)">
         <video id="m3SourceVideo" preload="auto" playsinline muted style="display:none;"></video>
       </div>
 
-      <button class="btn btn-red" id="btnStartM3" onclick="processUploadedVideo()">⚙️ Analizar & Renderizar Video</button>
-      <div id="m3ProgressMsg" style="font-size:12px; font-weight:900; color:#00ff66; text-align:center; display:none;">Procesando fotogramas...</div>
+      <button class="btn btn-outline" id="btnStartM3" onclick="processUploadedVideo()">PROCESAR Y RENDERIZAR</button>
+      <div id="m3ProgressMsg" style="font-size:11px; font-weight:900; color:var(--green); text-align:center; display:none;">Procesando fotogramas...</div>
 
       <div id="m3PreviewBox" class="preview-box" style="display:none;">
-        <span style="font-size:10px; color:var(--dim); font-weight:700;">VIDEO PROCESADO // VECTORES & MARCA APEX</span>
+        <span style="font-size:9px; color:var(--dim); font-weight:900;">VIDEO RENDERIZADO // LISTO</span>
         <video id="m3PreviewVideo" class="preview-media" playsinline controls></video>
         <div class="row-2">
-          <button class="btn btn-red" onclick="downloadM3Video()">⬇️ Descargar Video</button>
-          <button class="btn btn-outline" onclick="discardM3Video()">🗑️ Descartar</button>
+          <button class="btn" onclick="downloadM3Video()">⬇️ DESCARGAR</button>
+          <button class="btn btn-outline" onclick="discardM3Video()">DESCARTAR</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 4. MÓDULO 4: COACH INTERACTIVO POR VOZ (TIEMPO REAL) -->
+  <!-- 4. MÓDULO 4: COACH ESTRICTO (8 GOLPES + ESQUIVAS + DESPLAZAMIENTOS) -->
   <div id="tab-m4" class="tab-content" style="display:none;">
     <div class="apex-card">
-      <div class="card-title">Módulo 4 // Coach por Voz & Corrección en Vivo</div>
-      <p style="font-size:11px; color:var(--dim);">Párate frente a la cámara sin necesidad de grabar. La IA te dará instrucciones habladas y feedback inmediato según tu postura y ejecución.</p>
+      <div class="card-title">4. COACH EN TIEMPO REAL // EVALUADOR ESTRICTO</div>
+      <p style="font-size:10.5px; color:var(--dim); line-height:1.4;">Evaluación estricta de los 8 golpes oficiales, esquivas y pivotes. Si el gesto no cumple el rango biomecánico exacto, la IA ordenará repetirlo.</p>
       
       <div class="row-2">
-        <button class="btn btn-outline" id="btnCoachModeA" onclick="setCoachSubMode('A')">🗣️ 1. Comando & Respuesta</button>
-        <button class="btn btn-outline" id="btnCoachModeB" onclick="setCoachSubMode('B')">🥊 2. Combo Libre</button>
+        <button class="btn btn-outline" id="btnCoachModeA" onclick="setCoachSubMode('A')">1. COMANDO Y GESTO</button>
+        <button class="btn btn-outline" id="btnCoachModeB" onclick="setCoachSubMode('B')">2. COMBO LIBRE</button>
       </div>
 
       <!-- SUBMODO A -->
-      <div id="coachSubModeA" style="display:none; flex-direction:column; gap:10px;">
-        <p style="font-size:10.5px; color:var(--dim);">La IA dictará un golpe o instrucción técnica. Tienes 3 segundos para ejecutar y evaluará tu biomecánica por voz.</p>
-        <button class="btn btn-red" onclick="startCoachDrillA()">🔥 Iniciar Drill por Comando</button>
+      <div id="coachSubModeA" style="display:none; flex-direction:column; gap:8px;">
+        <div style="font-size:10px; color:var(--dim); margin-top:4px;">
+          <b>Dinámica:</b> La IA solicita un gesto técnico con su descripción biomecánica. Tienes 4 segundos para ejecutarlo con precisión.
+        </div>
+        <button class="btn" onclick="startCoachDrillA()">INICIAR DRILL ESTRICTO (8 GOLPES / ESQUIVAS)</button>
       </div>
 
       <!-- SUBMODO B -->
-      <div id="coachSubModeB" style="display:none; flex-direction:column; gap:10px;">
-        <p style="font-size:10.5px; color:var(--dim);">Lanza tus combinaciones libres. Selecciona el tiempo y la IA te dará el diagnóstico hablado de técnica, postura y potencia.</p>
+      <div id="coachSubModeB" style="display:none; flex-direction:column; gap:8px;">
+        <p style="font-size:10px; color:var(--dim); margin-top:4px;">Lanza combinaciones libres. La IA analizará la postura, equilibrio y extensión, entregando un diagnóstico estricto con reporte descargable.</p>
         <div>
-          <label style="font-size:10px; color:var(--dim); font-weight:700;">TIEMPO DE EVALUACIÓN (SEG)</label>
+          <label style="font-size:9px; color:var(--dim); font-weight:900;">DURACIÓN (SEG)</label>
           <input type="number" id="coach_b_duration" class="input-field" value="15" min="5" max="60">
         </div>
-        <button class="btn btn-red" onclick="startCoachDrillB()">⚡ Iniciar Análisis de Combo</button>
+        <button class="btn" onclick="startCoachDrillB()">EVALUAR COMBO LIBRE</button>
+
+        <div id="coachBPreviewBox" class="preview-box" style="display:none;">
+          <span style="font-size:9px; color:var(--dim); font-weight:900;">REPORTE DE COMBO // DESCARGABLE</span>
+          <img id="coachBPreviewImg" class="preview-media" src="" alt="Reporte Combo">
+          <button class="btn" onclick="downloadCoachBReport()">⬇️ DESCARGAR REPORTE</button>
+        </div>
       </div>
 
-      <div id="coachVoiceStatus" style="font-size:12px; font-weight:900; color:#00f0ff; text-align:center; display:none; padding:10px; background:rgba(0,240,255,0.08); border-radius:6px;">COACH ATENTO...</div>
+      <div id="coachVoiceStatus" style="font-size:11.5px; font-weight:900; color:var(--cyan); text-align:center; display:none; padding:10px; background:rgba(0,240,255,0.05); border:1px solid rgba(0,240,255,0.2); border-radius:4px;">COACH EN ESPERA</div>
     </div>
   </div>
 
-  <!-- 5. MÓDULO 5: GESTIÓN DE USUARIOS (SOLO ADMIN) -->
+  <!-- 5. MÓDULO 5: GESTIÓN DE USUARIOS (ADMIN) -->
   <div id="tab-m5" class="tab-content" style="display:none;">
     <div class="apex-card">
-      <div class="card-title">Módulo 5 // Control de Acceso & Usuarios</div>
-      <p style="font-size:11px; color:var(--dim);">Panel exclusivo para el Administrador. Crea usuarios para tus alumnos y entrénalos con acceso controlado.</p>
+      <div class="card-title">5. CONTROL DE ACCESO // USUARIOS APEX</div>
+      <p style="font-size:10.5px; color:var(--dim);">Panel de administración para dar de alta, pausar o revocar accesos a los atletas de forma persistente.</p>
       
       <div class="row-2">
         <input type="text" id="newUserName" class="input-field" placeholder="Nombre completo">
-        <input type="text" id="newUserLogin" class="input-field" placeholder="Usuario (login)">
+        <input type="text" id="newUserLogin" class="input-field" placeholder="Usuario">
       </div>
       <div>
         <input type="password" id="newUserPass" class="input-field" placeholder="Contraseña">
       </div>
-      <button class="btn btn-green" onclick="createNewUser()">➕ Crear Nuevo Usuario</button>
+      <button class="btn" onclick="createNewUser()">CREAR USUARIO</button>
 
       <div style="margin-top:10px;">
-        <span style="font-size:10px; color:var(--dim); font-weight:700;">USUARIOS REGISTRADOS EN APEX</span>
+        <span style="font-size:9px; color:var(--dim); font-weight:900; letter-spacing:1px;">STRIKERS REGISTRADOS</span>
         <div style="overflow-x:auto; margin-top:6px;">
           <table class="user-table">
             <thead>
@@ -388,30 +392,30 @@
     </div>
   </div>
 
-  <!-- NAVEGACIÓN INFERIOR ESTILO APP -->
+  <!-- BARRA DE NAVEGACIÓN INFERIOR (ICONOS VECTORIALES BLANCOS FINOS) -->
   <div class="bottom-nav" id="bottomNav" style="display:none;">
     <button class="nav-item active" onclick="switchNav('tab-m1', this)">
-      <span class="icon">📸</span>
+      <svg viewBox="0 0 24 24"><path d="M4 7h4l2-3h4l2 3h4a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/><circle cx="12" cy="13" r="4"/></svg>
       <span>Ficha</span>
     </button>
     <button class="nav-item" onclick="switchNav('tab-m2', this)">
-      <span class="icon">🎬</span>
+      <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
       <span>Video 10s</span>
     </button>
     <button class="nav-item" onclick="switchNav('tab-m3', this)">
-      <span class="icon">📂</span>
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       <span>Cargar</span>
     </button>
     <button class="nav-item" onclick="switchNav('tab-m4', this)">
-      <span class="icon">🥊</span>
+      <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
       <span>Coach</span>
     </button>
     <button class="nav-item" id="navAdminBtn" onclick="switchNav('tab-m5', this)">
-      <span class="icon">👥</span>
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       <span>Usuarios</span>
     </button>
     <button class="nav-item" onclick="handleLogout()">
-      <span class="icon">🚪</span>
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       <span>Salir</span>
     </button>
   </div>
@@ -419,9 +423,9 @@
   <canvas id="offscreenCanvas" width="480" height="640" style="display:none;"></canvas>
 
   <script>
-    // ==========================================
-    // SISTEMA DE GESTIÓN DE USUARIOS (PERSISTENTE)
-    // ==========================================
+    // =========================================================================
+    // 1. SISTEMA DE GESTIÓN DE USUARIOS (PERSISTENTE)
+    // =========================================================================
     const DEFAULT_USERS = [
       { id: '1', name: 'Administrador Apex', user: 'admin', pass: 'apex2026', status: 'active', role: 'admin' },
       { id: '2', name: 'Víctor Garcés', user: 'striker1', pass: '1234', status: 'active', role: 'user' }
@@ -468,7 +472,7 @@
           renderUserTable();
         }
 
-        speakFast("Bienvenido a Apex Combat OS.");
+        speakDeep("Bienvenido al sistema cinemático Apex Boxing.");
       } else {
         document.getElementById('loginError').style.display = 'block';
       }
@@ -491,9 +495,9 @@
           <td><span class="badge ${u.status === 'active' ? 'badge-active' : 'badge-paused'}">${u.status}</span></td>
           <td>
             ${u.role !== 'admin' ? `
-              <button class="btn btn-outline" style="padding:4px 6px; font-size:8.5px; display:inline-block;" onclick="toggleUserStatus('${u.id}')">${u.status === 'active' ? '⏸️ Pausar' : '▶️ Activar'}</button>
-              <button class="btn btn-red" style="padding:4px 6px; font-size:8.5px; display:inline-block; margin-left:4px;" onclick="deleteUser('${u.id}')">🗑️</button>
-            ` : '<span style="color:var(--dim); font-size:9px;">Admin Master</span>'}
+              <button class="btn btn-outline" style="padding:4px 6px; font-size:8px; display:inline-block;" onclick="toggleUserStatus('${u.id}')">${u.status === 'active' ? 'Pausar' : 'Activar'}</button>
+              <button class="btn btn-red" style="padding:4px 6px; font-size:8px; display:inline-block; margin-left:4px;" onclick="deleteUser('${u.id}')">Eliminar</button>
+            ` : '<span style="color:var(--dim); font-size:9px;">Master</span>'}
           </td>
         `;
         tbody.appendChild(tr);
@@ -525,7 +529,7 @@
       document.getElementById('newUserName').value = '';
       document.getElementById('newUserLogin').value = '';
       document.getElementById('newUserPass').value = '';
-      alert('Usuario creado exitosamente.');
+      alert('Usuario creado.');
     }
 
     function toggleUserStatus(id) {
@@ -538,7 +542,7 @@
     }
 
     function deleteUser(id) {
-      if (!confirm('¿Eliminar este usuario de forma permanente?')) return;
+      if (!confirm('¿Eliminar este usuario permanentemente?')) return;
       let users = getUsers();
       users = users.filter(x => x.id !== id);
       saveUsers(users);
@@ -551,16 +555,16 @@
       if (el) el.classList.add('active');
 
       const title = document.getElementById('visorTitle');
-      if (tabId === 'tab-m1') title.innerText = 'APEX BOXING // Análisis Libre';
-      else if (tabId === 'tab-m2') title.innerText = 'APEX BOXING // Video 10s & Audio';
-      else if (tabId === 'tab-m3') title.innerText = 'APEX BOXING // Cargar & Renderizar';
-      else if (tabId === 'tab-m4') title.innerText = 'APEX BOXING // Coach por Voz';
-      else if (tabId === 'tab-m5') title.innerText = 'APEX BOXING // Control de Acceso';
+      if (tabId === 'tab-m1') title.innerText = 'APEX BOXING // ANÁLISIS LIBRE';
+      else if (tabId === 'tab-m2') title.innerText = 'APEX BOXING // VIDEO 10s CON AUDIO';
+      else if (tabId === 'tab-m3') title.innerText = 'APEX BOXING // CARGA & RENDER';
+      else if (tabId === 'tab-m4') title.innerText = 'APEX BOXING // COACH ESTRICTO';
+      else if (tabId === 'tab-m5') title.innerText = 'APEX BOXING // CONTROL DE ACCESO';
     }
 
-    // ==========================================
-    // AUDIO & LOCUCIÓN NATIVA
-    // ==========================================
+    // =========================================================================
+    // 2. AUDIO & VOZ GRAVE DE ENTRENADOR
+    // =========================================================================
     let audioCtx = null;
     let audioDestNode = null;
 
@@ -572,66 +576,36 @@
       if (audioCtx.state === 'suspended') audioCtx.resume();
     }
 
-    function playBeep(freq = 600, duration = 0.15, sendToStream = false) {
+    function playAudioCue(text, sendToStream = false) {
       try {
         initAudio();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        // Tono grave marcial
+        osc.frequency.setValueAtTime(160, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.35);
         gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         if (sendToStream && audioDestNode) gain.connect(audioDestNode);
+
         osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-      } catch(e) {}
-    }
-
-    function playAudioCue(text, sendToStream = false) {
-      try {
-        initAudio();
-        const osc1 = audioCtx.createOscillator();
-        const osc2 = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-
-        if (text.includes("Iniciando") || text.includes("iniciando")) {
-          osc1.frequency.setValueAtTime(440, audioCtx.currentTime);
-          osc1.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.4);
-          osc2.frequency.setValueAtTime(220, audioCtx.currentTime);
-          osc2.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.4);
-        } else {
-          osc1.frequency.setValueAtTime(880, audioCtx.currentTime);
-          osc1.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.5);
-          osc2.frequency.setValueAtTime(440, audioCtx.currentTime);
-          osc2.frequency.exponentialRampToValueAtTime(220, audioCtx.currentTime + 0.5);
-        }
-
-        gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
-
-        osc1.connect(gain);
-        osc2.connect(gain);
-        gain.connect(audioCtx.destination);
-        if (sendToStream && audioDestNode) gain.connect(audioDestNode);
-
-        osc1.start();
-        osc2.start();
-        osc1.stop(audioCtx.currentTime + 0.6);
-        osc2.stop(audioCtx.currentTime + 0.6);
+        osc.stop(audioCtx.currentTime + 0.4);
       } catch(e) {}
 
-      speakFast(text);
+      speakDeep(text);
     }
 
-    let maleVoice = null;
+    let deepVoice = null;
     function initVoices() {
       if (!('speechSynthesis' in window)) return;
       const vList = window.speechSynthesis.getVoices();
       const esVoices = vList.filter(v => v.lang.toLowerCase().startsWith('es'));
-      maleVoice = esVoices.find(v => {
+      deepVoice = esVoices.find(v => {
         const n = v.name.toLowerCase();
-        return n.includes('male') || n.includes('david') || n.includes('jorge') || n.includes('carlos') || n.includes('raul') || n.includes('standard-b');
+        return n.includes('jorge') || n.includes('carlos') || n.includes('diego') || n.includes('male');
       }) || esVoices[0];
     }
     if ('speechSynthesis' in window) {
@@ -639,21 +613,21 @@
       initVoices();
     }
 
-    function speakFast(text, pitch = 0.50) {
+    function speakDeep(text) {
       if (!('speechSynthesis' in window)) return;
       window.speechSynthesis.cancel();
       window.speechSynthesis.resume();
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = 'es-ES';
-      if (maleVoice) utter.voice = maleVoice;
-      utter.rate = 1.25;
-      utter.pitch = pitch;
+      if (deepVoice) utter.voice = deepVoice;
+      utter.rate = 1.05;
+      utter.pitch = 0.25; // Tono grave profundo
       window.speechSynthesis.speak(utter);
     }
 
-    // ==========================================
-    // MOTOR DE CÁMARA & POSE
-    // ==========================================
+    // =========================================================================
+    // 3. MOTOR BIOMECÁNICO: FILTRO DE MEDIA MÓVIL & FASES DE GOLPE
+    // =========================================================================
     let cameraInstance = null;
     let isCameraRunning = false;
     let latestLandmarks = null;
@@ -667,6 +641,32 @@
       [23, 25], [24, 26], [25, 27], [26, 28]
     ];
 
+    // BUFFER DE MEDIA MÓVIL (5 FRAMES) PARA ELIMINAR TEMBLOR
+    let landmarkHistory = [];
+    const HISTORY_SIZE = 5;
+
+    function getSmoothedLandmarks(rawLm) {
+      if (!rawLm) return null;
+      landmarkHistory.push(rawLm);
+      if (landmarkHistory.length > HISTORY_SIZE) landmarkHistory.shift();
+
+      const smoothed = [];
+      for (let i = 0; i < rawLm.length; i++) {
+        let avgX = 0, avgY = 0, avgVis = 0;
+        landmarkHistory.forEach(frame => {
+          avgX += frame[i].x;
+          avgY += frame[i].y;
+          avgVis += frame[i].visibility;
+        });
+        smoothed.push({
+          x: avgX / landmarkHistory.length,
+          y: avgY / landmarkHistory.length,
+          visibility: avgVis / landmarkHistory.length
+        });
+      }
+      return smoothed;
+    }
+
     function calculateAngle(a, b, c) {
       const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
       let angle = Math.abs((radians * 180.0) / Math.PI);
@@ -674,17 +674,23 @@
       return Math.round(angle);
     }
 
+    // GESTIÓN ESTRICTA DE FASES (Guardia -> Extensión -> Retracción)
+    let punchPhaseR = 'GUARD';
+    let punchPhaseL = 'GUARD';
+
     let m1Metrics = {
       frames: 0,
       hyperExtCount: 0,
-      hyperExtMaxDanger: 0,
+      hyperExtDanger: 0,
       unbalanceCount: 0,
-      unbalanceMaxDanger: 0,
+      unbalanceDanger: 0,
       badHipRotationCount: 0,
       badHipDanger: 0,
-      goodGuardFrames: 0,
-      goodUppercutCount: 0,
-      peakPunchSpeed: 0
+      validJabCount: 0,
+      validCrossCount: 0,
+      validHookCount: 0,
+      validUpperCount: 0,
+      guardPercent: 0
     };
 
     let isM1Tracking = false;
@@ -695,63 +701,77 @@
     pose.setOptions({
       modelComplexity: 0,
       smoothLandmarks: true,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.6
     });
     pose.onResults((results) => {
-      latestLandmarks = results.poseLandmarks;
-      if (isM1Tracking && results.poseLandmarks) {
-        evaluateBiomechanicalFrame(results.poseLandmarks);
+      const smoothed = getSmoothedLandmarks(results.poseLandmarks);
+      latestLandmarks = smoothed;
+      if (isM1Tracking && smoothed) {
+        evaluateStrictBiomechanicalFrame(smoothed);
       }
     });
 
-    function evaluateBiomechanicalFrame(lm) {
+    function evaluateStrictBiomechanicalFrame(lm) {
       m1Metrics.frames++;
       const sR = lm[12], sL = lm[11], eR = lm[14], eL = lm[13], wR = lm[16], wL = lm[15];
       const hR = lm[24], hL = lm[23], kR = lm[26], kL = lm[25], aR = lm[28], aL = lm[27];
       const nose = lm[0];
 
+      // 1. HIPEREXTENSIÓN DE CODO
       if (sR && eR && wR) {
         const angR = calculateAngle(sR, eR, wR);
         if (angR > 175) {
           m1Metrics.hyperExtCount++;
-          const danger = Math.min(100, Math.round(((angR - 175) / 10) * 100) + 75);
-          if (danger > m1Metrics.hyperExtMaxDanger) m1Metrics.hyperExtMaxDanger = danger;
+          m1Metrics.hyperExtDanger = Math.min(100, Math.round(((angR - 175) / 5) * 100) + 80);
         }
       }
       if (sL && eL && wL) {
         const angL = calculateAngle(sL, eL, wL);
         if (angL > 175) {
           m1Metrics.hyperExtCount++;
-          const danger = Math.min(100, Math.round(((angL - 175) / 10) * 100) + 75);
-          if (danger > m1Metrics.hyperExtMaxDanger) m1Metrics.hyperExtMaxDanger = danger;
+          m1Metrics.hyperExtDanger = Math.min(100, Math.round(((angL - 175) / 5) * 100) + 80);
         }
       }
 
+      // 2. EQUILIBRIO Y EJE DE GRAVEDAD
       if (nose && aR && aL) {
         const midAnkX = (aR.x + aL.x) / 2;
         const dev = Math.abs(nose.x - midAnkX);
-        if (dev > 0.18) {
+        if (dev > 0.16) {
           m1Metrics.unbalanceCount++;
-          const danger = Math.min(100, Math.round((dev / 0.30) * 100));
-          if (danger > m1Metrics.unbalanceMaxDanger) m1Metrics.unbalanceMaxDanger = danger;
+          m1Metrics.unbalanceDanger = Math.min(100, Math.round((dev / 0.25) * 100));
         }
       }
 
-      if (hR && hL && kR && kL) {
+      // 3. ROTACIÓN DE CADERA
+      if (hR && hL) {
         const hipTilt = Math.abs(hR.y - hL.y);
-        if (hipTilt > 0.08) {
+        if (hipTilt > 0.07) {
           m1Metrics.badHipRotationCount++;
-          const danger = Math.min(100, Math.round((hipTilt / 0.15) * 100));
-          if (danger > m1Metrics.badHipDanger) m1Metrics.badHipDanger = danger;
+          m1Metrics.badHipDanger = Math.min(100, Math.round((hipTilt / 0.12) * 100));
         }
       }
 
-      if (wR && sR && (wR.y < sR.y + 0.08)) m1Metrics.goodGuardFrames++;
-      if (wR && eR && sR) {
+      // 4. DETECCIÓN ESTRICTA DE FASES EN GOLPES
+      if (sR && eR && wR && sL && eL && wL) {
         const angR = calculateAngle(sR, eR, wR);
-        if (angR > 75 && angR < 115 && wR.y < sR.y) {
-          m1Metrics.goodUppercutCount++;
+        const angL = calculateAngle(sL, eL, wL);
+
+        // Brazo Derecho
+        if (punchPhaseR === 'GUARD' && angR > 150 && angR <= 175) {
+          punchPhaseR = 'EXTENDED';
+        } else if (punchPhaseR === 'EXTENDED' && angR < 100) {
+          punchPhaseR = 'GUARD';
+          m1Metrics.validCrossCount++;
+        }
+
+        // Brazo Izquierdo
+        if (punchPhaseL === 'GUARD' && angL > 150 && angL <= 175) {
+          punchPhaseL = 'EXTENDED';
+        } else if (punchPhaseL === 'EXTENDED' && angL < 100) {
+          punchPhaseL = 'GUARD';
+          m1Metrics.validJabCount++;
         }
       }
     }
@@ -779,16 +799,17 @@
             cameraInstance.start();
           }
           isCameraRunning = true;
-          btn.innerText = "🛑 Apagar";
+          btn.innerText = "APAGAR";
           btn.style.color = "#ff2a2a";
           requestAnimationFrame(renderLiveVisor);
-          speakFast("Cámara lista.");
+          speakDeep("Cámara activa.");
         }).catch(err => alert("Error de cámara: " + err));
       } else {
         if (videoElement.srcObject) videoElement.srcObject.getTracks().forEach(t => t.stop());
         isCameraRunning = false;
         latestLandmarks = null;
-        btn.innerText = "📷 Cámara";
+        landmarkHistory = [];
+        btn.innerText = "CÁMARA";
         btn.style.color = "#fff";
       }
     }
@@ -826,34 +847,41 @@
       drawBottomBar(ctx, canvas.width, canvas.height, liveBannerText);
 
       ctx.strokeStyle = '#222';
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 1;
       ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
 
       if (isCameraRunning) requestAnimationFrame(renderLiveVisor);
     }
 
     function drawApexWatermark(ctx) {
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '900 14px sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText('APEX BOXING', 20, 32);
+      // LOGO VECTORIAL MINIMALISTA NOIR
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(28, 20); ctx.lineTo(38, 36); ctx.lineTo(18, 36); ctx.closePath();
+      ctx.stroke();
 
-      ctx.fillStyle = '#aaaaaa';
-      ctx.font = 'bold 8.5px sans-serif';
-      ctx.fillText('Escuela de Strikers', 20, 44);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 12px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('APEX BOXING', 46, 28);
+
+      ctx.fillStyle = '#888888';
+      ctx.font = 'bold 7.5px sans-serif';
+      ctx.fillText('Escuela de Strikers', 46, 38);
     }
 
     function drawBottomBar(ctx, w, h, text) {
-      ctx.fillStyle = 'rgba(5, 5, 5, 0.75)';
-      ctx.fillRect(16, h - 52, w - 32, 36);
-      ctx.strokeStyle = '#222222';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+      ctx.fillRect(16, h - 48, w - 32, 34);
+      ctx.strokeStyle = 'rgba(255,255,255,0.1)';
       ctx.lineWidth = 1;
-      ctx.strokeRect(16, h - 52, w - 32, 36);
+      ctx.strokeRect(16, h - 48, w - 32, 34);
 
       ctx.fillStyle = '#00ff66';
-      ctx.font = '900 12px monospace';
+      ctx.font = '900 11px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(text, w / 2, h - 30);
+      ctx.fillText(text, w / 2, h - 27);
     }
 
     function drawDynamicSkeleton(ctx, lm, w, h) {
@@ -867,7 +895,7 @@
       if (sL && eL && wL && calculateAngle(sL, eL, wL) > 175) isArmDanger = true;
 
       let isBalanceDanger = false;
-      if (nose && aR && aL && Math.abs(nose.x - (aR.x + aL.x)/2) > 0.18) isBalanceDanger = true;
+      if (nose && aR && aL && Math.abs(nose.x - (aR.x + aL.x)/2) > 0.16) isBalanceDanger = true;
 
       POSE_CONNECTIONS.forEach(([i, j]) => {
         const p1 = lm[i];
@@ -879,33 +907,30 @@
 
           if ((i === 14 || j === 14 || i === 13 || j === 13) && isArmDanger) {
             ctx.strokeStyle = '#ff2a2a';
-            ctx.lineWidth = 4;
+            ctx.lineWidth = 3;
           } else if ((i >= 23 || j >= 23) && isBalanceDanger) {
             ctx.strokeStyle = '#ff2a2a';
-            ctx.lineWidth = 4;
+            ctx.lineWidth = 3;
           } else {
             ctx.strokeStyle = '#00ff66';
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 2;
           }
           ctx.stroke();
         }
       });
 
+      // CADENA CINÉTICA CIAN
       if (sR && eR && wR && hR && aR) {
         const ang = calculateAngle(sR, eR, wR);
-        if (ang > 150) {
-          ctx.strokeStyle = '#00ffff';
-          ctx.lineWidth = 5;
+        if (ang > 150 && ang <= 175) {
+          ctx.strokeStyle = '#00f0ff';
+          ctx.lineWidth = 4;
           ctx.beginPath();
           ctx.moveTo(aR.x * w, aR.y * h);
           ctx.lineTo(hR.x * w, hR.y * h);
           ctx.lineTo(sR.x * w, sR.y * h);
           ctx.lineTo(wR.x * w, wR.y * h);
           ctx.stroke();
-
-          ctx.fillStyle = '#00ffff';
-          ctx.font = 'bold 9px monospace';
-          ctx.fillText("CADENA CINÉTICA ACTIVA", wR.x * w + 10, wR.y * h);
         }
       }
 
@@ -913,15 +938,15 @@
         if (pt.visibility > 0.5) {
           ctx.fillStyle = (idx === 15 || idx === 16) ? '#ff2a2a' : '#ffffff';
           ctx.beginPath();
-          ctx.arc(pt.x * w, pt.y * h, (idx === 15 || idx === 16) ? 5 : 3, 0, 2 * Math.PI);
+          ctx.arc(pt.x * w, pt.y * h, (idx === 15 || idx === 16) ? 4 : 2.5, 0, 2 * Math.PI);
           ctx.fill();
         }
       });
     }
 
-    // ==========================================
-    // MÓDULO 1: ANÁLISIS LIBRE -> FICHA PNG
-    // ==========================================
+    // =========================================================================
+    // 4. MÓDULO 1: ANÁLISIS LIBRE -> FICHA PNG DESCARGABLE
+    // =========================================================================
     let m1GeneratedImageUri = null;
 
     async function startModule1Analysis() {
@@ -930,24 +955,23 @@
       const msg = document.getElementById('m1StatusMsg');
       msg.style.display = 'block';
 
-      m1Metrics = { frames: 0, hyperExtCount: 0, hyperExtMaxDanger: 0, unbalanceCount: 0, unbalanceMaxDanger: 0, badHipRotationCount: 0, badHipDanger: 0, goodGuardFrames: 0, goodUppercutCount: 0, peakPunchSpeed: 0 };
+      m1Metrics = { frames: 0, hyperExtCount: 0, hyperExtDanger: 0, unbalanceCount: 0, unbalanceDanger: 0, badHipRotationCount: 0, badHipDanger: 0, validJabCount: 0, validCrossCount: 0, validHookCount: 0, validUpperCount: 0, guardPercent: 0 };
       isM1Tracking = true;
-      playAudioCue(`Iniciando análisis libre de ${secTotal} segundos.`);
+      playAudioCue(`Iniciando escáner cinemático de ${secTotal} segundos.`);
 
       for (let s = secTotal; s >= 1; s--) {
-        msg.innerText = `ANÁLISIS ACTIVO // ${s}s RESTANTES`;
-        liveBannerText = `APEX // ESCANEO LIBRE: ${s}s RESTANTES`;
+        msg.innerText = `ESCANEO ACTIVO // ${s}s`;
+        liveBannerText = `APEX // MUESTREO: ${s}s RESTANTES`;
         await new Promise(r => setTimeout(r, 1000));
       }
 
       isM1Tracking = false;
       liveBannerText = "APEX // GENERANDO FICHA WHATSAPP...";
       msg.style.display = 'none';
-      playAudioCue("Análisis finalizado.");
+      playAudioCue("Muestreo finalizado.");
 
       const canvas = document.getElementById('gamingCanvas');
       const lastFrameUrl = canvas.toDataURL('image/jpeg', 0.95);
-
       generateWhatsAppReportPNG(lastFrameUrl);
     }
 
@@ -958,96 +982,86 @@
 
       bgImg.onload = () => {
         ctx.drawImage(bgImg, 0, 0, cvs.width, cvs.height);
-
-        ctx.fillStyle = 'rgba(5, 5, 5, 0.75)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.80)';
         ctx.fillRect(0, 0, cvs.width, cvs.height);
 
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 1.5;
         ctx.strokeRect(12, 12, cvs.width - 24, cvs.height - 24);
 
         drawApexWatermark(ctx);
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = '900 18px sans-serif';
+        ctx.font = '900 16px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('STRIKER PASS // CINEMÁTICA', 240, 68);
+        ctx.fillText('STRIKER PASS // FICHA CINEMÁTICA', 240, 68);
 
         ctx.fillStyle = '#ff2a2a';
-        ctx.font = 'bold 11px sans-serif';
-        ctx.fillText('REPORTE OFICIAL DE MOVIMIENTOS & PREVENCIÓN', 240, 88);
-
-        const guardPercent = m1Metrics.frames > 0 ? Math.round((m1Metrics.goodGuardFrames / m1Metrics.frames) * 100) : 85;
-        const upperDanger = m1Metrics.goodUppercutCount > 0 ? 92 : 78;
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText('EVALUACIÓN DE GESTOS & PREVENCIÓN ARTICULAR', 240, 86);
 
         const reportCards = [
           {
             title: "HIPEREXTENSIÓN DE CODO",
-            sub: m1Metrics.hyperExtCount > 0 ? `Peligro Articular: ${m1Metrics.hyperExtMaxDanger}%` : "Peligro Articular: 0%",
-            stat: m1Metrics.hyperExtCount > 0 ? `${m1Metrics.hyperExtCount} ALERTAS` : "ÓPTIMO",
+            sub: m1Metrics.hyperExtCount > 0 ? `Riesgo Articular: ${m1Metrics.hyperExtDanger}%` : "Riesgo Articular: 0%",
+            stat: m1Metrics.hyperExtCount > 0 ? `${m1Metrics.hyperExtCount} FALLOS` : "ÓPTIMO",
             isDanger: m1Metrics.hyperExtCount > 0
           },
           {
-            title: "PÉRDIDA DE EQUILIBRIO",
-            sub: m1Metrics.unbalanceCount > 0 ? `Desviación de Eje: ${m1Metrics.unbalanceMaxDanger}%` : "Desviación de Eje: 0%",
-            stat: m1Metrics.unbalanceCount > 0 ? `${m1Metrics.unbalanceCount} EVENTOS` : "ESTABLE",
+            title: "ESTABILIDAD Y EJE",
+            sub: m1Metrics.unbalanceCount > 0 ? `Desviación: ${m1Metrics.unbalanceDanger}%` : "Desviación: 0%",
+            stat: m1Metrics.unbalanceCount > 0 ? `${m1Metrics.unbalanceCount} PÉRDIDAS` : "ESTABLE",
             isDanger: m1Metrics.unbalanceCount > 0
           },
           {
             title: "ROTACIÓN DE CADERA",
             sub: m1Metrics.badHipRotationCount > 0 ? `Estrés Lumbar: ${m1Metrics.badHipDanger}%` : "Alineación Pélvica: 100%",
-            stat: m1Metrics.badHipRotationCount > 0 ? "DESALINEADA" : "PIVOTE ÓPTIMO",
+            stat: m1Metrics.badHipRotationCount > 0 ? "INCORRECTA" : "PIVOTE ÓPTIMO",
             isDanger: m1Metrics.badHipRotationCount > 0
           },
           {
-            title: "EFECTIVIDAD DE GUARDIA",
-            sub: `Protección de Mentón: ${guardPercent}%`,
-            stat: `${guardPercent}%`,
-            isDanger: guardPercent < 60
-          },
-          {
-            title: "EJECUCIÓN DE UPPERCUT",
-            sub: `Alineación Vectorial: ${upperDanger}%`,
-            stat: `${upperDanger}% EFICIENTE`,
-            isDanger: false
+            title: "JABS Y RECTOS VÁLIDOS",
+            sub: `3 Fases Cumplidas: ${m1Metrics.validJabCount + m1Metrics.validCrossCount} golpes`,
+            stat: `${m1Metrics.validJabCount + m1Metrics.validCrossCount} GOLPES`,
+            isDanger: (m1Metrics.validJabCount + m1Metrics.validCrossCount) === 0
           }
         ];
 
-        let y = 115;
+        let y = 110;
         reportCards.forEach(c => {
-          ctx.fillStyle = 'rgba(18, 18, 18, 0.88)';
-          ctx.fillRect(24, y, 432, 54);
-          ctx.strokeStyle = c.isDanger ? '#ff2a2a' : '#282828';
-          ctx.lineWidth = 1.2;
-          ctx.strokeRect(24, y, 432, 54);
+          ctx.fillStyle = 'rgba(10, 10, 10, 0.92)';
+          ctx.fillRect(24, y, 432, 52);
+          ctx.strokeStyle = c.isDanger ? '#ff2a2a' : '#222';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(24, y, 432, 52);
 
           ctx.fillStyle = c.isDanger ? '#ff2a2a' : '#ffffff';
-          ctx.font = '900 11px sans-serif';
+          ctx.font = '900 10.5px sans-serif';
           ctx.textAlign = 'left';
           ctx.fillText(c.title, 36, y + 20);
 
-          ctx.fillStyle = '#aaaaaa';
-          ctx.font = 'bold 9.5px monospace';
-          ctx.fillText(c.sub, 36, y + 38);
+          ctx.fillStyle = '#888888';
+          ctx.font = 'bold 9px monospace';
+          ctx.fillText(c.sub, 36, y + 36);
 
           ctx.fillStyle = c.isDanger ? '#ff2a2a' : '#00ff66';
-          ctx.font = '900 13px monospace';
+          ctx.font = '900 12px monospace';
           ctx.textAlign = 'right';
-          ctx.fillText(c.stat, 444, y + 30);
+          ctx.fillText(c.stat, 444, y + 28);
 
-          y += 64;
+          y += 62;
         });
 
-        ctx.fillStyle = '#888888';
-        ctx.font = '9.5px monospace';
+        ctx.fillStyle = '#777777';
+        ctx.font = '9px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('APEX BOXING ESCUELA DE STRIKERS • CALI', 240, 595);
+        ctx.fillText('APEX BOXING ESCUELA DE STRIKERS • CALI', 240, 600);
 
         m1GeneratedImageUri = cvs.toDataURL('image/png');
         const imgPreview = document.getElementById('m1PreviewImg');
         imgPreview.src = m1GeneratedImageUri;
         document.getElementById('m1PreviewBox').style.display = 'flex';
-        speakFast("Ficha técnica lista para descargar o enviar por WhatsApp.");
+        speakDeep("Ficha cinemática lista para descargar.");
       };
 
       bgImg.src = backgroundImgUrl;
@@ -1057,19 +1071,17 @@
       if (!m1GeneratedImageUri) return;
       const a = document.createElement('a');
       a.href = m1GeneratedImageUri;
-      a.download = `Apex_Ficha_WhatsApp_${Date.now()}.png`;
+      a.download = `Apex_Ficha_${Date.now()}.png`;
       a.click();
-      speakFast("Ficha descargada.");
     }
 
     function discardM1Image() {
       m1GeneratedImageUri = null;
       document.getElementById('m1PreviewBox').style.display = 'none';
-      document.getElementById('m1PreviewImg').src = '';
     }
 
     // =========================================================================
-    // MÓDULO 2: CAPTURA 10s & POST-PROCESAMIENTO CON AUDIO SINCRONIZADO
+    // 5. MÓDULO 2: VIDEO 10s CON AUDIO INTEGRADO
     // =========================================================================
     let m2GeneratedVideoBlob = null;
 
@@ -1080,8 +1092,7 @@
 
       for (let c = 3; c >= 1; c--) {
         msg.innerText = `PREPARADO: ${c}...`;
-        playBeep(500, 0.1);
-        speakFast(`${c}`);
+        playAudioCue(`${c}`);
         await new Promise(r => setTimeout(r, 1000));
       }
 
@@ -1128,12 +1139,10 @@
 
           playAudioCue("Iniciando análisis.", true);
 
-          let frameIdx = 0;
-
           async function processFrame() {
             if (tempVid.ended || tempVid.paused) {
               playAudioCue("Análisis finalizado.", true);
-              await new Promise(r => setTimeout(r, 600));
+              await new Promise(r => setTimeout(r, 500));
 
               finalRecorder.stop();
               finalRecorder.onstop = () => {
@@ -1145,13 +1154,12 @@
                 isPipelineActive = false;
                 msg.style.display = 'none';
                 requestAnimationFrame(renderLiveVisor);
-                speakFast("Video post-procesado con éxito. Puedes reproducirlo antes de descargar.");
+                speakDeep("Video post-procesado con éxito.");
                 resolve();
               };
               return;
             }
 
-            frameIdx++;
             ctx.drawImage(tempVid, 0, 0, canvas.width, canvas.height);
             ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1167,7 +1175,6 @@
             }
 
             drawBottomBar(ctx, canvas.width, canvas.height, "APEX // VELOCIDAD: 9.4 m/s | POTENCIA: 880 PSI");
-
             requestAnimationFrame(processFrame);
           }
 
@@ -1188,20 +1195,16 @@
       a.href = URL.createObjectURL(m2GeneratedVideoBlob);
       a.download = `Apex_Video_10s_${Date.now()}.webm`;
       a.click();
-      speakFast("Video descargado.");
     }
 
     function discardM2Video() {
       m2GeneratedVideoBlob = null;
       document.getElementById('m2PreviewBox').style.display = 'none';
-      const vid = document.getElementById('m2PreviewVideo');
-      vid.pause();
-      vid.src = '';
-      speakFast("Video descartado.");
+      document.getElementById('m2PreviewVideo').src = '';
     }
 
     // =========================================================================
-    // MÓDULO 3: CARGA & ANÁLISIS DE VIDEO EXTERNO
+    // 6. MÓDULO 3: CARGA & ANÁLISIS DE VIDEO EXTERNO
     // =========================================================================
     let m3UploadedBlob = null;
 
@@ -1210,16 +1213,16 @@
       if (!f) return;
       const vid = document.getElementById('m3SourceVideo');
       vid.src = URL.createObjectURL(f);
-      speakFast("Video cargado. Listo para procesar.");
+      speakDeep("Video cargado. Listo para renderizar.");
     }
 
     async function processUploadedVideo() {
       const vid = document.getElementById('m3SourceVideo');
-      if (!vid.src) return alert('Debes cargar un archivo de video primero.');
+      if (!vid.src) return alert('Debes seleccionar un video primero.');
 
       const progress = document.getElementById('m3ProgressMsg');
       progress.style.display = 'block';
-      progress.innerText = "Analizando video y renderizando vectores...";
+      progress.innerText = "Procesando fotogramas con IA...";
 
       const canvas = document.getElementById('gamingCanvas');
       const ctx = canvas.getContext('2d');
@@ -1242,8 +1245,8 @@
             const prevVid = document.getElementById('m3PreviewVideo');
             prevVid.src = URL.createObjectURL(m3UploadedBlob);
             prevBox.style.display = 'flex';
-            progress.innerText = "¡Video analizado y renderizado!";
-            speakFast("Video analizado y listo para descargar.");
+            progress.innerText = "¡Video renderizado con éxito!";
+            speakDeep("Renderizado completado.");
           };
           return;
         }
@@ -1272,7 +1275,7 @@
       if (!m3UploadedBlob) return;
       const a = document.createElement('a');
       a.href = URL.createObjectURL(m3UploadedBlob);
-      a.download = `Apex_Analisis_Externo_${Date.now()}.webm`;
+      a.download = `Apex_Render_${Date.now()}.webm`;
       a.click();
     }
 
@@ -1283,7 +1286,7 @@
     }
 
     // =========================================================================
-    // MÓDULO 4: COACH POR VOZ EN TIEMPO REAL
+    // 7. MÓDULO 4: COACH ESTRICTO (8 GOLPES + ESQUIVAS + DESPLAZAMIENTOS)
     // =========================================================================
     let currentCoachMode = 'A';
 
@@ -1291,44 +1294,131 @@
       currentCoachMode = mode;
       document.getElementById('coachSubModeA').style.display = mode === 'A' ? 'flex' : 'none';
       document.getElementById('coachSubModeB').style.display = mode === 'B' ? 'flex' : 'none';
-      document.getElementById('btnCoachModeA').classList.toggle('btn-red', mode === 'A');
-      document.getElementById('btnCoachModeB').classList.toggle('btn-red', mode === 'B');
+      document.getElementById('btnCoachModeA').classList.toggle('btn-outline', mode !== 'A');
+      document.getElementById('btnCoachModeB').classList.toggle('btn-outline', mode !== 'B');
     }
+
+    // CATÁLOGO DE LOS 8 GOLPES + ESQUIVAS CON PARÁMETROS BIOMECÁNICOS
+    const BOXING_CATALOG = [
+      {
+        name: "1. Jab de Izquierda",
+        desc: "Extensión directa del brazo izquierdo (150° a 170°). Mantén guardia derecha arriba.",
+        type: "jab"
+      },
+      {
+        name: "2. Cross de Derecha",
+        desc: "Extensión directa del brazo derecho con pivote de cadera.",
+        type: "cross"
+      },
+      {
+        name: "3. Hook Izquierdo a la Cabeza",
+        desc: "Codo izquierdo flexionado a 90° en plano horizontal a la altura del mentón.",
+        type: "hook_L"
+      },
+      {
+        name: "4. Hook Derecho a la Cabeza",
+        desc: "Codo derecho flexionado a 90° con rotación de torso.",
+        type: "hook_R"
+      },
+      {
+        name: "5. Uppercut Izquierdo",
+        desc: "Ascendente desde la cintura, codo flexionado entre 75° y 110°.",
+        type: "upper_L"
+      },
+      {
+        name: "6. Uppercut Derecho",
+        desc: "Ascendente con empuje de pierna trasera y flexión de 90°.",
+        type: "upper_R"
+      },
+      {
+        name: "7. Hook al Hígado / Cuerpo",
+        desc: "Impacto semicircular bajo, nivel de costillas.",
+        type: "body_hook"
+      },
+      {
+        name: "8. Overhand Derecho",
+        desc: "Golpe en curva descendente por encima de la línea del hombro.",
+        type: "overhand"
+      },
+      {
+        name: "9. Esquiva Circular (Roll / Weave)",
+        desc: "Flexión de piernas y desplazamiento en U del tronco.",
+        type: "weave"
+      },
+      {
+        name: "10. Desplazamiento / Pivote",
+        desc: "Pivote lateral de 45° manteniendo la base de apoyo.",
+        type: "pivot"
+      }
+    ];
 
     async function startCoachDrillA() {
       if (!isCameraRunning) toggleCameraPower();
       const statusBox = document.getElementById('coachVoiceStatus');
       statusBox.style.display = 'block';
 
-      const drills = [
-        { cmd: "¡Lanza Jab directo al mentón!", check: "jab" },
-        { cmd: "¡Cross de potencia con pivote de cadera!", check: "cross" },
-        { cmd: "¡Guardia alta cubriendo mentón!", check: "guard" },
-        { cmd: "¡Uppercut derecho explosivo!", check: "uppercut" }
-      ];
+      for (let i = 0; i < BOXING_CATALOG.length; i++) {
+        const item = BOXING_CATALOG[i];
+        let validated = false;
+        let attempts = 0;
 
-      for (let i = 0; i < drills.length; i++) {
-        const d = drills[i];
-        statusBox.innerText = `COACH: ${d.cmd}`;
-        playAudioCue(d.cmd);
+        while (!validated && attempts < 2) {
+          attempts++;
+          statusBox.innerText = `EJECUTA: ${item.name}\n${item.desc}`;
+          playAudioCue(`Atento: ${item.name}. ${item.desc}`);
 
-        await new Promise(r => setTimeout(r, 3500));
+          await new Promise(r => setTimeout(r, 4500));
 
-        let feedback = "¡Bien ejecutado! Buena alineación.";
-        if (latestLandmarks) {
-          const sR = latestLandmarks[12], eR = latestLandmarks[14], wR = latestLandmarks[16];
-          if (sR && eR && wR && calculateAngle(sR, eR, wR) > 175) {
-            feedback = "¡Cuidado! Estás hiperextendiendo el codo.";
+          // VALIDACIÓN BIOMECÁNICA ESTRICTA
+          let isGestureCorrect = false;
+          if (latestLandmarks) {
+            const sR = latestLandmarks[12], sL = latestLandmarks[11];
+            const eR = latestLandmarks[14], eL = latestLandmarks[13];
+            const wR = latestLandmarks[16], wL = latestLandmarks[15];
+
+            if (item.type === 'jab' && sL && eL && wL) {
+              const ang = calculateAngle(sL, eL, wL);
+              if (ang >= 145 && ang <= 175) isGestureCorrect = true;
+            } else if (item.type === 'cross' && sR && eR && wR) {
+              const ang = calculateAngle(sR, eR, wR);
+              if (ang >= 145 && ang <= 175) isGestureCorrect = true;
+            } else if ((item.type === 'hook_L' || item.type === 'hook_R') && sR && eR && wR) {
+              const angR = calculateAngle(sR, eR, wR);
+              const angL = sL ? calculateAngle(sL, eL, wL) : 0;
+              if ((angR >= 75 && angR <= 115) || (angL >= 75 && angL <= 115)) isGestureCorrect = true;
+            } else if ((item.type === 'upper_L' || item.type === 'upper_R') && sR && eR && wR) {
+              const angR = calculateAngle(sR, eR, wR);
+              if (angR >= 70 && angR <= 120 && wR.y < sR.y) isGestureCorrect = true;
+            } else {
+              // Esquivas / Desplazamientos
+              if (latestLandmarks[0] && Math.abs(latestLandmarks[0].x - 0.5) > 0.08) isGestureCorrect = true;
+            }
+          }
+
+          if (isGestureCorrect) {
+            validated = true;
+            statusBox.innerText = `APROBADO: ${item.name} ejecutado con éxito.`;
+            speakDeep("Correcto. Parámetro cumplido.");
+            await new Promise(r => setTimeout(r, 2000));
+          } else {
+            if (attempts < 2) {
+              statusBox.innerText = `NO VÁLIDO. Repite: ${item.name}`;
+              speakDeep(`Gesto no detectado o incompleto. Repite: ${item.name}.`);
+              await new Promise(r => setTimeout(r, 2500));
+            } else {
+              statusBox.innerText = `FALLIDO. Pasando al siguiente gesto.`;
+              speakDeep("Gesto no cumplido. Avanzamos al siguiente.");
+              await new Promise(r => setTimeout(r, 2000));
+            }
           }
         }
-        statusBox.innerText = `EVALUACIÓN: ${feedback}`;
-        speakFast(feedback);
-        await new Promise(r => setTimeout(r, 2500));
       }
 
-      statusBox.innerText = "DRILL COMPLETADO.";
-      speakFast("Excelente entrenamiento. Drill completado.");
+      statusBox.innerText = "DRILL ESTRICTO COMPLETADO.";
+      speakDeep("Drill oficial completado.");
     }
+
+    let coachBReportUri = null;
 
     async function startCoachDrillB() {
       if (!isCameraRunning) toggleCameraPower();
@@ -1336,26 +1426,72 @@
       const statusBox = document.getElementById('coachVoiceStatus');
       statusBox.style.display = 'block';
 
-      speakFast(`Iniciando evaluación de combo libre. ${sec} segundos.`);
+      speakDeep(`Iniciando evaluación de combo libre. Tienes ${sec} segundos.`);
 
-      let hyperExtDetected = 0;
+      let hyperExt = 0;
+      let unbalance = 0;
+      let totalPunches = 0;
 
       for (let s = sec; s >= 1; s--) {
-        statusBox.innerText = `EVALUANDO COMBO // ${s}s`;
+        statusBox.innerText = `EVALUANDO COMBO LIBRE // ${s}s`;
         if (latestLandmarks) {
           const sR = latestLandmarks[12], eR = latestLandmarks[14], wR = latestLandmarks[16];
-          if (sR && eR && wR && calculateAngle(sR, eR, wR) > 175) hyperExtDetected++;
+          if (sR && eR && wR) {
+            const ang = calculateAngle(sR, eR, wR);
+            if (ang > 175) hyperExt++;
+            if (ang > 145 && ang <= 175) totalPunches++;
+          }
         }
         await new Promise(r => setTimeout(r, 1000));
       }
 
-      let voiceDiagnosis = "Análisis completado. Tu técnica fue sólida y mantuviste buena potencia.";
-      if (hyperExtDetected > 2) {
-        voiceDiagnosis = "Atención: detecté peligro de hiperextensión en los remates. Flexiona ligeramente al impactar.";
+      let voiceDiagnosis = "Diagnóstico: Buena cadencia y fluidez técnica.";
+      if (hyperExt > 2) {
+        voiceDiagnosis = "Advertencia: Peligro de hiperextensión en los remates. Corrige el codo.";
+      } else if (totalPunches < 5) {
+        voiceDiagnosis = "Volumen insuficiente. No se detectaron combinaciones claras.";
       }
 
       statusBox.innerText = `DIAGNÓSTICO: ${voiceDiagnosis}`;
-      speakFast(voiceDiagnosis);
+      speakDeep(voiceDiagnosis);
+
+      // Generar Reporte de Combo Descargable
+      const cvs = document.getElementById('offscreenCanvas');
+      const ctx = cvs.getContext('2d');
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, cvs.width, cvs.height);
+
+      drawApexWatermark(ctx);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('STRIKER PASS // REPORTE DE COMBO', 240, 70);
+
+      ctx.fillStyle = '#ff2a2a';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.fillText(voiceDiagnosis, 240, 95);
+
+      ctx.fillStyle = '#00ff66';
+      ctx.font = '900 13px monospace';
+      ctx.fillText(`IMPACTOS COMPUTADOS: ${totalPunches}`, 240, 140);
+      ctx.fillText(`ALERTAS DE HIPEREXTENSIÓN: ${hyperExt}`, 240, 165);
+
+      ctx.fillStyle = '#777777';
+      ctx.font = '9px monospace';
+      ctx.fillText('APEX BOXING ESCUELA DE STRIKERS • CALI', 240, 600);
+
+      coachBReportUri = cvs.toDataURL('image/png');
+      document.getElementById('coachBPreviewImg').src = coachBReportUri;
+      document.getElementById('coachBPreviewBox').style.display = 'flex';
+    }
+
+    function downloadCoachBReport() {
+      if (!coachBReportUri) return;
+      const a = document.createElement('a');
+      a.href = coachBReportUri;
+      a.download = `Apex_Reporte_Combo_${Date.now()}.png`;
+      a.click();
     }
   </script>
 </body>
