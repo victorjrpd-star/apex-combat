@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Apex CombatOS // Vision AI Pro</title>
+  <title>Apex CombatOS // Live Pro</title>
   <!-- MediaPipe Pose & Camera Utils -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
@@ -193,6 +193,7 @@
   <!-- TABS -->
   <div class="nav-tabs" id="navTabs" style="display:none;">
     <button class="tab-btn active" onclick="switchTab('tab-gaming', event)">Árbitro Virtual</button>
+    <button class="tab-btn" onclick="switchTab('tab-strike', event)">Strike Lab</button>
     <button class="tab-btn" onclick="switchTab('tab-history', event)">Historial (FIFO 10)</button>
     <button class="tab-btn" id="adminTabBtn" style="display:none;" onclick="switchTab('tab-admin', event)">🛡️ Control de Acceso</button>
     <button class="tab-btn btn-outline" style="margin-left:auto;" onclick="handleLogout()">Salir</button>
@@ -232,7 +233,7 @@
       </div>
       
       <div class="row-2">
-        <button class="btn" onclick="startCamera()">📷 Encender Cámara IA</button>
+        <button class="btn" id="btnCam" onclick="toggleCamera()">📷 Cámara Trasera</button>
         <button class="btn btn-red" onclick="startSparringSession()">🥊 Iniciar Combate</button>
       </div>
       <button class="btn btn-outline" onclick="presentFightersSpeech()">🎙️ Presentación Oficial</button>
@@ -242,21 +243,34 @@
     <div class="apex-card">
       <div class="card-title">HUD En Vivo // Telemetría Biomecánica</div>
       <div class="canvas-container">
-        <video id="webcamVideo" playsinline></video>
+        <video id="webcamVideo" playsinline autoplay muted></video>
         <canvas id="gamingCanvas" width="720" height="1280"></canvas>
       </div>
       
       <div class="row-2" style="margin-top:6px;">
-        <button class="btn btn-outline" onclick="triggerEvent('impact_f1')">💥 Impacto Negra</button>
-        <button class="btn btn-outline" onclick="triggerEvent('impact_f2')">💥 Impacto Blanca</button>
+        <button class="btn btn-outline" onclick="triggerEvent('impact_generic')">💥 Impacto</button>
+        <button class="btn btn-outline" onclick="triggerEvent('dodge_generic')">⚡ Esquiva Apex</button>
       </div>
       <div class="row-2">
-        <button class="btn btn-outline" onclick="triggerEvent('dodge_f1')">⚡ Esquiva Negra (Apex)</button>
-        <button class="btn btn-outline" onclick="triggerEvent('dodge_f2')">⚡ Esquiva Blanca (Apex)</button>
+        <button class="btn btn-red" onclick="triggerKnockdown()">⚠️ Caída (Cuenta 10s)</button>
+        <button class="btn" onclick="endMatch()">🏁 Finalizar Combate</button>
       </div>
+    </div>
+  </div>
+
+  <!-- TAB STRIKE LAB -->
+  <div id="tab-strike" class="tab-content">
+    <div class="apex-card">
+      <div class="card-title">Strike Lab // Análisis Vectorial en Vivo</div>
       <div class="row-2">
-        <button class="btn btn-red" onclick="triggerKnockdown('f2')">⚠️ Caída (Cuenta 10s)</button>
-        <button class="btn" onclick="endMatch()">🏁 Finalizar & Tabla Decisión</button>
+        <div style="font-size:12px; color:var(--dim);">
+          ÁNGULO CODO: <b id="ui_angle" style="color:#fff;">--</b><br>
+          EXTENSIÓN: <b id="ui_ext" style="color:#fff;">--</b>
+        </div>
+        <div style="font-size:12px; color:var(--dim);">
+          ESTADO: <b style="color:#fff;">Rastreo Activo</b><br>
+          MOTOR: <b style="color:#fff;">Noir AI v4</b>
+        </div>
       </div>
     </div>
   </div>
@@ -330,80 +344,65 @@
     }
 
     // ==========================================
-    // VOCES MASCULINAS (SÍNTESIS ESPECÍFICA)
+    // VOZ MASCULINA FORZADA & REACCIÓN INSTANTÁNEA
     // ==========================================
     let maleVoice = null;
-    let commentatorVoice = null;
 
     function initVoices() {
-      if ('speechSynthesis' in window) {
-        const vList = window.speechSynthesis.getVoices();
-        const esVoices = vList.filter(v => v.lang.startsWith('es'));
-        
-        maleVoice = esVoices.find(v => 
-          v.name.toLowerCase().includes('male') || 
-          v.name.toLowerCase().includes('david') || 
-          v.name.toLowerCase().includes('jorge') || 
-          v.name.toLowerCase().includes('carlos') ||
-          v.name.toLowerCase().includes('pablo') ||
-          v.name.toLowerCase().includes('raul')
-        ) || esVoices[0];
-
-        commentatorVoice = esVoices.find(v => v !== maleVoice) || maleVoice;
-      }
+      if (!('speechSynthesis' in window)) return;
+      const vList = window.speechSynthesis.getVoices();
+      
+      const esVoices = vList.filter(v => v.lang.toLowerCase().startsWith('es'));
+      
+      maleVoice = esVoices.find(v => {
+        const name = v.name.toLowerCase();
+        return name.includes('male') || 
+               name.includes('david') || 
+               name.includes('jorge') || 
+               name.includes('carlos') || 
+               name.includes('raul') || 
+               name.includes('pablo') || 
+               name.includes('standard-b') || 
+               name.includes('standard-c');
+      }) || esVoices.find(v => !v.name.toLowerCase().includes('female') && !v.name.toLowerCase().includes('sabina') && !v.name.toLowerCase().includes('monica')) || esVoices[0];
     }
+
     if ('speechSynthesis' in window) {
       window.speechSynthesis.onvoiceschanged = initVoices;
       initVoices();
     }
 
-    function speakNarrator(text) {
+    function speakFast(text, pitch = 0.60) {
       if (!('speechSynthesis' in window)) return;
+      
       window.speechSynthesis.cancel();
       window.speechSynthesis.resume();
+
       const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'es-CO';
+      utter.lang = 'es-ES';
       if (maleVoice) utter.voice = maleVoice;
-      utter.rate = 1.20;
-      utter.pitch = 0.85;
+      utter.rate = 1.35;
+      utter.pitch = pitch;
+      
       window.speechSynthesis.speak(utter);
     }
 
-    function speakCommentator(text) {
-      if (!('speechSynthesis' in window)) return;
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'es-CO';
-      if (commentatorVoice) utter.voice = commentatorVoice;
-      utter.rate = 0.95;
-      utter.pitch = 0.70;
-      window.speechSynthesis.speak(utter);
-    }
-
-    const IMPACT_PHRASES = [
-      "¡Tremendo derechazo que frena en seco el avance!",
-      "¡Conecta una ráfaga limpia a la zona media!",
-      "¡Entró el uno dos nítido directo a la mandíbula!",
-      "¡Poderoso gancho de izquierda al hígado!",
-      "¡Castiga con el cross por encima de la guardia!",
-      "¡Gran combinación que hace retroceder al rival!",
-      "¡Impacto seco y contundente al mentón!",
-      "¡Metió el upper por el centro de la guardia!"
+    const FAST_IMPACTS = [
+      "¡Directo!",
+      "¡Gancho al cuerpo!",
+      "¡Entró el uno dos!",
+      "¡Golpe de poder!",
+      "¡Cruzado limpio!",
+      "¡Upper al mentón!",
+      "¡Combinación sólida!"
     ];
 
-    const DODGE_APEX_PHRASES = [
-      "¡Qué movimiento de cintura, lo dejó pagando en el aire!",
-      "¡Paso lateral perfecto y sale del ángulo de ataque!",
-      "¡Cabeceo impecable! Pura maestría en la distancia.",
-      "¡Qué categoría! Esquiva y conecta. ¡Eso es el verdadero nivel Apex!",
-      "Técnica pura, sin regalar un milímetro. Apex Boxing es el camino correcto.",
-      "¡Elegancia pura! Péndulo perfecto para esquivar el recto."
-    ];
-
-    const REST_BIO_ANALYSIS = [
-      "Miren la repetición: excelente alineación del hombro y giro de cadera para transferir masa corporal.",
-      "Análisis en esquina: gran sincronización del pivote en el pie de apoyo al momento del impacto.",
-      "Observen el detalle técnico: mantiene el codo cerrado protegiendo la zona costal.",
-      "Repetición clave: gran flexión de rodillas y centro de gravedad bajo para pasar por debajo del recto."
+    const FAST_DODGES = [
+      "¡Buena esquiva!",
+      "¡Nivel Apex!",
+      "¡Paso lateral!",
+      "¡Cabeceo perfecto!",
+      "¡Cero daño!"
     ];
 
     function getRandom(arr) {
@@ -411,15 +410,30 @@
     }
 
     // ==========================================
-    // MEDIAPIPE POSE & BIOMECHANICAL AI ENGINE
+    // MEDIAPIPE POSE & ESQUELETO COMPLETO
     // ==========================================
     let cameraInstance = null;
     let latestLandmarks = null;
-    let lastNose_X = null;
+    let useFacingMode = "environment";
+    let lastAutoTrigger = 0;
+    let lastNoseX = null;
+
+    const POSE_CONNECTIONS = [
+      [11, 12], [11, 13], [13, 15], [12, 14], [14, 16],
+      [11, 23], [12, 24], [23, 24],
+      [23, 25], [24, 26], [25, 27], [26, 28]
+    ];
+
+    function calculateAngle(a, b, c) {
+      const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
+      let angle = Math.abs((radians * 180.0) / Math.PI);
+      if (angle > 180.0) angle = 360.0 - angle;
+      return Math.round(angle);
+    }
 
     function onPoseResults(results) {
       latestLandmarks = results.poseLandmarks;
-      if (latestLandmarks) {
+      if (latestLandmarks && isSparringActive) {
         analyzeBiomechanics(latestLandmarks);
       }
       drawHUD();
@@ -431,86 +445,103 @@
     pose.setOptions({
       modelComplexity: 1,
       smoothLandmarks: true,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.6
     });
     pose.onResults(onPoseResults);
 
-    function startCamera() {
+    function toggleCamera() {
       initAudio();
       const videoElement = document.getElementById('webcamVideo');
-      cameraInstance = new Camera(videoElement, {
-        onFrame: async () => {
-          await pose.send({ image: videoElement });
-        },
-        width: 720,
-        height: 1280
-      });
-      cameraInstance.start();
-      speakNarrator("Cámara IA activada. Reconocimiento biomecánico en línea.");
+      
+      if (cameraInstance) {
+        useFacingMode = useFacingMode === "environment" ? "user" : "environment";
+        document.getElementById('btnCam').innerText = useFacingMode === "environment" ? "📷 Cámara Trasera" : "📷 Cámara Frontal";
+      }
+
+      navigator.mediaDevices.getUserMedia({
+        video: { facingMode: useFacingMode, width: 720, height: 1280 }
+      }).then((stream) => {
+        videoElement.srcObject = stream;
+        videoElement.play();
+        
+        if (!cameraInstance) {
+          cameraInstance = new Camera(videoElement, {
+            onFrame: async () => {
+              await pose.send({ image: videoElement });
+            },
+            width: 720,
+            height: 1280
+          });
+          cameraInstance.start();
+        }
+        speakFast("Cámara lista.");
+      }).catch(err => alert("Error de cámara: " + err));
     }
 
-    let lastAutoTrigger = 0;
     function analyzeBiomechanics(lm) {
       const now = Date.now();
-      if (now - lastAutoTrigger < 1800) return;
+      if (now - lastAutoTrigger < 2500) return;
 
       const nose = lm[0];
-      const wristR = lm[16];
       const shoulderR = lm[12];
       const elbowR = lm[14];
-
-      if (wristR && shoulderR && elbowR) {
-        const armExtension = Math.hypot(wristR.x - shoulderR.x, wristR.y - shoulderR.y);
-        if (armExtension > 0.35 && wristR.y < shoulderR.y + 0.1) {
-          triggerEvent('impact_f1');
-          lastAutoTrigger = now;
-          return;
-        }
-      }
-
-      if (nose && lastNose_X !== null) {
-        const deltaX = Math.abs(nose.x - lastNose_X);
-        if (deltaX > 0.08) {
-          triggerEvent('dodge_f1');
-          lastAutoTrigger = now;
-          lastNose_X = nose.x;
-          return;
-        }
-      }
-      if (nose) lastNose_X = nose.x;
-
+      const wristR = lm[16];
       const hip = lm[24] || lm[23];
+
+      if (shoulderR && elbowR && wristR) {
+        const angle = calculateAngle(shoulderR, elbowR, wristR);
+        const elAngle = document.getElementById('ui_angle');
+        const elExt = document.getElementById('ui_ext');
+        if (elAngle) elAngle.innerText = `${angle}°`;
+        if (elExt) elExt.innerText = angle > 150 ? 'Completa' : 'Flexionado';
+
+        if (angle > 155 && wristR.y < shoulderR.y + 0.1) {
+          triggerEvent('impact_generic');
+          lastAutoTrigger = now;
+          return;
+        }
+      }
+
+      if (nose && lastNoseX !== null) {
+        const deltaX = Math.abs(nose.x - lastNoseX);
+        if (deltaX > 0.12) {
+          triggerEvent('dodge_generic');
+          lastAutoTrigger = now;
+          lastNoseX = nose.x;
+          return;
+        }
+      }
+      if (nose) lastNoseX = nose.x;
+
       if (nose && hip && nose.y > hip.y && !isKnockedDown) {
-        triggerKnockdown('f2');
-        lastAutoTrigger = now + 5000;
+        triggerKnockdown();
+        lastAutoTrigger = now + 6000;
       }
     }
 
     // ==========================================
     // LOGICA DE COMBATE & HUD
     // ==========================================
+    let isSparringActive = false;
     let totalRounds = 3, roundDuration = 180, restDuration = 60;
     let currentRound = 1, currentSec = 180;
     let isResting = false, isKnockedDown = false, kdSec = 10;
     let timer = null;
     let hp1 = 100, hp2 = 100;
-    let score1 = 0, score2 = 0;
-    let dodges1 = 0, dodges2 = 0;
-    let kd1 = 0, kd2 = 0;
+    let totalHits = 0, totalDodges = 0;
 
     function presentFightersSpeech() {
       initAudio();
       const f1 = document.getElementById('f1_name').value;
-      const d1 = document.getElementById('f1_detail').value;
       const f2 = document.getElementById('f2_name').value;
-      const d2 = document.getElementById('f2_detail').value;
       const rounds = document.getElementById('cfg_rounds').value;
-      speakNarrator(`¡Atención señores! Apex CombatOS presenta este combate pactado a ${rounds} asaltos. En la esquina negra: ${f1}, desde ${d1}. En la esquina blanca: ${f2}, desde ${d2}. ¡A pelear con honor!`);
+      speakFast(`Combate oficial a ${rounds} asaltos. ${f1} contra ${f2}. ¡A pelear!`, 0.6);
     }
 
     function startSparringSession() {
       initAudio();
+      isSparringActive = true;
       totalRounds = parseInt(document.getElementById('cfg_rounds').value);
       roundDuration = parseInt(document.getElementById('cfg_round_time').value) * 60;
       restDuration = parseInt(document.getElementById('cfg_rest_time').value);
@@ -519,12 +550,10 @@
       currentSec = roundDuration;
       isResting = false;
       hp1 = 100; hp2 = 100;
-      score1 = 0; score2 = 0;
-      dodges1 = 0; dodges2 = 0;
-      kd1 = 0; kd2 = 0;
+      totalHits = 0; totalDodges = 0;
 
       playBell();
-      speakNarrator(`¡Primer asalto! ¡Box!`);
+      speakFast(`¡Round uno! ¡Box!`, 0.6);
       
       if (timer) clearInterval(timer);
       timer = setInterval(gameLoopTick, 1000);
@@ -543,21 +572,19 @@
           } else {
             isResting = true;
             currentSec = restDuration;
-            speakNarrator(`¡Campana! Fin del round ${currentRound}. A descansar a las esquinas.`);
+            speakFast(`¡Fin del round! A las esquinas.`, 0.6);
           }
         }
       } else {
         currentSec--;
-        if (currentSec === Math.floor(restDuration - 10) || currentSec === Math.floor(restDuration - 40)) {
-          speakCommentator(getRandom(REST_BIO_ANALYSIS));
-        } else if (currentSec === 5) {
-          speakNarrator(`¡Segundos fuera!`);
+        if (currentSec === 5) {
+          speakFast(`¡Segundos fuera!`, 0.6);
         } else if (currentSec <= 0) {
           isResting = false;
           currentRound++;
           currentSec = roundDuration;
           playBell();
-          speakNarrator(`¡Round ${currentRound}! ¡Box!`);
+          speakFast(`¡Round ${currentRound}! ¡Box!`, 0.6);
         }
       }
       drawHUD();
@@ -565,39 +592,24 @@
 
     function triggerEvent(type) {
       initAudio();
-      const f1 = document.getElementById('f1_name').value;
-      const f2 = document.getElementById('f2_name').value;
-
-      if (type === 'impact_f1') {
-        hp2 = Math.max(0, hp2 - 6);
-        score1 += 100;
+      if (type === 'impact_generic') {
+        totalHits++;
+        hp2 = Math.max(0, hp2 - 5);
         playHit();
-        speakNarrator(`${f1}: ${getRandom(IMPACT_PHRASES)}`);
-      } else if (type === 'impact_f2') {
-        hp1 = Math.max(0, hp1 - 6);
-        score2 += 100;
-        playHit();
-        speakNarrator(`${f2}: ${getRandom(IMPACT_PHRASES)}`);
-      } else if (type === 'dodge_f1') {
-        dodges1++;
-        score1 += 80;
-        speakNarrator(`${f1}: ${getRandom(DODGE_APEX_PHRASES)}`);
-      } else if (type === 'dodge_f2') {
-        dodges2++;
-        score2 += 80;
-        speakNarrator(`${f2}: ${getRandom(DODGE_APEX_PHRASES)}`);
+        speakFast(getRandom(FAST_IMPACTS));
+      } else if (type === 'dodge_generic') {
+        totalDodges++;
+        speakFast(getRandom(FAST_DODGES));
       }
       drawHUD();
     }
 
-    function triggerKnockdown(corner) {
+    function triggerKnockdown() {
       initAudio();
       isKnockedDown = true;
       kdSec = 10;
-      kd2++;
       hp2 = Math.max(0, hp2 - 25);
-      const f2 = document.getElementById('f2_name').value;
-      speakNarrator(`¡A la lona! ¡${f2} al suelo! Inicia el conteo de protección.`);
+      speakFast(`¡Caída! Conteo de protección.`, 0.55);
 
       const kdInterval = setInterval(() => {
         kdSec--;
@@ -605,7 +617,7 @@
         if (kdSec <= 0) {
           clearInterval(kdInterval);
           isKnockedDown = false;
-          speakNarrator(`¡Diez! ¡No va más! ¡Victoria por Knockout!`);
+          speakFast(`¡Diez! ¡Victoria por Knockout!`, 0.55);
           endMatch(true);
         }
       }, 1000);
@@ -620,7 +632,7 @@
 
       if (video && video.readyState >= 2) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.40)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       } else {
         ctx.fillStyle = '#000';
@@ -629,15 +641,25 @@
 
       if (latestLandmarks) {
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 3;
-        ctx.fillStyle = '#ff2a2a';
+        ctx.lineWidth = 4;
+        POSE_CONNECTIONS.forEach(([i, j]) => {
+          const p1 = latestLandmarks[i];
+          const p2 = latestLandmarks[j];
+          if (p1 && p2 && p1.visibility > 0.5 && p2.visibility > 0.5) {
+            ctx.beginPath();
+            ctx.moveTo(p1.x * canvas.width, p1.y * canvas.height);
+            ctx.lineTo(p2.x * canvas.width, p2.y * canvas.height);
+            ctx.stroke();
+          }
+        });
 
-        latestLandmarks.forEach((pt) => {
-          const px = pt.x * canvas.width;
-          const py = pt.y * canvas.height;
-          ctx.beginPath();
-          ctx.arc(px, py, 4, 0, 2 * Math.PI);
-          ctx.fill();
+        latestLandmarks.forEach((pt, idx) => {
+          if (pt.visibility > 0.5) {
+            ctx.fillStyle = (idx === 15 || idx === 16) ? '#ff2a2a' : '#ffffff';
+            ctx.beginPath();
+            ctx.arc(pt.x * canvas.width, pt.y * canvas.height, (idx === 15 || idx === 16) ? 7 : 4, 0, 2 * Math.PI);
+            ctx.fill();
+          }
         });
       }
 
@@ -654,7 +676,7 @@
 
       ctx.fillStyle = isResting ? '#ff2a2a' : '#888';
       ctx.font = 'bold 13px sans-serif';
-      ctx.fillText(isResting ? 'DESCANSO // BIOANÁLISIS' : `ROUND ${currentRound} DE ${totalRounds}`, 360, 108);
+      ctx.fillText(isResting ? 'DESCANSO // ESQUINA' : `ROUND ${currentRound} DE ${totalRounds}`, 360, 108);
 
       ctx.textAlign = 'left';
       ctx.fillStyle = '#fff';
@@ -670,10 +692,9 @@
       ctx.fillRect(400 + (280 * (1 - hp2 / 100)), 155, 280 * (hp2 / 100), 22);
 
       ctx.font = '14px monospace';
-      ctx.textAlign = 'left';
-      ctx.fillText(`SCORE: ${score1} | ESQ: ${dodges1}`, 40, 205);
-      ctx.textAlign = 'right';
-      ctx.fillText(`SCORE: ${score2} | ESQ: ${dodges2}`, 680, 205);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#aaa';
+      ctx.fillText(`IMPACTOS: ${totalHits}  |  ESQUIVAS: ${totalDodges}`, 360, 205);
 
       if (isKnockedDown) {
         ctx.fillStyle = '#ff2a2a';
@@ -684,16 +705,16 @@
     }
 
     function endMatch(isKo = false) {
+      isSparringActive = false;
       if (timer) clearInterval(timer);
       const f1 = document.getElementById('f1_name').value;
       const f2 = document.getElementById('f2_name').value;
-      let winner = score1 >= score2 ? f1 : f2;
-      if (isKo) winner = f1;
+      let winner = f1;
 
       saveHistory({
         id: Date.now(),
         date: new Date().toLocaleDateString(),
-        f1, f2, winner, score1, score2
+        f1, f2, winner, totalHits, totalDodges
       });
 
       renderScoreboard(winner, isKo);
@@ -703,7 +724,6 @@
       const canvas = document.getElementById('gamingCanvas');
       const ctx = canvas.getContext('2d');
       const f1 = document.getElementById('f1_name').value.toUpperCase();
-      const f2 = document.getElementById('f2_name').value.toUpperCase();
 
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -719,17 +739,16 @@
 
       ctx.fillStyle = '#ff2a2a';
       ctx.font = 'bold 20px sans-serif';
-      ctx.fillText(isKo ? 'VICTORIA POR KNOCKOUT' : 'DECISIÓN DE JUECES', 360, 150);
+      ctx.fillText(isKo ? 'VICTORIA POR KNOCKOUT' : 'FINAL DEL COMBATE', 360, 150);
 
       ctx.fillStyle = '#fff';
       ctx.font = 'bold 24px sans-serif';
       ctx.fillText(`🏆 GANADOR: ${winner.toUpperCase()}`, 360, 220);
 
       const rows = [
-        { k: "PUNTUACIÓN TOTAL", v1: score1, v2: score2 },
-        { k: "VIDA FINAL", v1: `${hp1}%`, v2: `${hp2}%` },
-        { k: "ESQUIVAS NIVEL APEX", v1: dodges1, v2: dodges2 },
-        { k: "CAÍDAS (KD)", v1: kd1, v2: kd2 }
+        { k: "TOTAL IMPACTOS", v1: totalHits, v2: "-" },
+        { k: "ESQUIVAS NIVEL APEX", v1: totalDodges, v2: "-" },
+        { k: "ESTADO FINAL", v1: "COMPLETO", v2: "-" }
       ];
 
       let y = 290;
@@ -852,7 +871,7 @@
         <div class="history-item">
           <div>
             <b>#${i+1} 🏆 ${x.winner}</b>
-            <div style="font-size:10px; color:var(--dim);">${x.f1} (${x.score1}) vs ${x.f2} (${x.score2})</div>
+            <div style="font-size:10px; color:var(--dim);">${x.f1} vs ${x.f2} (Impactos: ${x.totalHits})</div>
           </div>
           <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" onclick="navigator.clipboard.writeText('Resultado Apex: Ganador ${x.winner}'); alert('Copiado');">Compartir</button>
         </div>
