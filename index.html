@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Apex CombatOS // Vision AI Pro</title>
+  <!-- MediaPipe Pose & Camera Utils -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #030303;
+      --card-bg: #0c0c0c;
+      --card-border: #1f1f1f;
+      --text: #ffffff;
+      --dim: #777777;
+      --red: #ff2a2a;
+      --accent: #141414;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      padding: 12px;
+      padding-bottom: 80px;
+    }
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .auth-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      width: 100%;
+      max-width: 360px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .auth-title {
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-align: center;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 6px;
+      border-bottom: 2px solid var(--card-border);
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--dim);
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      background: var(--text);
+      color: #000;
+      border-color: var(--text);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .apex-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 14px;
+      margin-bottom: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card-title {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-left: 3px solid var(--text);
+      padding-left: 8px;
+    }
+    .input-field {
+      width: 100%;
+      background: #000;
+      border: 1px solid var(--card-border);
+      padding: 10px;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 13px;
+    }
+    .input-field:focus { outline: 1px solid var(--text); }
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+    .btn {
+      background: var(--text);
+      color: #000;
+      border: none;
+      padding: 11px;
+      font-weight: 900;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-red { background: var(--red); color: #fff; }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--card-border); }
+    .canvas-container {
+      width: 100%;
+      background: #000;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    video { display: none; }
+    canvas { width: 100%; height: auto; max-height: 480px; object-fit: contain; }
+    .history-item, .user-item {
+      background: var(--accent);
+      border: 1px solid var(--card-border);
+      border-radius: 4px;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="authModal" class="auth-overlay">
+    <div class="auth-card">
+      <div class="auth-title">Apex CombatOS // Login</div>
+      <div>
+        <label style="font-size:10px; color:var(--dim); font-weight:700;">USUARIO</label>
+        <input type="text" id="loginUser" class="input-field" placeholder="ej. admin">
+      </div>
+      <div>
+        <label style="font-size:10px; color:var(--dim); font-weight:700;">CONTRASEÑA</label>
+        <input type="password" id="loginPass" class="input-field" placeholder="••••••••">
+      </div>
+      <button class="btn" onclick="handleLogin()">Ingresar al Sistema</button>
+      <div id="loginError" style="font-size:11px; color:var(--red); text-align:center; display:none;">Credenciales inválidas</div>
+      <p style="font-size:10px; color:var(--dim); text-align:center;">Admin: <b>admin</b> / Pass: <b>apex2026</b></p>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="nav-tabs" id="navTabs" style="display:none;">
+    <button class="tab-btn active" onclick="switchTab('tab-gaming', event)">Árbitro Virtual</button>
+    <button class="tab-btn" onclick="switchTab('tab-history', event)">Historial (FIFO 10)</button>
+    <button class="tab-btn" id="adminTabBtn" style="display:none;" onclick="switchTab('tab-admin', event)">🛡️ Control de Acceso</button>
+    <button class="tab-btn btn-outline" style="margin-left:auto;" onclick="handleLogout()">Salir</button>
+  </div>
+
+  <!-- TAB GAMING -->
+  <div id="tab-gaming" class="tab-content active">
+    <div class="apex-card">
+      <div class="card-title">Configuración de Combate & Esquinas</div>
+      
+      <div class="row-2">
+        <div>
+          <label style="font-size:10px; color:var(--dim); font-weight:700;">ESQUINA NEGRA</label>
+          <input type="text" id="f1_name" class="input-field" placeholder="Nombre" value="Víctor Garcés">
+          <input type="text" id="f1_detail" class="input-field" placeholder="Detalle" value="119 kg - Cali" style="margin-top:6px;">
+        </div>
+        <div>
+          <label style="font-size:10px; color:var(--dim); font-weight:700;">ESQUINA BLANCA</label>
+          <input type="text" id="f2_name" class="input-field" placeholder="Nombre" value="Carlos Rivas">
+          <input type="text" id="f2_detail" class="input-field" placeholder="Detalle" value="85 kg - Palmira" style="margin-top:6px;">
+        </div>
+      </div>
+
+      <div class="row-3">
+        <div>
+          <label style="font-size:10px; color:var(--dim); font-weight:700;">ROUNDS</label>
+          <input type="number" id="cfg_rounds" class="input-field" value="3" min="1" max="12">
+        </div>
+        <div>
+          <label style="font-size:10px; color:var(--dim); font-weight:700;">MIN/ROUND</label>
+          <input type="number" id="cfg_round_time" class="input-field" value="3" min="1" max="5">
+        </div>
+        <div>
+          <label style="font-size:10px; color:var(--dim); font-weight:700;">DESCANSO(S)</label>
+          <input type="number" id="cfg_rest_time" class="input-field" value="60" min="15" max="90">
+        </div>
+      </div>
+      
+      <div class="row-2">
+        <button class="btn" onclick="startCamera()">📷 Encender Cámara IA</button>
+        <button class="btn btn-red" onclick="startSparringSession()">🥊 Iniciar Combate</button>
+      </div>
+      <button class="btn btn-outline" onclick="presentFightersSpeech()">🎙️ Presentación Oficial</button>
+    </div>
+
+    <!-- HUD -->
+    <div class="apex-card">
+      <div class="card-title">HUD En Vivo // Telemetría Biomecánica</div>
+      <div class="canvas-container">
+        <video id="webcamVideo" playsinline></video>
+        <canvas id="gamingCanvas" width="720" height="1280"></canvas>
+      </div>
+      
+      <div class="row-2" style="margin-top:6px;">
+        <button class="btn btn-outline" onclick="triggerEvent('impact_f1')">💥 Impacto Negra</button>
+        <button class="btn btn-outline" onclick="triggerEvent('impact_f2')">💥 Impacto Blanca</button>
+      </div>
+      <div class="row-2">
+        <button class="btn btn-outline" onclick="triggerEvent('dodge_f1')">⚡ Esquiva Negra (Apex)</button>
+        <button class="btn btn-outline" onclick="triggerEvent('dodge_f2')">⚡ Esquiva Blanca (Apex)</button>
+      </div>
+      <div class="row-2">
+        <button class="btn btn-red" onclick="triggerKnockdown('f2')">⚠️ Caída (Cuenta 10s)</button>
+        <button class="btn" onclick="endMatch()">🏁 Finalizar & Tabla Decisión</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB HISTORIAL -->
+  <div id="tab-history" class="tab-content">
+    <div class="apex-card">
+      <div class="card-title">Historial de Sparrings (FIFO 10)</div>
+      <div id="historyContainer"></div>
+      <button class="btn btn-outline" onclick="clearHistory()">🗑️ Borrar Historial</button>
+    </div>
+  </div>
+
+  <!-- TAB ADMIN -->
+  <div id="tab-admin" class="tab-content">
+    <div class="apex-card">
+      <div class="card-title">Panel Maestro // Gestión de Perfiles</div>
+      <div class="row-2">
+        <input type="text" id="new_username" class="input-field" placeholder="Nuevo Usuario">
+        <input type="password" id="new_password" class="input-field" placeholder="Contraseña">
+      </div>
+      <button class="btn" onclick="createUserProfile()">➕ Crear Perfil</button>
+    </div>
+    <div class="apex-card">
+      <div class="card-title">Perfiles Activos</div>
+      <div id="usersListContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // AUDIO SFX
+    // ==========================================
+    let audioCtx = null;
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playBell() {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.0);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 1.0);
+      } catch(e) {}
+    }
+
+    function playHit() {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(130, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+      } catch(e) {}
+    }
+
+    // ==========================================
+    // VOCES MASCULINAS (SÍNTESIS ESPECÍFICA)
+    // ==========================================
+    let maleVoice = null;
+    let commentatorVoice = null;
+
+    function initVoices() {
+      if ('speechSynthesis' in window) {
+        const vList = window.speechSynthesis.getVoices();
+        const esVoices = vList.filter(v => v.lang.startsWith('es'));
+        
+        maleVoice = esVoices.find(v => 
+          v.name.toLowerCase().includes('male') || 
+          v.name.toLowerCase().includes('david') || 
+          v.name.toLowerCase().includes('jorge') || 
+          v.name.toLowerCase().includes('carlos') ||
+          v.name.toLowerCase().includes('pablo') ||
+          v.name.toLowerCase().includes('raul')
+        ) || esVoices[0];
+
+        commentatorVoice = esVoices.find(v => v !== maleVoice) || maleVoice;
+      }
+    }
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = initVoices;
+      initVoices();
+    }
+
+    function speakNarrator(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.resume();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'es-CO';
+      if (maleVoice) utter.voice = maleVoice;
+      utter.rate = 1.20;
+      utter.pitch = 0.85;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function speakCommentator(text) {
+      if (!('speechSynthesis' in window)) return;
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'es-CO';
+      if (commentatorVoice) utter.voice = commentatorVoice;
+      utter.rate = 0.95;
+      utter.pitch = 0.70;
+      window.speechSynthesis.speak(utter);
+    }
+
+    const IMPACT_PHRASES = [
+      "¡Tremendo derechazo que frena en seco el avance!",
+      "¡Conecta una ráfaga limpia a la zona media!",
+      "¡Entró el uno dos nítido directo a la mandíbula!",
+      "¡Poderoso gancho de izquierda al hígado!",
+      "¡Castiga con el cross por encima de la guardia!",
+      "¡Gran combinación que hace retroceder al rival!",
+      "¡Impacto seco y contundente al mentón!",
+      "¡Metió el upper por el centro de la guardia!"
+    ];
+
+    const DODGE_APEX_PHRASES = [
+      "¡Qué movimiento de cintura, lo dejó pagando en el aire!",
+      "¡Paso lateral perfecto y sale del ángulo de ataque!",
+      "¡Cabeceo impecable! Pura maestría en la distancia.",
+      "¡Qué categoría! Esquiva y conecta. ¡Eso es el verdadero nivel Apex!",
+      "Técnica pura, sin regalar un milímetro. Apex Boxing es el camino correcto.",
+      "¡Elegancia pura! Péndulo perfecto para esquivar el recto."
+    ];
+
+    const REST_BIO_ANALYSIS = [
+      "Miren la repetición: excelente alineación del hombro y giro de cadera para transferir masa corporal.",
+      "Análisis en esquina: gran sincronización del pivote en el pie de apoyo al momento del impacto.",
+      "Observen el detalle técnico: mantiene el codo cerrado protegiendo la zona costal.",
+      "Repetición clave: gran flexión de rodillas y centro de gravedad bajo para pasar por debajo del recto."
+    ];
+
+    function getRandom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    // ==========================================
+    // MEDIAPIPE POSE & BIOMECHANICAL AI ENGINE
+    // ==========================================
+    let cameraInstance = null;
+    let latestLandmarks = null;
+    let lastNose_X = null;
+
+    function onPoseResults(results) {
+      latestLandmarks = results.poseLandmarks;
+      if (latestLandmarks) {
+        analyzeBiomechanics(latestLandmarks);
+      }
+      drawHUD();
+    }
+
+    const pose = new Pose({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+    });
+    pose.setOptions({
+      modelComplexity: 1,
+      smoothLandmarks: true,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+    pose.onResults(onPoseResults);
+
+    function startCamera() {
+      initAudio();
+      const videoElement = document.getElementById('webcamVideo');
+      cameraInstance = new Camera(videoElement, {
+        onFrame: async () => {
+          await pose.send({ image: videoElement });
+        },
+        width: 720,
+        height: 1280
+      });
+      cameraInstance.start();
+      speakNarrator("Cámara IA activada. Reconocimiento biomecánico en línea.");
+    }
+
+    let lastAutoTrigger = 0;
+    function analyzeBiomechanics(lm) {
+      const now = Date.now();
+      if (now - lastAutoTrigger < 1800) return;
+
+      const nose = lm[0];
+      const wristR = lm[16];
+      const shoulderR = lm[12];
+      const elbowR = lm[14];
+
+      if (wristR && shoulderR && elbowR) {
+        const armExtension = Math.hypot(wristR.x - shoulderR.x, wristR.y - shoulderR.y);
+        if (armExtension > 0.35 && wristR.y < shoulderR.y + 0.1) {
+          triggerEvent('impact_f1');
+          lastAutoTrigger = now;
+          return;
+        }
+      }
+
+      if (nose && lastNose_X !== null) {
+        const deltaX = Math.abs(nose.x - lastNose_X);
+        if (deltaX > 0.08) {
+          triggerEvent('dodge_f1');
+          lastAutoTrigger = now;
+          lastNose_X = nose.x;
+          return;
+        }
+      }
+      if (nose) lastNose_X = nose.x;
+
+      const hip = lm[24] || lm[23];
+      if (nose && hip && nose.y > hip.y && !isKnockedDown) {
+        triggerKnockdown('f2');
+        lastAutoTrigger = now + 5000;
+      }
+    }
+
+    // ==========================================
+    // LOGICA DE COMBATE & HUD
+    // ==========================================
+    let totalRounds = 3, roundDuration = 180, restDuration = 60;
+    let currentRound = 1, currentSec = 180;
+    let isResting = false, isKnockedDown = false, kdSec = 10;
+    let timer = null;
+    let hp1 = 100, hp2 = 100;
+    let score1 = 0, score2 = 0;
+    let dodges1 = 0, dodges2 = 0;
+    let kd1 = 0, kd2 = 0;
+
+    function presentFightersSpeech() {
+      initAudio();
+      const f1 = document.getElementById('f1_name').value;
+      const d1 = document.getElementById('f1_detail').value;
+      const f2 = document.getElementById('f2_name').value;
+      const d2 = document.getElementById('f2_detail').value;
+      const rounds = document.getElementById('cfg_rounds').value;
+      speakNarrator(`¡Atención señores! Apex CombatOS presenta este combate pactado a ${rounds} asaltos. En la esquina negra: ${f1}, desde ${d1}. En la esquina blanca: ${f2}, desde ${d2}. ¡A pelear con honor!`);
+    }
+
+    function startSparringSession() {
+      initAudio();
+      totalRounds = parseInt(document.getElementById('cfg_rounds').value);
+      roundDuration = parseInt(document.getElementById('cfg_round_time').value) * 60;
+      restDuration = parseInt(document.getElementById('cfg_rest_time').value);
+      
+      currentRound = 1;
+      currentSec = roundDuration;
+      isResting = false;
+      hp1 = 100; hp2 = 100;
+      score1 = 0; score2 = 0;
+      dodges1 = 0; dodges2 = 0;
+      kd1 = 0; kd2 = 0;
+
+      playBell();
+      speakNarrator(`¡Primer asalto! ¡Box!`);
+      
+      if (timer) clearInterval(timer);
+      timer = setInterval(gameLoopTick, 1000);
+      drawHUD();
+    }
+
+    function gameLoopTick() {
+      if (isKnockedDown) return;
+
+      if (!isResting) {
+        currentSec--;
+        if (currentSec <= 0) {
+          playBell();
+          if (currentRound >= totalRounds) {
+            endMatch();
+          } else {
+            isResting = true;
+            currentSec = restDuration;
+            speakNarrator(`¡Campana! Fin del round ${currentRound}. A descansar a las esquinas.`);
+          }
+        }
+      } else {
+        currentSec--;
+        if (currentSec === Math.floor(restDuration - 10) || currentSec === Math.floor(restDuration - 40)) {
+          speakCommentator(getRandom(REST_BIO_ANALYSIS));
+        } else if (currentSec === 5) {
+          speakNarrator(`¡Segundos fuera!`);
+        } else if (currentSec <= 0) {
+          isResting = false;
+          currentRound++;
+          currentSec = roundDuration;
+          playBell();
+          speakNarrator(`¡Round ${currentRound}! ¡Box!`);
+        }
+      }
+      drawHUD();
+    }
+
+    function triggerEvent(type) {
+      initAudio();
+      const f1 = document.getElementById('f1_name').value;
+      const f2 = document.getElementById('f2_name').value;
+
+      if (type === 'impact_f1') {
+        hp2 = Math.max(0, hp2 - 6);
+        score1 += 100;
+        playHit();
+        speakNarrator(`${f1}: ${getRandom(IMPACT_PHRASES)}`);
+      } else if (type === 'impact_f2') {
+        hp1 = Math.max(0, hp1 - 6);
+        score2 += 100;
+        playHit();
+        speakNarrator(`${f2}: ${getRandom(IMPACT_PHRASES)}`);
+      } else if (type === 'dodge_f1') {
+        dodges1++;
+        score1 += 80;
+        speakNarrator(`${f1}: ${getRandom(DODGE_APEX_PHRASES)}`);
+      } else if (type === 'dodge_f2') {
+        dodges2++;
+        score2 += 80;
+        speakNarrator(`${f2}: ${getRandom(DODGE_APEX_PHRASES)}`);
+      }
+      drawHUD();
+    }
+
+    function triggerKnockdown(corner) {
+      initAudio();
+      isKnockedDown = true;
+      kdSec = 10;
+      kd2++;
+      hp2 = Math.max(0, hp2 - 25);
+      const f2 = document.getElementById('f2_name').value;
+      speakNarrator(`¡A la lona! ¡${f2} al suelo! Inicia el conteo de protección.`);
+
+      const kdInterval = setInterval(() => {
+        kdSec--;
+        drawHUD();
+        if (kdSec <= 0) {
+          clearInterval(kdInterval);
+          isKnockedDown = false;
+          speakNarrator(`¡Diez! ¡No va más! ¡Victoria por Knockout!`);
+          endMatch(true);
+        }
+      }, 1000);
+    }
+
+    function drawHUD() {
+      const canvas = document.getElementById('gamingCanvas');
+      const ctx = canvas.getContext('2d');
+      const video = document.getElementById('webcamVideo');
+      const f1 = document.getElementById('f1_name').value.toUpperCase();
+      const f2 = document.getElementById('f2_name').value.toUpperCase();
+
+      if (video && video.readyState >= 2) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      if (latestLandmarks) {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.fillStyle = '#ff2a2a';
+
+        latestLandmarks.forEach((pt) => {
+          const px = pt.x * canvas.width;
+          const py = pt.y * canvas.height;
+          ctx.beginPath();
+          ctx.arc(px, py, 4, 0, 2 * Math.PI);
+          ctx.fill();
+        });
+      }
+
+      ctx.strokeStyle = '#222';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+
+      const m = Math.floor(currentSec / 60);
+      const s = currentSec % 60;
+      ctx.fillStyle = '#fff';
+      ctx.font = '900 36px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${m}:${s < 10 ? '0' : ''}${s}`, 360, 80);
+
+      ctx.fillStyle = isResting ? '#ff2a2a' : '#888';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillText(isResting ? 'DESCANSO // BIOANÁLISIS' : `ROUND ${currentRound} DE ${totalRounds}`, 360, 108);
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#fff';
+      ctx.font = '900 15px sans-serif';
+      ctx.fillText(`■ ${f1}`, 40, 140);
+      ctx.strokeRect(40, 155, 280, 22);
+      ctx.fillRect(40, 155, 280 * (hp1 / 100), 22);
+
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#888';
+      ctx.fillText(`□ ${f2}`, 680, 140);
+      ctx.strokeRect(400, 155, 280, 22);
+      ctx.fillRect(400 + (280 * (1 - hp2 / 100)), 155, 280 * (hp2 / 100), 22);
+
+      ctx.font = '14px monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(`SCORE: ${score1} | ESQ: ${dodges1}`, 40, 205);
+      ctx.textAlign = 'right';
+      ctx.fillText(`SCORE: ${score2} | ESQ: ${dodges2}`, 680, 205);
+
+      if (isKnockedDown) {
+        ctx.fillStyle = '#ff2a2a';
+        ctx.font = '900 70px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`CUENTA: ${kdSec}`, 360, 600);
+      }
+    }
+
+    function endMatch(isKo = false) {
+      if (timer) clearInterval(timer);
+      const f1 = document.getElementById('f1_name').value;
+      const f2 = document.getElementById('f2_name').value;
+      let winner = score1 >= score2 ? f1 : f2;
+      if (isKo) winner = f1;
+
+      saveHistory({
+        id: Date.now(),
+        date: new Date().toLocaleDateString(),
+        f1, f2, winner, score1, score2
+      });
+
+      renderScoreboard(winner, isKo);
+    }
+
+    function renderScoreboard(winner, isKo) {
+      const canvas = document.getElementById('gamingCanvas');
+      const ctx = canvas.getContext('2d');
+      const f1 = document.getElementById('f1_name').value.toUpperCase();
+      const f2 = document.getElementById('f2_name').value.toUpperCase();
+
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
+
+      ctx.fillStyle = '#fff';
+      ctx.font = '900 30px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('RESULTADOS OFICIALES', 360, 110);
+
+      ctx.fillStyle = '#ff2a2a';
+      ctx.font = 'bold 20px sans-serif';
+      ctx.fillText(isKo ? 'VICTORIA POR KNOCKOUT' : 'DECISIÓN DE JUECES', 360, 150);
+
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 24px sans-serif';
+      ctx.fillText(`🏆 GANADOR: ${winner.toUpperCase()}`, 360, 220);
+
+      const rows = [
+        { k: "PUNTUACIÓN TOTAL", v1: score1, v2: score2 },
+        { k: "VIDA FINAL", v1: `${hp1}%`, v2: `${hp2}%` },
+        { k: "ESQUIVAS NIVEL APEX", v1: dodges1, v2: dodges2 },
+        { k: "CAÍDAS (KD)", v1: kd1, v2: kd2 }
+      ];
+
+      let y = 290;
+      rows.forEach((r, i) => {
+        ctx.fillStyle = i % 2 === 0 ? '#111' : '#080808';
+        ctx.fillRect(50, y, 620, 50);
+        ctx.fillStyle = '#888';
+        ctx.textAlign = 'left';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillText(r.k, 70, y + 32);
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.fillText(r.v1, 400, y + 32);
+        ctx.fillText(r.v2, 570, y + 32);
+        y += 60;
+      });
+
+      ctx.fillStyle = '#888';
+      ctx.font = '12px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('APEX BOXING // NOIR TECH LAB • CALI', 360, 1200);
+    }
+
+    // ==========================================
+    // AUTH & HISTORIAL
+    // ==========================================
+    const DEFAULT_ADMIN = { user: "admin", pass: "apex2026", role: "admin", active: true };
+
+    function getUsers() {
+      let users = JSON.parse(localStorage.getItem('apex_users') || 'null');
+      if (!users) {
+        users = [DEFAULT_ADMIN];
+        localStorage.setItem('apex_users', JSON.stringify(users));
+      }
+      return users;
+    }
+
+    function handleLogin() {
+      initAudio();
+      const u = document.getElementById('loginUser').value.trim();
+      const p = document.getElementById('loginPass').value.trim();
+      const users = getUsers();
+
+      const found = users.find(x => x.user === u && x.pass === p);
+      if (found) {
+        if (!found.active) {
+          document.getElementById('loginError').style.display = 'block';
+          document.getElementById('loginError').innerText = 'Acceso deshabilitado';
+          return;
+        }
+        sessionStorage.setItem('apex_current_user', JSON.stringify(found));
+        document.getElementById('authModal').style.display = 'none';
+        document.getElementById('navTabs').style.display = 'flex';
+        
+        if (found.role === 'admin') {
+          document.getElementById('adminTabBtn').style.display = 'block';
+        }
+        renderUsersList();
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+        document.getElementById('loginError').innerText = 'Usuario o contraseña incorrectos';
+      }
+    }
+
+    function handleLogout() {
+      sessionStorage.removeItem('apex_current_user');
+      location.reload();
+    }
+
+    function createUserProfile() {
+      const u = document.getElementById('new_username').value.trim();
+      const p = document.getElementById('new_password').value.trim();
+      if (!u || !p) return alert('Completa los campos');
+
+      let users = getUsers();
+      if (users.find(x => x.user === u)) return alert('El usuario ya existe');
+
+      users.push({ user: u, pass: p, role: "coach", active: true });
+      localStorage.setItem('apex_users', JSON.stringify(users));
+      document.getElementById('new_username').value = '';
+      document.getElementById('new_password').value = '';
+      renderUsersList();
+      alert('Perfil creado');
+    }
+
+    function renderUsersList() {
+      const container = document.getElementById('usersListContainer');
+      const users = getUsers();
+      container.innerHTML = users.map(u => `
+        <div class="user-item">
+          <div><b>${u.user}</b> (${u.role})</div>
+          <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" onclick="deleteUserProfile('${u.user}')">Borrar</button>
+        </div>
+      `).join('');
+    }
+
+    function deleteUserProfile(username) {
+      if (username === 'admin') return alert('No se puede eliminar admin');
+      let users = getUsers().filter(x => x.user !== username);
+      localStorage.setItem('apex_users', JSON.stringify(users));
+      renderUsersList();
+    }
+
+    function saveHistory(item) {
+      let h = JSON.parse(localStorage.getItem('apex_history') || '[]');
+      h.unshift(item);
+      if (h.length > 10) h.pop();
+      localStorage.setItem('apex_history', JSON.stringify(h));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const container = document.getElementById('historyContainer');
+      const h = JSON.parse(localStorage.getItem('apex_history') || '[]');
+      if (!h.length) {
+        container.innerHTML = `<p style="font-size:11px; color:var(--dim);">No hay registros.</p>`;
+        return;
+      }
+      container.innerHTML = h.map((x, i) => `
+        <div class="history-item">
+          <div>
+            <b>#${i+1} 🏆 ${x.winner}</b>
+            <div style="font-size:10px; color:var(--dim);">${x.f1} (${x.score1}) vs ${x.f2} (${x.score2})</div>
+          </div>
+          <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" onclick="navigator.clipboard.writeText('Resultado Apex: Ganador ${x.winner}'); alert('Copiado');">Compartir</button>
+        </div>
+      `).join('');
+    }
+
+    function clearHistory() {
+      localStorage.removeItem('apex_history');
+      renderHistory();
+    }
+
+    function switchTab(id, e) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      e.target.classList.add('active');
+    }
+
+    renderHistory();
+    drawHUD();
+  </script>
+</body>
+</html>
