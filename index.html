@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Apex CombatOS // Vision AI Pro</title>
+  <title>Apex CombatOS // Video AI Studio Pro</title>
   <!-- MediaPipe Pose & Camera Utils -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
@@ -29,7 +29,7 @@
       background: var(--bg);
       color: var(--text);
       padding: 12px;
-      padding-bottom: 80px;
+      padding-bottom: 90px;
     }
     .auth-overlay {
       position: fixed;
@@ -185,6 +185,15 @@
     }
     video { display: none; }
     canvas { width: 100%; height: auto; max-height: 440px; object-fit: contain; }
+    .clip-block {
+      background: #000;
+      border: 1px solid var(--card-border);
+      border-radius: 4px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
     .history-item, .user-item {
       background: var(--accent);
       border: 1px solid var(--card-border);
@@ -220,19 +229,22 @@
 
   <!-- TABS -->
   <div class="nav-tabs" id="navTabs" style="display:none;">
-    <button class="tab-btn active" onclick="switchTab('tab-gaming', event)">Árbitro Virtual</button>
+    <button class="tab-btn active" onclick="switchTab('tab-gaming', event)">🥊 Árbitro & Grabación</button>
     <button class="tab-btn" onclick="switchTab('tab-bio', event)">🔬 Análisis Biomecánico</button>
-    <button class="tab-btn" onclick="switchTab('tab-reto', event)">⚡ Reto Apex (4 Pruebas)</button>
+    <button class="tab-btn" onclick="switchTab('tab-reto', event)">🎬 Reto Apex (Editor 4 Clips)</button>
     <button class="tab-btn" onclick="switchTab('tab-history', event)">Historial (FIFO 10)</button>
     <button class="tab-btn" id="adminTabBtn" style="display:none;" onclick="switchTab('tab-admin', event)">🛡️ Control</button>
     <button class="tab-btn btn-outline" style="margin-left:auto;" onclick="handleLogout()">Salir</button>
   </div>
 
-  <!-- VISOR GLOBAL DE CÁMARA (PERMANECE VISIBLE EN ÁRBITRO Y EN BIOMECÁNICA) -->
+  <!-- VISOR GLOBAL DE CÁMARA & RENDER STUDIO -->
   <div class="apex-card" id="globalVisionCard" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <div class="card-title" id="visorTitle">Visor En Vivo // Telemetría</div>
-      <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" id="btnCamGlobal" onclick="toggleCamera()">📷 Activar Cámara</button>
+      <div class="card-title" id="visorTitle">Visor En Vivo // Telemetría Combate</div>
+      <div style="display:flex; gap:6px;">
+        <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" id="btnRecord" onclick="toggleSessionRecording()">⏺️ Grabar Sparring</button>
+        <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" id="btnCamGlobal" onclick="toggleCamera()">📷 Activar Cámara</button>
+      </div>
     </div>
     <div class="canvas-container" style="margin-top:6px; margin-bottom:0;">
       <video id="webcamVideo" playsinline autoplay muted></video>
@@ -240,10 +252,10 @@
     </div>
   </div>
 
-  <!-- TAB 1: GAMING -->
+  <!-- TAB 1: GAMING & REPLAY -->
   <div id="tab-gaming" class="tab-content active">
     <div class="apex-card">
-      <div class="card-title">Configuración de Combate & Esquinas</div>
+      <div class="card-title">Configuración de Combate & Grabación</div>
       
       <div class="row-2">
         <div>
@@ -329,36 +341,80 @@
     </div>
   </div>
 
-  <!-- TAB 3: RETO APEX (4 PRUEBAS) -->
+  <!-- TAB 3: RETO APEX // EDITOR 4 CLIPS + MÚSICA + OVERLAY TRASLÚCIDO -->
   <div id="tab-reto" class="tab-content">
     <div class="apex-card">
-      <div class="card-title">Reto Apex // Circuito Oficial (4 Pruebas)</div>
+      <div class="card-title">Reto Apex // Estudio de Unión de 4 Clips (9:16)</div>
       
       <div>
         <label style="font-size:10px; color:var(--dim); font-weight:700;">NOMBRE DEL STRIKER / ATLETA</label>
-        <input type="text" id="reto_striker" class="input-field" placeholder="ej. Camilo Pérez" value="Striker Apex">
+        <input type="text" id="reto_striker_name" class="input-field" placeholder="ej. Víctor Garcés" value="Víctor Garcés">
+      </div>
+
+      <!-- CLIP 1: SALTO -->
+      <div class="clip-block">
+        <span class="metric-lbl">1. Clip: Cadencia de Salto (Cuerda)</span>
+        <input type="file" id="clip1_file" accept="video/*" class="input-field" onchange="loadVideoClip(1, this)">
+        <div class="row-2">
+          <input type="number" id="clip1_start" class="input-field" placeholder="Inicio (seg)" value="0" min="0">
+          <input type="number" id="clip1_end" class="input-field" placeholder="Fin (seg)" value="5" min="1">
+        </div>
+        <video id="vclip1" preload="auto" playsinline muted style="display:none;"></video>
+      </div>
+
+      <!-- CLIP 2: TÉCNICA / POSTURA -->
+      <div class="clip-block">
+        <span class="metric-lbl">2. Clip: Técnica & Postura (Sombra/Guardia)</span>
+        <input type="file" id="clip2_file" accept="video/*" class="input-field" onchange="loadVideoClip(2, this)">
+        <div class="row-2">
+          <input type="number" id="clip2_start" class="input-field" placeholder="Inicio (seg)" value="0" min="0">
+          <input type="number" id="clip2_end" class="input-field" placeholder="Fin (seg)" value="5" min="1">
+        </div>
+        <video id="vclip2" preload="auto" playsinline muted style="display:none;"></video>
+      </div>
+
+      <!-- CLIP 3: POTENCIA SACO -->
+      <div class="clip-block">
+        <span class="metric-lbl">3. Clip: Fuerza, Impacto & Explosividad (Saco)</span>
+        <input type="file" id="clip3_file" accept="video/*" class="input-field" onchange="loadVideoClip(3, this)">
+        <div class="row-2">
+          <input type="number" id="clip3_start" class="input-field" placeholder="Inicio (seg)" value="0" min="0">
+          <input type="number" id="clip3_end" class="input-field" placeholder="Fin (seg)" value="5" min="1">
+        </div>
+        <video id="vclip3" preload="auto" playsinline muted style="display:none;"></video>
+      </div>
+
+      <!-- CLIP 4: CADENCIA DE GOLPEO -->
+      <div class="clip-block">
+        <span class="metric-lbl">4. Clip: Velocidad & Cadencia de Golpeo</span>
+        <input type="file" id="clip4_file" accept="video/*" class="input-field" onchange="loadVideoClip(4, this)">
+        <div class="row-2">
+          <input type="number" id="clip4_start" class="input-field" placeholder="Inicio (seg)" value="0" min="0">
+          <input type="number" id="clip4_end" class="input-field" placeholder="Fin (seg)" value="5" min="1">
+        </div>
+        <video id="vclip4" preload="auto" playsinline muted style="display:none;"></video>
+      </div>
+
+      <!-- MÚSICA LOCAL -->
+      <div class="clip-block">
+        <span class="metric-lbl">🎵 Pista de Audio / Música de Fondo (Desde tu Galería)</span>
+        <input type="file" id="audio_music_file" accept="audio/*" class="input-field" onchange="loadAudioTrack(this)">
+        <audio id="bgMusicTrack" preload="auto" style="display:none;"></audio>
       </div>
 
       <div class="row-2">
-        <div class="metric-box">
-          <span class="metric-lbl">1. Cadencia Salto (Saltos/min)</span>
-          <input type="number" id="reto_p1" class="input-field" value="142" style="margin-top:4px;">
+        <div>
+          <label style="font-size:10px; color:var(--dim); font-weight:700;">OPACIDAD TABLA TRASLÚCIDA</label>
+          <input type="range" id="overlay_opacity" min="0.2" max="0.9" step="0.05" value="0.55" class="input-field">
         </div>
-        <div class="metric-box">
-          <span class="metric-lbl">2. Técnica & Postura (0-100 pts)</span>
-          <input type="number" id="reto_p2" class="input-field" value="94" style="margin-top:4px;">
-        </div>
-        <div class="metric-box">
-          <span class="metric-lbl">3. Potencia & Velocidad Saco</span>
-          <input type="text" id="reto_p3" class="input-field" value="840 PSI - 9.2 m/s" style="margin-top:4px;">
-        </div>
-        <div class="metric-box">
-          <span class="metric-lbl">4. Cadencia de Golpeo (GPM)</span>
-          <input type="number" id="reto_p4" class="input-field" value="188" style="margin-top:4px;">
+        <div>
+          <label style="font-size:10px; color:var(--dim); font-weight:700;">NIVEL CERTIFICADO</label>
+          <input type="text" id="reto_cert_level" class="input-field" value="APEX PRO STRIKER">
         </div>
       </div>
 
-      <button class="btn btn-red" onclick="renderRetoScoreboard()">⚡ Generar Tabla Overlay Striker Pass</button>
+      <button class="btn btn-red" onclick="startRenderRetoSequence()">🎬 Renderizar Video Compuesto (4 Clips + Audio + Tabla Traslúcida)</button>
+      <div id="renderProgress" style="font-size:11px; color:#00ff66; text-align:center; display:none;">Procesando y componiendo video...</div>
     </div>
   </div>
 
@@ -389,7 +445,7 @@
 
   <script>
     // ==========================================
-    // AUDIO SFX
+    // AUDIO SFX & VOZ MASCULINA
     // ==========================================
     let audioCtx = null;
     function initAudio() {
@@ -430,9 +486,6 @@
       } catch(e) {}
     }
 
-    // ==========================================
-    // SÍNTESIS DE VOZ MASCULINA FIRME
-    // ==========================================
     let maleVoice = null;
     function initVoices() {
       if (!('speechSynthesis' in window)) return;
@@ -465,7 +518,7 @@
     function getRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
     // ==========================================
-    // MOTOR DE VISIÓN BIOMECÁNICO
+    // MOTOR DE VISIÓN & TRACKING
     // ==========================================
     let cameraInstance = null;
     let latestLandmarks = null;
@@ -619,12 +672,270 @@
     }
 
     function renderLoop() {
-      drawHUD();
+      if (!isRetoRendering) {
+        drawHUD();
+      }
       requestAnimationFrame(renderLoop);
     }
 
     // ==========================================
-    // LOGICA DE COMBATE
+    // GRABACIÓN DE SPARRING EN VIVO
+    // ==========================================
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecordingSession = false;
+
+    function toggleSessionRecording() {
+      const canvas = document.getElementById('gamingCanvas');
+      const btn = document.getElementById('btnRecord');
+
+      if (!isRecordingSession) {
+        recordedChunks = [];
+        const stream = canvas.captureStream(30);
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+        mediaRecorder.onstop = saveRecordedSession;
+        mediaRecorder.start();
+        isRecordingSession = true;
+        btn.innerText = "⏹️ Detener Grabación";
+        btn.style.color = "#ff2a2a";
+        speakFast("Grabando sparring con análisis en vivo.");
+      } else {
+        mediaRecorder.stop();
+        isRecordingSession = false;
+        btn.innerText = "⏺️ Grabar Sparring";
+        btn.style.color = "#fff";
+      }
+    }
+
+    function saveRecordedSession() {
+      const blob = new Blob(recordedChunks, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Apex_Sparring_${Date.now()}.webm`;
+      a.click();
+      speakFast("Video de sparring exportado con éxito.");
+    }
+
+    // ==========================================
+    // RETO APEX // EDITOR 4 CLIPS + MÚSICA + OVERLAY
+    // ==========================================
+    let isRetoRendering = false;
+
+    function loadVideoClip(index, input) {
+      const file = input.files[0];
+      if (!file) return;
+      const vid = document.getElementById(`vclip${index}`);
+      vid.src = URL.createObjectURL(file);
+      vid.onloadedmetadata = () => {
+        document.getElementById(`clip${index}_end`).value = Math.min(6, Math.floor(vid.duration));
+      };
+    }
+
+    function loadAudioTrack(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const audio = document.getElementById('bgMusicTrack');
+      audio.src = URL.createObjectURL(file);
+    }
+
+    async function startRenderRetoSequence() {
+      const v1 = document.getElementById('vclip1');
+      const v2 = document.getElementById('vclip2');
+      const v3 = document.getElementById('vclip3');
+      const v4 = document.getElementById('vclip4');
+      const audio = document.getElementById('bgMusicTrack');
+
+      if (!v1.src || !v2.src || !v3.src || !v4.src) {
+        return alert("Debes cargar los 4 videos del Reto Apex.");
+      }
+
+      switchTab('tab-gaming', { target: document.querySelectorAll('.tab-btn')[2] });
+      const visorCard = document.getElementById('globalVisionCard');
+      visorCard.style.display = 'block';
+
+      const progress = document.getElementById('renderProgress');
+      progress.style.display = 'block';
+      progress.innerText = "Iniciando composición de los 4 clips...";
+
+      isRetoRendering = true;
+      const canvas = document.getElementById('gamingCanvas');
+      const ctx = canvas.getContext('2d');
+      const stream = canvas.captureStream(30);
+
+      // Iniciar Grabador de Composición
+      const compRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      const compChunks = [];
+      compRecorder.ondataavailable = (e) => { if (e.data.size > 0) compChunks.push(e.data); };
+      compRecorder.start();
+
+      if (audio.src) {
+        audio.currentTime = 0;
+        audio.play().catch(()=>{});
+      }
+
+      const clips = [
+        { vid: v1, title: "1. CADENCIA DE SALTO", s: parseFloat(document.getElementById('clip1_start').value), e: parseFloat(document.getElementById('clip1_end').value), met: "148 SPM // RITMO CONSTANTE" },
+        { vid: v2, title: "2. TÉCNICA & POSTURA", s: parseFloat(document.getElementById('clip2_start').value), e: parseFloat(document.getElementById('clip2_end').value), met: "94/100 PTS // GUARDIA ALTA" },
+        { vid: v3, title: "3. IMPACTO & EXPLOSIVIDAD", s: parseFloat(document.getElementById('clip3_start').value), e: parseFloat(document.getElementById('clip3_end').value), met: "880 PSI // 9.4 m/s" },
+        { vid: v4, title: "4. VELOCIDAD DE GOLPEO", s: parseFloat(document.getElementById('clip4_start').value), e: parseFloat(document.getElementById('clip4_end').value), met: "192 GPM // VOLUMEN PURO" }
+      ];
+
+      for (let i = 0; i < clips.length; i++) {
+        const c = clips[i];
+        progress.innerText = `Renderizando Clip ${i+1} de 4: ${c.title}...`;
+        await playAndDrawClip(c.vid, c.s, c.e, c.title, c.met);
+      }
+
+      // 4 Segundos Finales de Tabla Completa Traslúcida con Video de fondo
+      progress.innerText = "Generando Striker Pass Certificado...";
+      await renderFinalOverlayScreen(clips[3].vid);
+
+      if (audio.src) audio.pause();
+      compRecorder.stop();
+
+      compRecorder.onstop = () => {
+        const blob = new Blob(compChunks, { type: 'video/webm' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Reto_Apex_${document.getElementById('reto_striker_name').value.replace(/\\s+/g, '_')}.webm`;
+        a.click();
+        progress.innerText = "¡Video final renderizado y descargado!";
+        isRetoRendering = false;
+        speakFast("Reto Apex renderizado exitosamente con tabla traslúcida.");
+      };
+    }
+
+    function playAndDrawClip(video, startTime, endTime, title, metricText) {
+      return new Promise((resolve) => {
+        const canvas = document.getElementById('gamingCanvas');
+        const ctx = canvas.getContext('2d');
+        const opacity = parseFloat(document.getElementById('overlay_opacity').value);
+        video.currentTime = startTime;
+        video.play();
+
+        function drawFrame() {
+          if (video.currentTime >= endTime || video.paused || video.ended) {
+            video.pause();
+            resolve();
+            return;
+          }
+
+          // 1. Dibujar Video Base 9:16
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          // 2. Capa de oscurecimiento sutil
+          ctx.fillStyle = `rgba(0, 0, 0, 0.25)`;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // 3. Tarjeta Traslúcida Flotante
+          ctx.fillStyle = `rgba(10, 10, 10, ${opacity})`;
+          ctx.fillRect(20, 20, canvas.width - 40, 90);
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(20, 20, canvas.width - 40, 90);
+
+          // Textos
+          ctx.fillStyle = '#ff2a2a';
+          ctx.font = '900 12px sans-serif';
+          ctx.fillText(`RETO APEX // ${title}`, 35, 48);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 15px monospace';
+          ctx.fillText(metricText, 35, 78);
+
+          requestAnimationFrame(drawFrame);
+        }
+        drawFrame();
+      });
+    }
+
+    function renderFinalOverlayScreen(lastVideo) {
+      return new Promise((resolve) => {
+        const canvas = document.getElementById('gamingCanvas');
+        const ctx = canvas.getContext('2d');
+        const striker = document.getElementById('reto_striker_name').value.toUpperCase();
+        const level = document.getElementById('reto_cert_level').value.toUpperCase();
+        const opacity = parseFloat(document.getElementById('overlay_opacity').value);
+        let frames = 0;
+        const totalFrames = 120; // 4 segundos a 30fps
+
+        function drawScreen() {
+          if (frames >= totalFrames) {
+            resolve();
+            return;
+          }
+
+          // Fondo: Video de fondo traslúcido
+          ctx.drawImage(lastVideo, 0, 0, canvas.width, canvas.height);
+
+          // Filtro Traslúcido Noir Completo
+          ctx.fillStyle = `rgba(5, 5, 5, ${opacity})`;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // Marco Blanco Sólido Noir
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
+
+          // Encabezado
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 20px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('STRIKER PASS // RESULTADOS', 240, 65);
+
+          ctx.fillStyle = '#ff2a2a';
+          ctx.font = 'bold 13px sans-serif';
+          ctx.fillText(`ATLETA: ${striker}`, 240, 95);
+
+          // Tabla de 4 Resultados
+          const rows = [
+            { k: "1. CADENCIA SALTO", v: "148 SPM" },
+            { k: "2. TÉCNICA & POSTURA", v: "94 / 100 PTS" },
+            { k: "3. IMPACTO & POTENCIA", v: "880 PSI - 9.4 m/s" },
+            { k: "4. CADENCIA GOLPEO", v: "192 GPM" }
+          ];
+
+          let y = 135;
+          rows.forEach((r) => {
+            ctx.fillStyle = 'rgba(20, 20, 20, 0.75)';
+            ctx.fillRect(30, y, 420, 52);
+            ctx.strokeStyle = '#333333';
+            ctx.strokeRect(30, y, 420, 52);
+
+            ctx.fillStyle = '#888888';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(r.k, 45, y + 22);
+
+            ctx.fillStyle = '#00ff66';
+            ctx.font = '900 15px monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText(r.v, 430, y + 36);
+
+            y += 62;
+          });
+
+          // Nivel y Marca
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 15px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`NIVEL: ${level}`, 240, 480);
+
+          ctx.fillStyle = '#888888';
+          ctx.font = '10px monospace';
+          ctx.fillText('APEX BOXING ESCUELA DE STRIKERS • CALI', 240, 580);
+
+          frames++;
+          requestAnimationFrame(drawScreen);
+        }
+        drawScreen();
+      });
+    }
+
+    // ==========================================
+    // LOGICA DE COMBATE & DECISIÓN
     // ==========================================
     let isSparringActive = false;
     let totalRounds = 3, roundDuration = 180, restDuration = 60;
@@ -738,7 +1049,6 @@
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
-      // Esqueleto Vectorial
       if (latestLandmarks) {
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 3;
@@ -762,7 +1072,6 @@
           }
         });
 
-        // ETIQUETAS ANGULARES DIRECTAS SOBRE EL VIDEO EN MODO BIOMECÁNICO
         if (currentTabMode === 'tab-bio') {
           const eR = latestLandmarks[14];
           if (eR && eR.visibility > 0.5) {
@@ -891,73 +1200,6 @@
     }
 
     // ==========================================
-    // RETO APEX // OVERLAY 9:16 RENDER
-    // ==========================================
-    function renderRetoScoreboard() {
-      switchTab('tab-gaming', { target: document.querySelector('.tab-btn') });
-      const canvas = document.getElementById('gamingCanvas');
-      const ctx = canvas.getContext('2d');
-      const striker = document.getElementById('reto_striker').value.toUpperCase();
-      const p1 = document.getElementById('reto_p1').value;
-      const p2 = document.getElementById('reto_p2').value;
-      const p3 = document.getElementById('reto_p3').value;
-      const p4 = document.getElementById('reto_p4').value;
-
-      ctx.fillStyle = '#050505';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '900 22px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('STRIKER PASS // RETO APEX', 240, 70);
-
-      ctx.fillStyle = '#ff2a2a';
-      ctx.font = 'bold 14px sans-serif';
-      ctx.fillText(`ATLETA: ${striker}`, 240, 105);
-
-      const items = [
-        { t: "1. CADENCIA DE SALTO", v: `${p1} SPM` },
-        { t: "2. TÉCNICA Y POSTURA", v: `${p2} / 100 PTS` },
-        { t: "3. IMPACTO & POTENCIA", v: p3 },
-        { t: "4. CADENCIA DE GOLPEO", v: `${p4} GPM` }
-      ];
-
-      let y = 145;
-      items.forEach((it, idx) => {
-        ctx.fillStyle = '#111111';
-        ctx.fillRect(30, y, 420, 65);
-        ctx.strokeStyle = '#222222';
-        ctx.strokeRect(30, y, 420, 65);
-
-        ctx.fillStyle = '#888888';
-        ctx.font = 'bold 10px sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText(it.t, 45, y + 25);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '900 16px monospace';
-        ctx.fillText(it.v, 45, y + 50);
-
-        y += 75;
-      });
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '900 16px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('NIVEL CERTIFICADO: APEX PRO', 240, 500);
-
-      ctx.fillStyle = '#888888';
-      ctx.font = '10px monospace';
-      ctx.fillText('APEX BOXING ESCUELA DE STRIKERS • CALI', 240, 600);
-      
-      speakFast(`Striker pass generado para ${striker}. Rendimiento certificado.`, 0.5);
-    }
-
-    // ==========================================
     // AUTH & HISTORIAL
     // ==========================================
     const DEFAULT_ADMIN = { user: "admin", pass: "apex2026", role: "admin", active: true };
@@ -1066,9 +1308,11 @@
       const visorCard = document.getElementById('globalVisionCard');
       const visorTitle = document.getElementById('visorTitle');
       
-      if (id === 'tab-gaming' || id === 'tab-bio') {
+      if (id === 'tab-gaming' || id === 'tab-bio' || id === 'tab-reto') {
         visorCard.style.display = 'block';
-        visorTitle.innerText = id === 'tab-bio' ? "Visor Biomecánico // Telemetría Vectorial" : "Visor En Vivo // Telemetría Combate";
+        if (id === 'tab-bio') visorTitle.innerText = "Visor Biomecánico // Telemetría Vectorial";
+        else if (id === 'tab-reto') visorTitle.innerText = "Studio // Renderizador 9:16 Reto Apex";
+        else visorTitle.innerText = "Visor En Vivo // Telemetría Combate";
       } else {
         visorCard.style.display = 'none';
       }
