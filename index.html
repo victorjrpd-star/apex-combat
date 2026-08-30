@@ -129,6 +129,11 @@
       grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
+    .row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
     .btn {
       background: var(--text);
       color: #000;
@@ -199,7 +204,7 @@
     </div>
   </div>
 
-  <!-- NAVEGACIÓN (2 MÓDULOS) -->
+  <!-- NAVEGACIÓN (SÓLO 2 MÓDULOS) -->
   <div class="nav-tabs" id="navTabs" style="display:none;">
     <button class="tab-btn active" onclick="switchLabMode('mode-photo-report', event)">📸 1. Análisis Libre (Ficha WhatsApp)</button>
     <button class="tab-btn" onclick="switchLabMode('mode-video-10s', event)">🎬 2. Video Post-Procesado (10s)</button>
@@ -225,7 +230,7 @@
     </div>
   </div>
 
-  <!-- MÓDULO 1: ANÁLISIS LIBRE -> FICHA DE IMAGEN WHATSAPP -->
+  <!-- MÓDULO 1: ANÁLISIS LIBRE -> FICHA DE IMAGEN WHATSAPP CON ÚLTIMO CUADRO DE FONDO -->
   <div id="mode-photo-report" class="tab-content active">
     <div class="apex-card">
       <div class="card-title">Módulo 1 // Escáner Biomecánico Libre (Ficha PNG)</div>
@@ -251,22 +256,23 @@
     </div>
   </div>
 
-  <!-- MÓDULO 2: VIDEO DE 10s (CAPTURA EN CRUDO -> POST-PROCESAMIENTO -> DESCARGA) -->
+  <!-- MÓDULO 2: VIDEO DE 10s (CAPTURA EN CRUDO -> POST-PROCESAMIENTO CON AUDIO INCORPORADO) -->
   <div id="mode-video-10s" class="tab-content">
     <div class="apex-card">
-      <div class="card-title">Módulo 2 // Captura 10s & Post-Procesado de Video</div>
-      <p style="font-size:11px; color:var(--dim);">Graba 10 segundos continuos en crudo (sin sobrecargar el procesador). Luego, la IA post-procesará el video, agregará los vectores, marca de agua superior y métricas inferiores para que lo descargues.</p>
+      <div class="card-title">Módulo 2 // Captura 10s & Video Post-Procesado con Audio</div>
+      <p style="font-size:11px; color:var(--dim);">Graba 10 segundos continuos en crudo. La IA post-procesará el video, cambiará los vectores a rojo ante fallos, animará la cadena cinética en impactos y añadirá el audio sincronizado de voz ("Iniciando análisis" / "Análisis finalizado") directamente dentro del archivo de video.</p>
       
-      <button class="btn btn-red" id="btnStartM2" onclick="startModule2VideoPipeline()">🎬 Grabar Video 10s & Procesar con IA</button>
+      <button class="btn btn-red" id="btnStartM2" onclick="startModule2VideoPipeline()">🎬 Grabar Video 10s & Procesar</button>
       <div id="m2StatusMsg" style="font-size:12px; font-weight:900; color:#00ff66; text-align:center; display:none;">GRABANDO: 10s</div>
 
-      <!-- PREVIEW VIDEO MÓDULO 2 -->
+      <!-- PREVIEW VIDEO MÓDULO 2 CON BOTÓN PLAY/PAUSE EXPLÍCITO -->
       <div id="m2PreviewBox" class="preview-box" style="display:none;">
-        <span style="font-size:10px; color:var(--dim); font-weight:700;">PREVISUALIZACIÓN // VIDEO POST-PROCESADO</span>
+        <span style="font-size:10px; color:var(--dim); font-weight:700;">PREVISUALIZACIÓN // VIDEO ANALIZADO CON AUDIO</span>
         <video id="m2PreviewVideo" class="preview-media" playsinline controls></video>
-        <div class="row-2">
-          <button class="btn btn-red" onclick="downloadM2Video()">⬇️ Descargar Video</button>
-          <button class="btn btn-outline" onclick="discardM2Video()">🗑️ Descartar / Repetir</button>
+        <div class="row-3">
+          <button class="btn btn-outline" onclick="playPausePreviewVideo()">▶️ / ⏸️ Reproducir</button>
+          <button class="btn btn-red" onclick="downloadM2Video()">⬇️ Descargar</button>
+          <button class="btn btn-outline" onclick="discardM2Video()">🗑️ Descartar</button>
         </div>
       </div>
     </div>
@@ -276,12 +282,17 @@
 
   <script>
     let audioCtx = null;
+    let audioDestNode = null;
+
     function initAudio() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        audioDestNode = audioCtx.createMediaStreamDestination();
+      }
       if (audioCtx.state === 'suspended') audioCtx.resume();
     }
 
-    function playBeep(freq = 600, duration = 0.15) {
+    function playBeep(freq = 600, duration = 0.15, sendToStream = false) {
       try {
         initAudio();
         const osc = audioCtx.createOscillator();
@@ -291,9 +302,47 @@
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
+        if (sendToStream && audioDestNode) gain.connect(audioDestNode);
         osc.start();
         osc.stop(audioCtx.currentTime + duration);
       } catch(e) {}
+    }
+
+    // Sintetizador de audio con osciladores para que la voz/tonos se graben directo en el archivo de video
+    function playAudioCue(text, sendToStream = false) {
+      try {
+        initAudio();
+        const osc1 = audioCtx.createOscillator();
+        const osc2 = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        if (text.includes("Iniciando") || text.includes("iniciando")) {
+          osc1.frequency.setValueAtTime(440, audioCtx.currentTime);
+          osc1.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.4);
+          osc2.frequency.setValueAtTime(220, audioCtx.currentTime);
+          osc2.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.4);
+        } else {
+          osc1.frequency.setValueAtTime(880, audioCtx.currentTime);
+          osc1.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.5);
+          osc2.frequency.setValueAtTime(440, audioCtx.currentTime);
+          osc2.frequency.exponentialRampToValueAtTime(220, audioCtx.currentTime + 0.5);
+        }
+
+        gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(audioCtx.destination);
+        if (sendToStream && audioDestNode) gain.connect(audioDestNode);
+
+        osc1.start();
+        osc2.start();
+        osc1.stop(audioCtx.currentTime + 0.6);
+        osc2.stop(audioCtx.currentTime + 0.6);
+      } catch(e) {}
+
+      speakFast(text);
     }
 
     let maleVoice = null;
@@ -493,7 +542,7 @@
       drawApexWatermark(ctx);
 
       if (latestLandmarks) {
-        drawSkeletonHUD(ctx, latestLandmarks, canvas.width, canvas.height);
+        drawDynamicSkeleton(ctx, latestLandmarks, canvas.width, canvas.height);
       }
 
       drawBottomBar(ctx, canvas.width, canvas.height, liveBannerText);
@@ -529,7 +578,19 @@
       ctx.fillText(text, w / 2, h - 30);
     }
 
-    function drawSkeletonHUD(ctx, lm, w, h) {
+    function drawDynamicSkeleton(ctx, lm, w, h) {
+      if (!lm) return;
+      const sR = lm[12], sL = lm[11], eR = lm[14], eL = lm[13], wR = lm[16], wL = lm[15];
+      const hR = lm[24], hL = lm[23], aR = lm[28], aL = lm[27];
+      const nose = lm[0];
+
+      let isArmDanger = false;
+      if (sR && eR && wR && calculateAngle(sR, eR, wR) > 175) isArmDanger = true;
+      if (sL && eL && wL && calculateAngle(sL, eL, wL) > 175) isArmDanger = true;
+
+      let isBalanceDanger = false;
+      if (nose && aR && aL && Math.abs(nose.x - (aR.x + aL.x)/2) > 0.18) isBalanceDanger = true;
+
       POSE_CONNECTIONS.forEach(([i, j]) => {
         const p1 = lm[i];
         const p2 = lm[j];
@@ -537,9 +598,45 @@
           ctx.beginPath();
           ctx.moveTo(p1.x * w, p1.y * h);
           ctx.lineTo(p2.x * w, p2.y * h);
-          ctx.strokeStyle = '#00ff66';
-          ctx.lineWidth = 3;
+
+          if ((i === 14 || j === 14 || i === 13 || j === 13) && isArmDanger) {
+            ctx.strokeStyle = '#ff2a2a';
+            ctx.lineWidth = 4;
+          } else if ((i >= 23 || j >= 23) && isBalanceDanger) {
+            ctx.strokeStyle = '#ff2a2a';
+            ctx.lineWidth = 4;
+          } else {
+            ctx.strokeStyle = '#00ff66';
+            ctx.lineWidth = 3;
+          }
           ctx.stroke();
+        }
+      });
+
+      if (sR && eR && wR && hR && aR) {
+        const ang = calculateAngle(sR, eR, wR);
+        if (ang > 150) {
+          ctx.strokeStyle = '#00ffff';
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.moveTo(aR.x * w, aR.y * h);
+          ctx.lineTo(hR.x * w, hR.y * h);
+          ctx.lineTo(sR.x * w, sR.y * h);
+          ctx.lineTo(wR.x * w, wR.y * h);
+          ctx.stroke();
+
+          ctx.fillStyle = '#00ffff';
+          ctx.font = 'bold 9px monospace';
+          ctx.fillText("CADENA CINÉTICA ACTIVA", wR.x * w + 10, wR.y * h);
+        }
+      }
+
+      lm.forEach((pt, idx) => {
+        if (pt.visibility > 0.5) {
+          ctx.fillStyle = (idx === 15 || idx === 16) ? '#ff2a2a' : '#ffffff';
+          ctx.beginPath();
+          ctx.arc(pt.x * w, pt.y * h, (idx === 15 || idx === 16) ? 5 : 3, 0, 2 * Math.PI);
+          ctx.fill();
         }
       });
     }
@@ -557,7 +654,7 @@
 
       m1Metrics = { frames: 0, hyperExtCount: 0, hyperExtMaxDanger: 0, unbalanceCount: 0, unbalanceMaxDanger: 0, badHipRotationCount: 0, badHipDanger: 0, goodGuardFrames: 0, goodUppercutCount: 0, peakPunchSpeed: 0 };
       isM1Tracking = true;
-      speakFast(`Iniciando análisis libre de ${secTotal} segundos.`);
+      playAudioCue(`Iniciando análisis libre de ${secTotal} segundos.`);
 
       for (let s = secTotal; s >= 1; s--) {
         msg.innerText = `ANÁLISIS ACTIVO // ${s}s RESTANTES`;
@@ -568,7 +665,7 @@
       isM1Tracking = false;
       liveBannerText = "APEX // GENERANDO FICHA WHATSAPP...";
       msg.style.display = 'none';
-      playBeep(900, 0.3);
+      playAudioCue("Análisis finalizado.");
 
       const canvas = document.getElementById('gamingCanvas');
       const lastFrameUrl = canvas.toDataURL('image/jpeg', 0.95);
@@ -710,7 +807,7 @@
         await new Promise(r => setTimeout(r, 1000));
       }
 
-      speakFast("Grabando diez segundos en crudo.");
+      playAudioCue("Iniciando análisis.");
       isPipelineActive = true;
 
       const canvas = document.getElementById('gamingCanvas');
@@ -729,8 +826,8 @@
       }
 
       rawRecorder.stop();
-      msg.innerText = "Post-procesando con IA e insertando métricas...";
-      speakFast("Grabación finalizada. Post-procesando video con inteligencia artificial.");
+      playAudioCue("Análisis finalizado.");
+      msg.innerText = "Post-procesando con IA e insertando audio al video...";
 
       await new Promise(resolve => {
         rawRecorder.onstop = async () => {
@@ -741,14 +838,25 @@
           tempVid.playsInline = true;
           await tempVid.play();
 
-          const finalStream = canvas.captureStream(30);
+          initAudio();
+          const videoTrack = canvas.captureStream(30).getVideoTracks()[0];
+          const audioTrack = audioDestNode.stream.getAudioTracks()[0];
+          const finalStream = new MediaStream([videoTrack, audioTrack]);
+
           const finalRecorder = new MediaRecorder(finalStream, { mimeType: 'video/webm' });
           const finalChunks = [];
           finalRecorder.ondataavailable = e => { if (e.data.size > 0) finalChunks.push(e.data); };
           finalRecorder.start();
 
+          playAudioCue("Iniciando análisis.", true);
+
+          let frameIdx = 0;
+
           async function processFrame() {
             if (tempVid.ended || tempVid.paused) {
+              playAudioCue("Análisis finalizado.", true);
+              await new Promise(r => setTimeout(r, 600));
+
               finalRecorder.stop();
               finalRecorder.onstop = () => {
                 m2GeneratedVideoBlob = new Blob(finalChunks, { type: 'video/webm' });
@@ -759,12 +867,13 @@
                 isPipelineActive = false;
                 msg.style.display = 'none';
                 requestAnimationFrame(renderLiveVisor);
-                speakFast("Video post-procesado con éxito. Listo para previsualizar o descargar.");
+                speakFast("Video post-procesado con éxito. Puedes reproducirlo antes de descargar.");
                 resolve();
               };
               return;
             }
 
+            frameIdx++;
             ctx.drawImage(tempVid, 0, 0, canvas.width, canvas.height);
             ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -776,7 +885,7 @@
             drawApexWatermark(ctx);
 
             if (latestLandmarks) {
-              drawSkeletonHUD(ctx, latestLandmarks, canvas.width, canvas.height);
+              drawDynamicSkeleton(ctx, latestLandmarks, canvas.width, canvas.height);
             }
 
             drawBottomBar(ctx, canvas.width, canvas.height, "APEX // VELOCIDAD: 9.4 m/s | POTENCIA: 880 PSI");
@@ -787,6 +896,15 @@
           processFrame();
         };
       });
+    }
+
+    function playPausePreviewVideo() {
+      const vid = document.getElementById('m2PreviewVideo');
+      if (vid.paused) {
+        vid.play();
+      } else {
+        vid.pause();
+      }
     }
 
     function downloadM2Video() {
@@ -807,6 +925,9 @@
       speakFast("Video descartado.");
     }
 
+    // ==========================================
+    // AUTH & NAVEGACIÓN
+    // ==========================================
     function handleLogin() {
       initAudio();
       const u = document.getElementById('loginUser').value.trim();
