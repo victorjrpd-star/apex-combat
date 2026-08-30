@@ -15,6 +15,7 @@
       --text: #ffffff;
       --dim: #777777;
       --red: #ff2a2a;
+      --green: #00ff66;
       --accent: #141414;
     }
     * {
@@ -180,9 +181,10 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      margin-bottom: 12px;
     }
     video { display: none; }
-    canvas { width: 100%; height: auto; max-height: 480px; object-fit: contain; }
+    canvas { width: 100%; height: auto; max-height: 440px; object-fit: contain; }
     .history-item, .user-item {
       background: var(--accent);
       border: 1px solid var(--card-border);
@@ -226,6 +228,18 @@
     <button class="tab-btn btn-outline" style="margin-left:auto;" onclick="handleLogout()">Salir</button>
   </div>
 
+  <!-- VISOR GLOBAL DE CÁMARA (PERMANECE VISIBLE EN ÁRBITRO Y EN BIOMECÁNICA) -->
+  <div class="apex-card" id="globalVisionCard" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="card-title" id="visorTitle">Visor En Vivo // Telemetría</div>
+      <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" id="btnCamGlobal" onclick="toggleCamera()">📷 Activar Cámara</button>
+    </div>
+    <div class="canvas-container" style="margin-top:6px; margin-bottom:0;">
+      <video id="webcamVideo" playsinline autoplay muted></video>
+      <canvas id="gamingCanvas" width="480" height="640"></canvas>
+    </div>
+  </div>
+
   <!-- TAB 1: GAMING -->
   <div id="tab-gaming" class="tab-content active">
     <div class="apex-card">
@@ -260,21 +274,15 @@
       </div>
       
       <div class="row-2">
-        <button class="btn" id="btnCam" onclick="toggleCamera()">📷 Cámara Trasera</button>
         <button class="btn btn-red" onclick="startSparringSession()">🥊 Iniciar Combate</button>
+        <button class="btn btn-outline" onclick="presentFightersSpeech()">🎙️ Presentación Oficial</button>
       </div>
-      <button class="btn btn-outline" onclick="presentFightersSpeech()">🎙️ Presentación Oficial</button>
     </div>
 
-    <!-- HUD -->
+    <!-- CONTROLES MANUALES ÁRBITRO -->
     <div class="apex-card">
-      <div class="card-title">HUD En Vivo // Telemetría</div>
-      <div class="canvas-container">
-        <video id="webcamVideo" playsinline autoplay muted></video>
-        <canvas id="gamingCanvas" width="480" height="640"></canvas>
-      </div>
-      
-      <div class="row-2" style="margin-top:6px;">
+      <div class="card-title">Intervención de Jueces</div>
+      <div class="row-2">
         <button class="btn btn-outline" onclick="triggerEvent('impact_generic')">💥 Impacto</button>
         <button class="btn btn-outline" onclick="triggerEvent('dodge_generic')">⚡ Esquiva Apex</button>
       </div>
@@ -288,7 +296,7 @@
   <!-- TAB 2: ANÁLISIS BIOMECÁNICO -->
   <div id="tab-bio" class="tab-content">
     <div class="apex-card">
-      <div class="card-title">Telemetría Biomecánica Vectorial en Vivo</div>
+      <div class="card-title">Métricas de Ángulos y Articulaciones en Tiempo Real</div>
       <div class="row-4">
         <div class="metric-box">
           <span class="metric-lbl">Extensión Codo Der</span>
@@ -299,7 +307,7 @@
           <span class="metric-val" id="bio_codo_l">--°</span>
         </div>
         <div class="metric-box">
-          <span class="metric-lbl">Alineación Hombros</span>
+          <span class="metric-lbl">Inclinación Hombros</span>
           <span class="metric-val" id="bio_hombros">--°</span>
         </div>
         <div class="metric-box">
@@ -310,12 +318,12 @@
 
       <div class="row-2" style="margin-top:8px;">
         <div class="metric-box">
-          <span class="metric-lbl">Estado Articular del Golpe</span>
-          <span class="metric-val" id="bio_seguridad" style="color:#00ff66; font-size:14px;">ESTABLE // SEGURO</span>
+          <span class="metric-lbl">Evaluación de Codo en Extensión</span>
+          <span class="metric-val" id="bio_seguridad" style="color:#00ff66; font-size:13px;">ÓPTIMO (SIN HIPEREXTENSIÓN)</span>
         </div>
         <div class="metric-box">
-          <span class="metric-lbl">Centro de Gravedad</span>
-          <span class="metric-val" id="bio_centro" style="font-size:14px;">EQUILIBRADO</span>
+          <span class="metric-lbl">Postura y Base de Apoyo</span>
+          <span class="metric-val" id="bio_centro" style="font-size:13px;">SÓLIDA // ESTABLE</span>
         </div>
       </div>
     </div>
@@ -465,6 +473,7 @@
     let lastAutoTrigger = 0;
     let lastNoseX = null;
     let frameCounter = 0;
+    let currentTabMode = 'tab-gaming';
 
     const POSE_CONNECTIONS = [
       [11, 12], [11, 13], [13, 15], [12, 14], [14, 16],
@@ -478,6 +487,8 @@
       if (angle > 180.0) angle = 360.0 - angle;
       return Math.round(angle);
     }
+
+    let angR_live = 0, angL_live = 0;
 
     function onPoseResults(results) {
       latestLandmarks = results.poseLandmarks;
@@ -504,7 +515,7 @@
       
       if (cameraInstance) {
         useFacingMode = useFacingMode === "environment" ? "user" : "environment";
-        document.getElementById('btnCam').innerText = useFacingMode === "environment" ? "📷 Cámara Trasera" : "📷 Cámara Frontal";
+        document.getElementById('btnCamGlobal').innerText = useFacingMode === "environment" ? "📷 Cámara Trasera" : "📷 Cámara Frontal";
       }
 
       navigator.mediaDevices.getUserMedia({
@@ -527,6 +538,7 @@
           cameraInstance.start();
           requestAnimationFrame(renderLoop);
         }
+        document.getElementById('btnCamGlobal').innerText = "📷 Cámara Activa";
         speakFast("Cámara lista.");
       }).catch(err => alert("Error de cámara: " + err));
     }
@@ -537,20 +549,34 @@
       const hipR = lm[24], kneeR = lm[26], ankR = lm[28];
 
       if (sR && eR && wR) {
-        const angR = calculateAngle(sR, eR, wR);
+        angR_live = calculateAngle(sR, eR, wR);
         const el = document.getElementById('bio_codo_r');
-        if (el) el.innerText = `${angR}°`;
+        if (el) el.innerText = `${angR_live}°`;
+
+        const elSec = document.getElementById('bio_seguridad');
+        if (elSec) {
+          if (angR_live > 175) {
+            elSec.innerText = "ALERTA: RIESGO DE HIPEREXTENSIÓN";
+            elSec.style.color = "#ff2a2a";
+          } else {
+            elSec.innerText = "ÓPTIMO (SIN HIPEREXTENSIÓN)";
+            elSec.style.color = "#00ff66";
+          }
+        }
       }
+
       if (sL && eL && wL) {
-        const angL = calculateAngle(sL, eL, wL);
+        angL_live = calculateAngle(sL, eL, wL);
         const el = document.getElementById('bio_codo_l');
-        if (el) el.innerText = `${angL}°`;
+        if (el) el.innerText = `${angL_live}°`;
       }
+
       if (sR && sL) {
         const slope = Math.round(Math.abs(sR.y - sL.y) * 100);
         const el = document.getElementById('bio_hombros');
         if (el) el.innerText = `${slope}°`;
       }
+
       if (hipR && kneeR && ankR) {
         const angKnee = calculateAngle(hipR, kneeR, ankR);
         const el = document.getElementById('bio_rodilla');
@@ -712,6 +738,7 @@
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
+      // Esqueleto Vectorial
       if (latestLandmarks) {
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 3;
@@ -734,47 +761,67 @@
             ctx.fill();
           }
         });
+
+        // ETIQUETAS ANGULARES DIRECTAS SOBRE EL VIDEO EN MODO BIOMECÁNICO
+        if (currentTabMode === 'tab-bio') {
+          const eR = latestLandmarks[14];
+          if (eR && eR.visibility > 0.5) {
+            ctx.fillStyle = '#00ff66';
+            ctx.font = 'bold 13px monospace';
+            ctx.fillText(`${angR_live}°`, eR.x * canvas.width + 10, eR.y * canvas.height);
+          }
+        }
       }
 
       ctx.strokeStyle = '#222';
       ctx.lineWidth = 3;
       ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
 
-      const m = Math.floor(currentSec / 60);
-      const s = currentSec % 60;
-      ctx.fillStyle = '#fff';
-      ctx.font = '900 28px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(`${m}:${s < 10 ? '0' : ''}${s}`, 240, 50);
-
-      ctx.fillStyle = isResting ? '#ff2a2a' : '#888';
-      ctx.font = 'bold 11px sans-serif';
-      ctx.fillText(isResting ? 'DESCANSO // ESQUINA' : `ROUND ${currentRound} DE ${totalRounds}`, 240, 70);
-
-      // Barras
-      ctx.textAlign = 'left';
-      ctx.fillStyle = '#fff';
-      ctx.font = '900 12px sans-serif';
-      ctx.fillText(`■ ${f1}`, 20, 95);
-      ctx.strokeRect(20, 105, 190, 16);
-      ctx.fillRect(20, 105, 190 * (hp1 / 100), 16);
-
-      ctx.textAlign = 'right';
-      ctx.fillStyle = '#888';
-      ctx.fillText(`□ ${f2}`, 460, 95);
-      ctx.strokeRect(270, 105, 190, 16);
-      ctx.fillRect(270 + (190 * (1 - hp2 / 100)), 105, 190 * (hp2 / 100), 16);
-
-      ctx.font = '12px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillStyle = '#aaa';
-      ctx.fillText(`IMPACTOS: ${totalHits}  |  ESQUIVAS: ${totalDodges}`, 240, 140);
-
-      if (isKnockedDown) {
-        ctx.fillStyle = '#ff2a2a';
-        ctx.font = '900 48px monospace';
+      if (currentTabMode === 'tab-gaming') {
+        const m = Math.floor(currentSec / 60);
+        const s = currentSec % 60;
+        ctx.fillStyle = '#fff';
+        ctx.font = '900 28px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(`CUENTA: ${kdSec}`, 240, 340);
+        ctx.fillText(`${m}:${s < 10 ? '0' : ''}${s}`, 240, 50);
+
+        ctx.fillStyle = isResting ? '#ff2a2a' : '#888';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillText(isResting ? 'DESCANSO // ESQUINA' : `ROUND ${currentRound} DE ${totalRounds}`, 240, 70);
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#fff';
+        ctx.font = '900 12px sans-serif';
+        ctx.fillText(`■ ${f1}`, 20, 95);
+        ctx.strokeRect(20, 105, 190, 16);
+        ctx.fillRect(20, 105, 190 * (hp1 / 100), 16);
+
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#888';
+        ctx.fillText(`□ ${f2}`, 460, 95);
+        ctx.strokeRect(270, 105, 190, 16);
+        ctx.fillRect(270 + (190 * (1 - hp2 / 100)), 105, 190 * (hp2 / 100), 16);
+
+        ctx.font = '12px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#aaa';
+        ctx.fillText(`IMPACTOS: ${totalHits}  |  ESQUIVAS: ${totalDodges}`, 240, 140);
+
+        if (isKnockedDown) {
+          ctx.fillStyle = '#ff2a2a';
+          ctx.font = '900 48px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(`CUENTA: ${kdSec}`, 240, 340);
+        }
+      } else if (currentTabMode === 'tab-bio') {
+        ctx.fillStyle = '#00ff66';
+        ctx.font = '900 13px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`● RASTREO BIOMECÁNICO ACTIVO`, 240, 45);
+
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 11px monospace';
+        ctx.fillText(`CODO DER: ${angR_live}°  |  CODO IZQ: ${angL_live}°`, 240, 68);
       }
     }
 
@@ -898,7 +945,6 @@
         y += 75;
       });
 
-      // Calificación General
       ctx.fillStyle = '#ffffff';
       ctx.font = '900 16px sans-serif';
       ctx.textAlign = 'center';
@@ -935,6 +981,7 @@
         sessionStorage.setItem('apex_current_user', JSON.stringify(found));
         document.getElementById('authModal').style.display = 'none';
         document.getElementById('navTabs').style.display = 'flex';
+        document.getElementById('globalVisionCard').style.display = 'block';
         if (found.role === 'admin') document.getElementById('adminTabBtn').style.display = 'block';
         renderUsersList();
       } else {
@@ -1010,10 +1057,21 @@
     }
 
     function switchTab(id, e) {
+      currentTabMode = id;
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById(id).classList.add('active');
-      e.target.classList.add('active');
+      if (e && e.target) e.target.classList.add('active');
+
+      const visorCard = document.getElementById('globalVisionCard');
+      const visorTitle = document.getElementById('visorTitle');
+      
+      if (id === 'tab-gaming' || id === 'tab-bio') {
+        visorCard.style.display = 'block';
+        visorTitle.innerText = id === 'tab-bio' ? "Visor Biomecánico // Telemetría Vectorial" : "Visor En Vivo // Telemetría Combate";
+      } else {
+        visorCard.style.display = 'none';
+      }
     }
 
     renderHistory();
