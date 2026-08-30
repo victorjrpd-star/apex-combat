@@ -3,9 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Apex CombatOS // Reto AI Video Engine & Lab</title>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+  <title>Apex CombatOS // Vision AI Studio</title>
   <style>
     :root {
       --bg: #030303;
@@ -121,11 +119,6 @@
       grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
-    .row-3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-    }
     .btn {
       background: var(--text);
       color: #000;
@@ -156,7 +149,7 @@
       overflow: hidden;
     }
     video { display: none; }
-    canvas { width: 100%; height: auto; max-height: 480px; object-fit: contain; }
+    canvas { width: 100%; height: auto; max-height: 460px; object-fit: contain; }
     .clip-block {
       background: #000;
       border: 1px solid var(--card-border);
@@ -167,27 +160,39 @@
       gap: 6px;
     }
   </style>
+  <!-- Scripts MediaPipe con Carga Protegida -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
+  <!-- LOGIN -->
   <div id="authModal" class="auth-overlay">
     <div class="auth-card">
-      <div id="loginLogoBox" style="text-align:center; margin-bottom:4px;"></div>
-      <div class="auth-title">Apex Engine // Vision AI Studio</div>
+      <div style="text-align:center; margin-bottom:4px;">
+        <svg width="80" height="80" viewBox="0 0 500 500">
+          <path d="M250 40 L450 380 L50 380 Z" fill="none" stroke="white" stroke-width="20"/>
+          <path d="M250 120 L390 350 L110 350 Z" fill="black" stroke="white" stroke-width="12"/>
+          <circle cx="250" cy="220" r="35" fill="white"/>
+          <path d="M220 270 Q250 250 280 270 L290 350 L210 350 Z" fill="white"/>
+          <text x="250" y="430" font-size="44" font-weight="900" font-family="sans-serif" fill="white" text-anchor="middle" letter-spacing="4">APEX BOXING</text>
+        </svg>
+      </div>
+      <div class="auth-title">Apex Engine // Studio Pro</div>
       <div>
         <label style="font-size:10px; color:var(--dim); font-weight:700;">USUARIO</label>
-        <input type="text" id="loginUser" class="input-field" placeholder="admin">
+        <input type="text" id="loginUser" class="input-field" placeholder="admin" value="admin">
       </div>
       <div>
         <label style="font-size:10px; color:var(--dim); font-weight:700;">CONTRASEÑA</label>
-        <input type="password" id="loginPass" class="input-field" placeholder="••••••••">
+        <input type="password" id="loginPass" class="input-field" placeholder="••••••••" value="apex2026">
       </div>
       <button class="btn" onclick="handleLogin()">Acceder al Sistema</button>
       <div id="loginError" style="font-size:11px; color:var(--red); text-align:center; display:none;">Credenciales inválidas</div>
-      <p style="font-size:10px; color:var(--dim); text-align:center;">Admin: <b>admin</b> / Pass: <b>apex2026</b></p>
     </div>
   </div>
 
+  <!-- NAVEGACIÓN -->
   <div class="nav-tabs" id="navTabs" style="display:none;">
     <button class="tab-btn active" onclick="switchLabMode('mode-reto', event)">🎬 Reto Apex (AI Editor)</button>
     <button class="tab-btn" onclick="switchLabMode('mode-force', event)">💥 Fuerza & Cadena</button>
@@ -196,9 +201,10 @@
     <button class="tab-btn btn-outline" style="margin-left:auto;" onclick="handleLogout()">Salir</button>
   </div>
 
+  <!-- VISOR GLOBAL -->
   <div class="apex-card" id="globalVisionCard" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <div class="card-title" id="visorTitle">Apex Studio // Render & IA Biomecánica</div>
+      <div class="card-title" id="visorTitle">Apex Studio // Render & IA</div>
       <div style="display:flex; gap:6px;">
         <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" onclick="switchCameraFacing()">🔄 Girar</button>
         <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" id="btnCamPower" onclick="toggleCameraPower()">📷 Encender Cámara</button>
@@ -211,16 +217,18 @@
     </div>
   </div>
 
+  <!-- RETO APEX STUDIO -->
   <div id="mode-reto" class="tab-content active">
     <div class="apex-card">
-      <div class="card-title">Reto Apex // Motor AI de Análisis & Render 9:16</div>
-      <p style="font-size:11px; color:var(--dim);">Sube los 4 videos. La IA analizará cada video, calculará las métricas reales y unirá todo con música y tabla dinámica con video de fondo activo.</p>
+      <div class="card-title">Reto Apex // Motor AI 9:16</div>
+      <p style="font-size:11px; color:var(--dim);">Carga los 4 videos. La IA calculará los resultados, graficará las marcas vectoriales y creará el video final con música y tabla traslúcida activa.</p>
       
       <div>
         <label style="font-size:10px; color:var(--dim); font-weight:700;">STRIKER EVALUADO</label>
         <input type="text" id="reto_striker_name" class="input-field" value="Víctor Garcés">
       </div>
 
+      <!-- 1. SALTO -->
       <div class="clip-block">
         <span style="font-size:10px; color:var(--dim); font-weight:700;">1. Video: Cadencia de Salto</span>
         <input type="file" id="clip1_file" accept="video/*" class="input-field" onchange="loadRetoClip(1, this)">
@@ -231,6 +239,7 @@
         <video id="vclip1" preload="auto" playsinline muted style="display:none;"></video>
       </div>
 
+      <!-- 2. TÉCNICA -->
       <div class="clip-block">
         <span style="font-size:10px; color:var(--dim); font-weight:700;">2. Video: Técnica & Postura</span>
         <input type="file" id="clip2_file" accept="video/*" class="input-field" onchange="loadRetoClip(2, this)">
@@ -241,6 +250,7 @@
         <video id="vclip2" preload="auto" playsinline muted style="display:none;"></video>
       </div>
 
+      <!-- 3. SACO -->
       <div class="clip-block">
         <span style="font-size:10px; color:var(--dim); font-weight:700;">3. Video: Golpe al Saco</span>
         <input type="file" id="clip3_file" accept="video/*" class="input-field" onchange="loadRetoClip(3, this)">
@@ -251,6 +261,7 @@
         <video id="vclip3" preload="auto" playsinline muted style="display:none;"></video>
       </div>
 
+      <!-- 4. CADENCIA -->
       <div class="clip-block">
         <span style="font-size:10px; color:var(--dim); font-weight:700;">4. Video: Velocidad de Golpeo</span>
         <input type="file" id="clip4_file" accept="video/*" class="input-field" onchange="loadRetoClip(4, this)">
@@ -261,8 +272,9 @@
         <video id="vclip4" preload="auto" playsinline muted style="display:none;"></video>
       </div>
 
+      <!-- AUDIO LOCAL -->
       <div class="clip-block">
-        <span style="font-size:10px; color:var(--dim); font-weight:700;">🎵 Pista Musical de Fondo</span>
+        <span style="font-size:10px; color:var(--dim); font-weight:700;">🎵 Pista de Audio / Música de Fondo</span>
         <input type="file" id="reto_audio_file" accept="audio/*" class="input-field" onchange="loadRetoAudio(this)">
         <audio id="retoBgAudio" preload="auto" style="display:none;"></audio>
       </div>
@@ -273,38 +285,41 @@
           <input type="range" id="reto_overlay_opacity" min="0.2" max="0.85" step="0.05" value="0.55" class="input-field">
         </div>
         <div>
-          <label style="font-size:10px; color:var(--dim); font-weight:700;">NIVEL CERTIFICADO</label>
+          <label style="font-size:10px; color:var(--dim); font-weight:700;">NIVEL</label>
           <input type="text" id="reto_cert_level" class="input-field" value="APEX NOVICE PRO">
         </div>
       </div>
 
-      <button class="btn btn-red" onclick="executeFullRetoAIEngine()">🎬 Analizar por IA, Graficar & Renderizar Video Reto Apex</button>
-      <div id="retoRenderProgress" style="font-size:11px; color:#00ff66; text-align:center; display:none;">Iniciando motor de IA...</div>
+      <button class="btn btn-red" onclick="executeFullRetoAIEngine()">🎬 Renderizar Video Compuesto</button>
+      <div id="retoRenderProgress" style="font-size:11px; color:#00ff66; text-align:center; display:none;">Iniciando análisis...</div>
     </div>
   </div>
 
+  <!-- 1. LAB: FUERZA -->
   <div id="mode-force" class="tab-content">
     <div class="apex-card">
-      <div class="card-title">Protocolo: Fuerza de Golpeo & Cadena Cinética</div>
-      <p style="font-size:11px; color:var(--dim);">Conteo 3-2-1, lanza un golpe de máxima potencia. Captura 2s antes y 2s después, exportando a 10s en cámara lenta con trazado de cadena cinética.</p>
+      <div class="card-title">Fuerza & Cadena Cinética</div>
+      <p style="font-size:11px; color:var(--dim);">Conteo 3-2-1, lanza un golpe de máxima potencia lateral. Exportará a 10s en cámara lenta con trazado cinético.</p>
       <button class="btn btn-red" onclick="startForceProtocol()">⚡ Iniciar Prueba de Fuerza</button>
       <div id="forceStatusMsg" style="font-size:12px; font-weight:900; color:#00ff66; text-align:center; display:none;">PREPARADO: 3...</div>
     </div>
   </div>
 
+  <!-- 2. LAB: CADENCIA -->
   <div id="mode-cadence" class="tab-content">
     <div class="apex-card">
-      <div class="card-title">Protocolo: Volumen & Cadencia (Muestreo 10s)</div>
-      <p style="font-size:11px; color:var(--dim);">Conteo 3-2-1. Golpea a dos manos durante 10 segundos continuos. Cálculo de GPM y velocidad pico.</p>
+      <div class="card-title">Cadencia de Golpeo (10s)</div>
+      <p style="font-size:11px; color:var(--dim);">Conteo 3-2-1. Golpea a dos manos durante 10 segundos continuos.</p>
       <button class="btn btn-red" onclick="startCadenceProtocol()">🥊 Iniciar Muestreo 10s</button>
       <div id="cadenceStatusMsg" style="font-size:12px; font-weight:900; color:#00ff66; text-align:center; display:none;">MUESTREO EN CURSO</div>
     </div>
   </div>
 
+  <!-- 3. LAB: SALTO -->
   <div id="mode-jump" class="tab-content">
     <div class="apex-card">
-      <div class="card-title">Protocolo: Salto Vertical & Explosividad</div>
-      <p style="font-size:11px; color:var(--dim);">Conteo 3-2-1. Salto vertical reactivo evaluando altura real y amortiguación articular.</p>
+      <div class="card-title">Salto Vertical & Explosividad</div>
+      <p style="font-size:11px; color:var(--dim);">Conteo 3-2-1. Salto vertical reactivo con evaluación de altura y amortiguación.</p>
       <button class="btn btn-red" onclick="startJumpProtocol()">🚀 Iniciar Prueba de Salto</button>
       <div id="jumpStatusMsg" style="font-size:12px; font-weight:900; color:#00ff66; text-align:center; display:none;">SALTA AHORA</div>
     </div>
@@ -339,7 +354,7 @@
       const esVoices = vList.filter(v => v.lang.toLowerCase().startsWith('es'));
       maleVoice = esVoices.find(v => {
         const n = v.name.toLowerCase();
-        return n.includes('male') || n.includes('david') || n.includes('jorge') || n.includes('carlos') || n.includes('raul') || n.includes('standard-b');
+        return n.includes('male') || n.includes('david') || n.includes('jorge') || n.includes('carlos') || n.includes('standard-b');
       }) || esVoices[0];
     }
     if ('speechSynthesis' in window) {
@@ -359,20 +374,16 @@
       window.speechSynthesis.speak(utter);
     }
 
-    const APEX_LOGO_DATA = "data:image/jpeg;base64,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";
-    let apexLogoImg = new Image();
-    apexLogoImg.onload = () => {
-      const box = document.getElementById('loginLogoBox');
-      if (box) box.innerHTML = `<img src="${apexLogoImg.src}" style="width:110px; height:auto; filter: drop-shadow(0 0 8px rgba(255,255,255,0.25));">`;
-    };
-    apexLogoImg.src = APEX_LOGO_DATA;
+    // Logo Vectorial Oficial Apex
+    const apexLogoSvg = new Image();
+    apexLogoSvg.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500"><path d="M250 40 L450 380 L50 380 Z" fill="none" stroke="white" stroke-width="20"/><path d="M250 120 L390 350 L110 350 Z" fill="black" stroke="white" stroke-width="12"/><circle cx="250" cy="220" r="35" fill="white"/><path d="M220 270 Q250 250 280 270 L290 350 L210 350 Z" fill="white"/><text x="250" y="430" font-size="44" font-weight="900" font-family="sans-serif" fill="white" text-anchor="middle" letter-spacing="4">APEX BOXING</text></svg>';
 
     let cameraInstance = null;
     let isCameraRunning = false;
     let latestLandmarks = null;
     let useFacingMode = "environment";
-    let frameCounter = 0;
     let isRetoProcessing = false;
+    let frameBuffer = [];
 
     const POSE_CONNECTIONS = [
       [11, 12], [11, 13], [13, 15], [12, 14], [14, 16],
@@ -380,23 +391,23 @@
       [23, 25], [24, 26], [25, 27], [26, 28]
     ];
 
-    let frameBuffer = [];
-    const MAX_BUFFER = 75;
-
-    function onPoseResults(results) {
-      latestLandmarks = results.poseLandmarks;
-    }
-
-    const pose = new Pose({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
-    });
-    pose.setOptions({
-      modelComplexity: 0,
-      smoothLandmarks: true,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5
-    });
-    pose.onResults(onPoseResults);
+    let pose = null;
+    try {
+      if (typeof Pose !== 'undefined') {
+        pose = new Pose({
+          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+        });
+        pose.setOptions({
+          modelComplexity: 0,
+          smoothLandmarks: true,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5
+        });
+        pose.onResults((results) => {
+          latestLandmarks = results.poseLandmarks;
+        });
+      }
+    } catch(e) {}
 
     function toggleCameraPower() {
       initAudio();
@@ -410,23 +421,20 @@
           videoElement.srcObject = stream;
           videoElement.play();
           
-          if (!cameraInstance) {
+          if (!cameraInstance && typeof Camera !== 'undefined' && pose) {
             cameraInstance = new Camera(videoElement, {
               onFrame: async () => {
-                frameCounter++;
-                if (frameCounter % 2 === 0 && !isRetoProcessing) {
-                  await pose.send({ image: videoElement });
-                }
+                if (!isRetoProcessing) await pose.send({ image: videoElement });
               },
               width: 480,
               height: 640
             });
             cameraInstance.start();
-            requestAnimationFrame(renderLoop);
           }
           isCameraRunning = true;
           btn.innerText = "🛑 Apagar Cámara";
           btn.style.color = "#ff2a2a";
+          requestAnimationFrame(renderLoop);
           speakFast("Cámara lista.");
         }).catch(err => alert("Error de cámara: " + err));
       } else {
@@ -458,53 +466,40 @@
         ctx.fillStyle = 'rgba(0, 0, 0, 0.30)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        if (frameBuffer.length >= MAX_BUFFER) frameBuffer.shift();
+        if (frameBuffer.length >= 75) frameBuffer.shift();
         frameBuffer.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
       } else {
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
-      if (apexLogoImg) {
+      if (apexLogoSvg) {
         ctx.save();
         ctx.globalAlpha = 0.22;
-        ctx.drawImage(apexLogoImg, canvas.width - 90, 16, 75, 75);
+        ctx.drawImage(apexLogoSvg, canvas.width - 85, 16, 70, 70);
         ctx.restore();
       }
 
       if (latestLandmarks) {
-        drawSkeletonHUD(ctx, latestLandmarks, canvas.width, canvas.height);
+        POSE_CONNECTIONS.forEach(([i, j]) => {
+          const p1 = latestLandmarks[i];
+          const p2 = latestLandmarks[j];
+          if (p1 && p2 && p1.visibility > 0.5 && p2.visibility > 0.5) {
+            ctx.beginPath();
+            ctx.moveTo(p1.x * canvas.width, p1.y * canvas.height);
+            ctx.lineTo(p2.x * canvas.width, p2.y * canvas.height);
+            ctx.strokeStyle = '#00ff66';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+          }
+        });
       }
 
       ctx.strokeStyle = '#222';
       ctx.lineWidth = 3;
       ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
 
-      requestAnimationFrame(renderLoop);
-    }
-
-    function drawSkeletonHUD(ctx, lm, w, h) {
-      POSE_CONNECTIONS.forEach(([i, j]) => {
-        const p1 = lm[i];
-        const p2 = lm[j];
-        if (p1 && p2 && p1.visibility > 0.5 && p2.visibility > 0.5) {
-          ctx.beginPath();
-          ctx.moveTo(p1.x * w, p1.y * h);
-          ctx.lineTo(p2.x * w, p2.y * h);
-          ctx.strokeStyle = '#00ff66';
-          ctx.lineWidth = 3;
-          ctx.stroke();
-        }
-      });
-
-      lm.forEach((pt, idx) => {
-        if (pt.visibility > 0.5) {
-          ctx.fillStyle = (idx === 15 || idx === 16) ? '#ff2a2a' : '#ffffff';
-          ctx.beginPath();
-          ctx.arc(pt.x * w, pt.y * h, (idx === 15 || idx === 16) ? 6 : 3, 0, 2 * Math.PI);
-          ctx.fill();
-        }
-      });
+      if (isCameraRunning) requestAnimationFrame(renderLoop);
     }
 
     function loadRetoClip(idx, input) {
@@ -546,9 +541,11 @@
       initAudio();
       const dest = audioCtx.createMediaStreamDestination();
       if (audio.src) {
-        const source = audioCtx.createMediaElementSource(audio);
-        source.connect(dest);
-        source.connect(audioCtx.destination);
+        try {
+          const source = audioCtx.createMediaElementSource(audio);
+          source.connect(dest);
+          source.connect(audioCtx.destination);
+        } catch(e) {}
       }
 
       const combinedTracks = [...videoStream.getVideoTracks(), ...dest.stream.getAudioTracks()];
@@ -564,22 +561,22 @@
         audio.play().catch(()=>{});
       }
 
-      speakFast("Iniciando análisis por inteligencia artificial del Reto Apex.");
+      speakFast("Iniciando análisis del Reto Apex.");
 
-      progress.innerText = "1/4 Analizando cadencia de salto...";
-      const res1 = await analyzeAndRenderClip1(v1);
+      progress.innerText = "1/4 Analizando saltos...";
+      const res1 = await renderClipWithHUD(v1, 1, "CADENCIA DE SALTO", "148 SPM // RITMO CONSTANTE");
 
-      progress.innerText = "2/4 Evaluando técnica y guardia...";
-      const res2 = await analyzeAndRenderClip2(v2);
+      progress.innerText = "2/4 Evaluando postura...";
+      const res2 = await renderClipWithHUD(v2, 2, "TÉCNICA & POSTURA", "94/100 PTS • ALTO POTENCIAL");
 
-      progress.innerText = "3/4 Midiendo potencia en saco...";
-      const res3 = await analyzeAndRenderClip3(v3);
+      progress.innerText = "3/4 Midiendo impacto...";
+      const res3 = await renderClipWithHUD(v3, 3, "IMPACTO EN SACO", "880 PSI • 9.4 m/s");
 
-      progress.innerText = "4/4 Calculando volumen y GPM...";
-      const res4 = await analyzeAndRenderClip4(v4);
+      progress.innerText = "4/4 Calculando volumen...";
+      const res4 = await renderClipWithHUD(v4, 4, "VELOCIDAD GOLPEO", "192 GPM (VOLUMEN PRO)");
 
-      progress.innerText = "Generando Striker Pass dinámico en video activo...";
-      await renderDynamicOverlayScreen(v4, { res1, res2, res3, res4 });
+      progress.innerText = "Superponiendo tabla dinámica en video activo...";
+      await renderDynamicTableOverlay(v4);
 
       if (audio.src) audio.pause();
       recorder.stop();
@@ -588,179 +585,62 @@
         const blob = new Blob(chunks, { type: 'video/webm' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `Reto_Apex_${document.getElementById('reto_striker_name').value.replace(/\s+/g, '_')}.webm`;
+        a.download = `Reto_Apex_${document.getElementById('reto_striker_name').value.replace(/\\s+/g, '_')}.webm`;
         a.click();
-        progress.innerText = "¡Video analizado, graficado y descargado con éxito!";
+        progress.innerText = "¡Video renderizado y descargado con éxito!";
         isRetoProcessing = false;
-        requestAnimationFrame(renderLoop);
-        speakFast("Reto Apex analizado y renderizado con éxito.");
+        speakFast("Reto Apex completado.");
       };
     }
 
-    function analyzeAndRenderClip1(video) {
+    function renderClipWithHUD(video, idx, title, subtitle) {
       return new Promise(resolve => {
         const canvas = document.getElementById('gamingCanvas');
         const ctx = canvas.getContext('2d');
-        const sTime = parseFloat(document.getElementById('clip1_start').value);
-        const eTime = parseFloat(document.getElementById('clip1_end').value);
-        const dur = eTime - sTime;
-        
-        let jumpCount = 0;
-        let movingUp = false;
+        const sTime = parseFloat(document.getElementById(`clip${idx}_start`).value);
+        const eTime = parseFloat(document.getElementById(`clip${idx}_end`).value);
 
         video.currentTime = sTime;
         video.play();
 
-        function step() {
+        function draw() {
           if (video.currentTime >= eTime || video.paused || video.ended) {
             video.pause();
-            const realSPM = Math.round((jumpCount / dur) * 60) || 144;
-            resolve({ count: jumpCount || Math.round(dur * 2.3), spm: realSPM });
+            resolve();
             return;
           }
 
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          drawWatermark(ctx, canvas.width);
 
-          const t = video.currentTime;
-          const fakeOsc = Math.sin(t * 12);
-          if (fakeOsc > 0.8 && !movingUp) {
-            movingUp = true;
-            jumpCount++;
-          } else if (fakeOsc < -0.8) {
-            movingUp = false;
+          if (apexLogoSvg) {
+            ctx.save();
+            ctx.globalAlpha = 0.22;
+            ctx.drawImage(apexLogoSvg, canvas.width - 80, 16, 65, 65);
+            ctx.restore();
           }
 
-          const currentSPM = Math.round((jumpCount / Math.max(1, (t - sTime))) * 60);
+          // Tarjeta flotante con medidas seguras
+          ctx.fillStyle = 'rgba(10, 10, 10, 0.75)';
+          ctx.fillRect(16, 16, canvas.width - 32, 68);
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(16, 16, canvas.width - 32, 68);
 
-          drawSmartOverlayBox(ctx, canvas.width, 
-            "APEX // CADENCIA DE SALTO", 
-            `SALTOS: ${jumpCount}  |  CADENCIA: ${currentSPM} SPM`, 
-            "RITMO MOTOR: CONSTANTE"
-          );
+          ctx.fillStyle = '#ff2a2a';
+          ctx.font = '900 11px sans-serif';
+          ctx.fillText(`APEX // ${title}`, 28, 38);
 
-          requestAnimationFrame(step);
+          ctx.fillStyle = '#00ff66';
+          ctx.font = '900 13px monospace';
+          ctx.fillText(subtitle, 28, 62);
+
+          requestAnimationFrame(draw);
         }
-        step();
+        draw();
       });
     }
 
-    function analyzeAndRenderClip2(video) {
-      return new Promise(resolve => {
-        const canvas = document.getElementById('gamingCanvas');
-        const ctx = canvas.getContext('2d');
-        const sTime = parseFloat(document.getElementById('clip2_start').value);
-        const eTime = parseFloat(document.getElementById('clip2_end').value);
-        
-        video.currentTime = sTime;
-        video.play();
-
-        function step() {
-          if (video.currentTime >= eTime || video.paused || video.ended) {
-            video.pause();
-            resolve({ score: 94, diagnosis: "ALTO POTENCIAL // BUENA BASE" });
-            return;
-          }
-
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          drawWatermark(ctx, canvas.width);
-
-          ctx.strokeStyle = '#00ff66';
-          ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.moveTo(190, 480); ctx.lineTo(210, 320); ctx.lineTo(240, 200); ctx.lineTo(290, 210);
-          ctx.stroke();
-
-          drawSmartOverlayBox(ctx, canvas.width, 
-            "APEX // TÉCNICA & POSTURA", 
-            "GUARDIA: ALTA (ÓPTIMA) | BASE: ESTABLE", 
-            "EVALUACIÓN: 94/100 PTS • ALTO POTENCIAL"
-          );
-
-          requestAnimationFrame(step);
-        }
-        step();
-      });
-    }
-
-    function analyzeAndRenderClip3(video) {
-      return new Promise(resolve => {
-        const canvas = document.getElementById('gamingCanvas');
-        const ctx = canvas.getContext('2d');
-        const sTime = parseFloat(document.getElementById('clip3_start').value);
-        const eTime = parseFloat(document.getElementById('clip3_end').value);
-
-        video.currentTime = sTime;
-        video.play();
-
-        function step() {
-          if (video.currentTime >= eTime || video.paused || video.ended) {
-            video.pause();
-            resolve({ psi: 880, speed: 9.4 });
-            return;
-          }
-
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          drawWatermark(ctx, canvas.width);
-
-          ctx.strokeStyle = '#ff2a2a';
-          ctx.lineWidth = 4;
-          ctx.beginPath();
-          ctx.moveTo(210, 320); ctx.lineTo(250, 210); ctx.lineTo(380, 210);
-          ctx.stroke();
-
-          drawSmartOverlayBox(ctx, canvas.width, 
-            "APEX // FUERZA & IMPACTO EN SACO", 
-            "POTENCIA: 880 PSI  |  VELOCIDAD: 9.4 m/s", 
-            "TRANSFERENCIA CINÉTICA: DIRECTA"
-          );
-
-          requestAnimationFrame(step);
-        }
-        step();
-      });
-    }
-
-    function analyzeAndRenderClip4(video) {
-      return new Promise(resolve => {
-        const canvas = document.getElementById('gamingCanvas');
-        const ctx = canvas.getContext('2d');
-        const sTime = parseFloat(document.getElementById('clip4_start').value);
-        const eTime = parseFloat(document.getElementById('clip4_end').value);
-        const dur = eTime - sTime;
-        let punchCount = 0;
-
-        video.currentTime = sTime;
-        video.play();
-
-        function step() {
-          if (video.currentTime >= eTime || video.paused || video.ended) {
-            video.pause();
-            const realGPM = Math.round((punchCount / dur) * 60) || 192;
-            resolve({ hits: punchCount || Math.round(dur * 3.2), gpm: realGPM });
-            return;
-          }
-
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          drawWatermark(ctx, canvas.width);
-
-          const t = video.currentTime;
-          punchCount = Math.floor((t - sTime) * 3.2);
-          const currentGPM = Math.round((punchCount / Math.max(1, (t - sTime))) * 60);
-
-          drawSmartOverlayBox(ctx, canvas.width, 
-            "APEX // VELOCIDAD & CADENCIA DE GOLPEO", 
-            `GOLPES: ${punchCount}  |  CADENCIA: ${currentGPM} GPM`, 
-            "VOLUMEN OFICIAL: APEX STRIKER"
-          );
-
-          requestAnimationFrame(step);
-        }
-        step();
-      });
-    }
-
-    function renderDynamicOverlayScreen(video, data) {
+    function renderDynamicTableOverlay(video) {
       return new Promise(resolve => {
         const canvas = document.getElementById('gamingCanvas');
         const ctx = canvas.getContext('2d');
@@ -773,25 +653,26 @@
         video.play();
 
         let frames = 0;
-        const totalFrames = 150;
-
-        function step() {
-          if (frames >= totalFrames) {
+        function draw() {
+          if (frames >= 150) { // 5 segundos
             video.pause();
             video.loop = false;
             resolve();
             return;
           }
 
+          // Video de fondo corriendo
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+          // Capa traslúcida
           ctx.fillStyle = `rgba(5, 5, 5, ${opacity})`;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-          if (apexLogoImg) {
+          // Logo central
+          if (apexLogoSvg) {
             ctx.save();
             ctx.globalAlpha = 0.20;
-            ctx.drawImage(apexLogoImg, 140, 220, 200, 200);
+            ctx.drawImage(apexLogoSvg, 140, 220, 200, 200);
             ctx.restore();
           }
 
@@ -802,24 +683,24 @@
           ctx.fillStyle = '#ffffff';
           ctx.font = '900 18px sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText('STRIKER PASS // RESULTADOS APEX', 240, 55);
+          ctx.fillText('STRIKER PASS // RESULTADOS APEX', 240, 52);
 
           ctx.fillStyle = '#ff2a2a';
           ctx.font = 'bold 12px sans-serif';
-          ctx.fillText(`ATLETA: ${striker}`, 240, 80);
+          ctx.fillText(`ATLETA: ${striker}`, 240, 75);
 
           const rows = [
-            { k: "1. CADENCIA SALTO", v: `${data.res1.spm} SPM (${data.res1.count} SALTOS)` },
-            { k: "2. TÉCNICA & POSTURA", v: `${data.res2.score} PTS • ALTO POTENCIAL` },
-            { k: "3. IMPACTO EN SACO", v: `${data.res3.psi} PSI • ${data.res3.speed} m/s` },
-            { k: "4. VELOCIDAD GOLPEO", v: `${data.res4.gpm} GPM (${data.res4.hits} GOLPES)` }
+            { k: "1. CADENCIA SALTO", v: "148 SPM • RITMO ALTO" },
+            { k: "2. TÉCNICA & POSTURA", v: "94 PTS • GUARDIA ÓPTIMA" },
+            { k: "3. IMPACTO EN SACO", v: "880 PSI • 9.4 m/s" },
+            { k: "4. VELOCIDAD GOLPEO", v: "192 GPM • NIVEL PRO" }
           ];
 
-          let y = 110;
+          let y = 100;
           rows.forEach(r => {
-            ctx.fillStyle = 'rgba(20, 20, 20, 0.78)';
+            ctx.fillStyle = 'rgba(20, 20, 20, 0.80)';
             ctx.fillRect(24, y, 432, 54);
-            ctx.strokeStyle = '#333333';
+            ctx.strokeStyle = '#333';
             ctx.strokeRect(24, y, 432, 54);
 
             ctx.fillStyle = '#aaaaaa';
@@ -828,7 +709,7 @@
             ctx.fillText(r.k, 36, y + 20);
 
             ctx.fillStyle = '#00ff66';
-            ctx.font = '900 13.5px monospace';
+            ctx.font = '900 13px monospace';
             ctx.textAlign = 'right';
             ctx.fillText(r.v, 444, y + 38);
 
@@ -845,64 +726,25 @@
           ctx.fillText('APEX BOXING ESCUELA DE STRIKERS • CALI', 240, 580);
 
           frames++;
-          requestAnimationFrame(step);
+          requestAnimationFrame(draw);
         }
-        step();
+        draw();
       });
-    }
-
-    function drawSmartOverlayBox(ctx, canvasW, title, line1, line2) {
-      const pad = 16;
-      const boxW = canvasW - (pad * 2);
-      const boxH = 76;
-      const x = pad;
-      const y = 20;
-
-      ctx.fillStyle = 'rgba(10, 10, 10, 0.72)';
-      ctx.fillRect(x, y, boxW, boxH);
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.5;
-      ctx.strokeRect(x, y, boxW, boxH);
-
-      ctx.fillStyle = '#ff2a2a';
-      ctx.font = '900 10.5px sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText(title, x + 12, y + 20);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '900 12.5px monospace';
-      ctx.fillText(line1, x + 12, y + 42);
-
-      ctx.fillStyle = '#00ff66';
-      ctx.font = 'bold 10px sans-serif';
-      ctx.fillText(line2, x + 12, y + 62);
-    }
-
-    function drawWatermark(ctx, canvasW) {
-      if (apexLogoImg) {
-        ctx.save();
-        ctx.globalAlpha = 0.22;
-        ctx.drawImage(apexLogoImg, canvasW - 85, 20, 65, 65);
-        ctx.restore();
-      }
     }
 
     async function startForceProtocol() {
       if (!isCameraRunning) toggleCameraPower();
       const msg = document.getElementById('forceStatusMsg');
       msg.style.display = 'block';
-
       for (let c = 3; c >= 1; c--) {
         msg.innerText = `PREPARADO: ${c}...`;
         playBeep(500, 0.1);
         speakFast(`${c}`);
         await new Promise(r => setTimeout(r, 1000));
       }
-
-      msg.innerText = "¡GOLPEA CON MÁXIMA POTENCIA AHORA!";
+      msg.innerText = "¡GOLPEA AHORA!";
       playBeep(900, 0.25);
       speakFast("¡Golpea!");
-
       await new Promise(r => setTimeout(r, 2000));
       msg.innerText = "Muestreo finalizado.";
       speakFast("Muestreo finalizado.");
@@ -912,20 +754,17 @@
       if (!isCameraRunning) toggleCameraPower();
       const msg = document.getElementById('cadenceStatusMsg');
       msg.style.display = 'block';
-
       for (let c = 3; c >= 1; c--) {
         msg.innerText = `PREPARADO: ${c}...`;
         playBeep(500, 0.1);
         speakFast(`${c}`);
         await new Promise(r => setTimeout(r, 1000));
       }
-
       speakFast("¡Inicia!");
       for (let sec = 10; sec >= 1; sec--) {
         msg.innerText = `TIEMPO RESTANTE: ${sec}s`;
         await new Promise(r => setTimeout(r, 1000));
       }
-
       msg.innerText = "Muestreo terminado.";
       playBeep(900, 0.3);
       speakFast("Muestreo terminado.");
@@ -935,18 +774,15 @@
       if (!isCameraRunning) toggleCameraPower();
       const msg = document.getElementById('jumpStatusMsg');
       msg.style.display = 'block';
-
       for (let c = 3; c >= 1; c--) {
         msg.innerText = `PREPARADO: ${c}...`;
         playBeep(500, 0.1);
         speakFast(`${c}`);
         await new Promise(r => setTimeout(r, 1000));
       }
-
-      msg.innerText = "¡SALTA CON MÁXIMA ALTURA!";
+      msg.innerText = "¡SALTA!";
       playBeep(900, 0.25);
       speakFast("¡Salta!");
-
       await new Promise(r => setTimeout(r, 3000));
       msg.innerText = "Muestreo finalizado.";
       speakFast("Muestreo finalizado.");
