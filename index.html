@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Apex CombatOS // Video AI Studio Pro</title>
+  <title>Apex CombatOS // Vision AI Studio Pro</title>
   <!-- MediaPipe Pose & Camera Utils -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
@@ -66,7 +66,7 @@
       gap: 6px;
       border-bottom: 2px solid var(--card-border);
       padding-bottom: 8px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       overflow-x: auto;
     }
     .tab-btn {
@@ -94,7 +94,7 @@
       border: 1px solid var(--card-border);
       border-radius: 6px;
       padding: 14px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -181,10 +181,9 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      margin-bottom: 12px;
     }
     video { display: none; }
-    canvas { width: 100%; height: auto; max-height: 440px; object-fit: contain; }
+    canvas { width: 100%; height: auto; max-height: 460px; object-fit: contain; }
     .clip-block {
       background: #000;
       border: 1px solid var(--card-border);
@@ -229,69 +228,70 @@
 
   <!-- TABS -->
   <div class="nav-tabs" id="navTabs" style="display:none;">
-    <button class="tab-btn active" onclick="switchTab('tab-gaming', event)">🥊 Árbitro & Grabación</button>
-    <button class="tab-btn" onclick="switchTab('tab-bio', event)">🔬 Análisis Biomecánico</button>
-    <button class="tab-btn" onclick="switchTab('tab-reto', event)">🎬 Reto Apex (Editor 4 Clips)</button>
-    <button class="tab-btn" onclick="switchTab('tab-history', event)">Historial (FIFO 10)</button>
-    <button class="tab-btn" id="adminTabBtn" style="display:none;" onclick="switchTab('tab-admin', event)">🛡️ Control</button>
+    <button class="tab-btn active" onclick="switchMode('tab-gaming', event)">🥊 Árbitro Virtual</button>
+    <button class="tab-btn" onclick="switchMode('tab-bio', event)">🔬 Análisis Biomecánico</button>
+    <button class="tab-btn" onclick="switchMode('tab-reto', event)">🎬 Reto Apex (4 Clips)</button>
+    <button class="tab-btn" onclick="switchMode('tab-history', event)">Historial</button>
+    <button class="tab-btn" id="adminTabBtn" style="display:none;" onclick="switchMode('tab-admin', event)">🛡️ Control</button>
     <button class="tab-btn btn-outline" style="margin-left:auto;" onclick="handleLogout()">Salir</button>
   </div>
 
-  <!-- VISOR GLOBAL DE CÁMARA & RENDER STUDIO -->
+  <!-- VISOR DE CÁMARA GLOBAL & HUB CENTRAL PERSISTENTE -->
   <div class="apex-card" id="globalVisionCard" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <div class="card-title" id="visorTitle">Visor En Vivo // Telemetría Combate</div>
       <div style="display:flex; gap:6px;">
-        <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" id="btnRecord" onclick="toggleSessionRecording()">⏺️ Grabar Sparring</button>
-        <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" id="btnCamGlobal" onclick="toggleCamera()">📷 Activar Cámara</button>
+        <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" id="btnCamSwitch" onclick="switchCameraFacing()">🔄 Girar</button>
+        <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" id="btnCamPower" onclick="toggleCameraPower()">📷 Encender Cámara</button>
       </div>
     </div>
-    <div class="canvas-container" style="margin-top:6px; margin-bottom:0;">
+    
+    <div class="canvas-container" style="margin-top:6px;">
       <video id="webcamVideo" playsinline autoplay muted></video>
       <canvas id="gamingCanvas" width="480" height="640"></canvas>
     </div>
+
+    <!-- CARGA DE LOGO APEX / MARCA DE AGUA PERSONALIZABLE -->
+    <div style="display:flex; justify-content:space-between; align-items:center; background:#000; border:1px solid var(--card-border); padding:6px 10px; border-radius:4px;">
+      <span style="font-size:10px; color:var(--dim); font-weight:700;">MARCA DE AGUA // LOGO APEX</span>
+      <input type="file" id="logoUploadInput" accept="image/*" style="font-size:10px; color:var(--dim);" onchange="handleLogoUpload(this)">
+    </div>
   </div>
 
-  <!-- TAB 1: GAMING & REPLAY -->
+  <!-- MODALIDAD 1: ÁRBITRO VIRTUAL -->
   <div id="tab-gaming" class="tab-content active">
     <div class="apex-card">
-      <div class="card-title">Configuración de Combate & Grabación</div>
-      
+      <div class="card-title">Configuración de Combate</div>
       <div class="row-2">
         <div>
           <label style="font-size:10px; color:var(--dim); font-weight:700;">ESQUINA NEGRA</label>
           <input type="text" id="f1_name" class="input-field" placeholder="Nombre" value="Víctor Garcés">
-          <input type="text" id="f1_detail" class="input-field" placeholder="Detalle" value="119 kg - Cali" style="margin-top:6px;">
         </div>
         <div>
           <label style="font-size:10px; color:var(--dim); font-weight:700;">ESQUINA BLANCA</label>
           <input type="text" id="f2_name" class="input-field" placeholder="Nombre" value="Carlos Rivas">
-          <input type="text" id="f2_detail" class="input-field" placeholder="Detalle" value="85 kg - Palmira" style="margin-top:6px;">
         </div>
       </div>
-
       <div class="row-3">
         <div>
           <label style="font-size:10px; color:var(--dim); font-weight:700;">ROUNDS</label>
-          <input type="number" id="cfg_rounds" class="input-field" value="3" min="1" max="12">
+          <input type="number" id="cfg_rounds" class="input-field" value="3">
         </div>
         <div>
           <label style="font-size:10px; color:var(--dim); font-weight:700;">MIN/ROUND</label>
-          <input type="number" id="cfg_round_time" class="input-field" value="3" min="1" max="5">
+          <input type="number" id="cfg_round_time" class="input-field" value="3">
         </div>
         <div>
           <label style="font-size:10px; color:var(--dim); font-weight:700;">DESCANSO(S)</label>
-          <input type="number" id="cfg_rest_time" class="input-field" value="60" min="15" max="90">
+          <input type="number" id="cfg_rest_time" class="input-field" value="60">
         </div>
       </div>
-      
       <div class="row-2">
         <button class="btn btn-red" onclick="startSparringSession()">🥊 Iniciar Combate</button>
         <button class="btn btn-outline" onclick="presentFightersSpeech()">🎙️ Presentación Oficial</button>
       </div>
     </div>
 
-    <!-- CONTROLES MANUALES ÁRBITRO -->
     <div class="apex-card">
       <div class="card-title">Intervención de Jueces</div>
       <div class="row-2">
@@ -305,17 +305,37 @@
     </div>
   </div>
 
-  <!-- TAB 2: ANÁLISIS BIOMECÁNICO -->
+  <!-- MODALIDAD 2: ANÁLISIS BIOMECÁNICO (SPARRING / SACO - MÁX 30s) -->
   <div id="tab-bio" class="tab-content">
     <div class="apex-card">
-      <div class="card-title">Métricas de Ángulos y Articulaciones en Tiempo Real</div>
+      <div class="card-title">Grabación & Análisis de Técnica (Máx. 30 Segundos)</div>
+      
+      <div class="row-2">
+        <button class="btn btn-red" id="btnBioRecord" onclick="toggleBioSessionRecord()">⏺️ Grabar Clip Biomecánico (30s)</button>
+        <button class="btn btn-outline" onclick="renderBioAnalysisVideo()">🎬 Renderizar Video + Tabla</button>
+      </div>
+      <div id="bioTimerDisplay" style="font-size:13px; font-weight:900; color:#ff2a2a; text-align:center; display:none;">TIEMPO: 0s / 30s</div>
+
+      <!-- REPRODUCTOR CON SLOW-MOTION -->
+      <div id="bioPlayerBox" style="display:none; flex-direction:column; gap:8px; background:#000; border:1px solid var(--card-border); padding:10px; border-radius:4px;">
+        <span class="metric-lbl">REVISIÓN DE TÉCNICA // VIDEO CAPTURADO</span>
+        <video id="bioPlaybackVideo" playsinline controls style="width:100%; border-radius:4px; max-height:320px;"></video>
+        <div class="row-2">
+          <button class="btn btn-outline" onclick="setPlaybackSpeed(1.0)">1.0x (Normal)</button>
+          <button class="btn btn-outline" style="border-color:#00ff66; color:#00ff66;" onclick="setPlaybackSpeed(0.5)">⚡ 0.5x (Cámara Lenta)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="apex-card">
+      <div class="card-title">Telemetría Biomecánica en Vivo</div>
       <div class="row-4">
         <div class="metric-box">
-          <span class="metric-lbl">Extensión Codo Der</span>
+          <span class="metric-lbl">Codo Derecho</span>
           <span class="metric-val" id="bio_codo_r">--°</span>
         </div>
         <div class="metric-box">
-          <span class="metric-lbl">Extensión Codo Izq</span>
+          <span class="metric-lbl">Codo Izquierdo</span>
           <span class="metric-val" id="bio_codo_l">--°</span>
         </div>
         <div class="metric-box">
@@ -328,83 +348,95 @@
         </div>
       </div>
 
-      <div class="row-2" style="margin-top:8px;">
+      <div class="row-2" style="margin-top:4px;">
         <div class="metric-box">
-          <span class="metric-lbl">Evaluación de Codo en Extensión</span>
-          <span class="metric-val" id="bio_seguridad" style="color:#00ff66; font-size:13px;">ÓPTIMO (SIN HIPEREXTENSIÓN)</span>
+          <span class="metric-lbl">Diagnóstico Articular</span>
+          <span class="metric-val" id="bio_seguridad" style="color:#00ff66; font-size:12px;">ESTABLE // SEGURO</span>
         </div>
         <div class="metric-box">
-          <span class="metric-lbl">Postura y Base de Apoyo</span>
-          <span class="metric-val" id="bio_centro" style="font-size:13px;">SÓLIDA // ESTABLE</span>
+          <span class="metric-lbl">Movimiento Detectado</span>
+          <span class="metric-val" id="bio_movement_tag" style="font-size:12px;">EN GUARDIA</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- TAB 3: RETO APEX // EDITOR 4 CLIPS + MÚSICA + OVERLAY TRASLÚCIDO -->
+  <!-- MODALIDAD 3: RETO APEX (GRABAR O SUBIR 4 CLIPS + MÚSICA) -->
   <div id="tab-reto" class="tab-content">
     <div class="apex-card">
-      <div class="card-title">Reto Apex // Estudio de Unión de 4 Clips (9:16)</div>
+      <div class="card-title">Reto Apex // Estudio 9:16 (4 Pruebas)</div>
       
       <div>
-        <label style="font-size:10px; color:var(--dim); font-weight:700;">NOMBRE DEL STRIKER / ATLETA</label>
-        <input type="text" id="reto_striker_name" class="input-field" placeholder="ej. Víctor Garcés" value="Víctor Garcés">
+        <label style="font-size:10px; color:var(--dim); font-weight:700;">NOMBRE DEL STRIKER</label>
+        <input type="text" id="reto_striker_name" class="input-field" value="Víctor Garcés">
       </div>
 
-      <!-- CLIP 1: SALTO -->
+      <!-- CLIP 1 -->
       <div class="clip-block">
-        <span class="metric-lbl">1. Clip: Cadencia de Salto (Cuerda)</span>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="metric-lbl">1. Cadencia de Salto</span>
+          <button class="btn btn-outline" style="padding:2px 6px; font-size:9px;" onclick="recordDirectClip(1)">⏺️ Grabar en Vivo</button>
+        </div>
         <input type="file" id="clip1_file" accept="video/*" class="input-field" onchange="loadVideoClip(1, this)">
         <div class="row-2">
-          <input type="number" id="clip1_start" class="input-field" placeholder="Inicio (seg)" value="0" min="0">
-          <input type="number" id="clip1_end" class="input-field" placeholder="Fin (seg)" value="5" min="1">
+          <input type="number" id="clip1_start" class="input-field" placeholder="Inicio (seg)" value="0">
+          <input type="number" id="clip1_end" class="input-field" placeholder="Fin (seg)" value="5">
         </div>
         <video id="vclip1" preload="auto" playsinline muted style="display:none;"></video>
       </div>
 
-      <!-- CLIP 2: TÉCNICA / POSTURA -->
+      <!-- CLIP 2 -->
       <div class="clip-block">
-        <span class="metric-lbl">2. Clip: Técnica & Postura (Sombra/Guardia)</span>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="metric-lbl">2. Técnica & Postura</span>
+          <button class="btn btn-outline" style="padding:2px 6px; font-size:9px;" onclick="recordDirectClip(2)">⏺️ Grabar en Vivo</button>
+        </div>
         <input type="file" id="clip2_file" accept="video/*" class="input-field" onchange="loadVideoClip(2, this)">
         <div class="row-2">
-          <input type="number" id="clip2_start" class="input-field" placeholder="Inicio (seg)" value="0" min="0">
-          <input type="number" id="clip2_end" class="input-field" placeholder="Fin (seg)" value="5" min="1">
+          <input type="number" id="clip2_start" class="input-field" placeholder="Inicio (seg)" value="0">
+          <input type="number" id="clip2_end" class="input-field" placeholder="Fin (seg)" value="5">
         </div>
         <video id="vclip2" preload="auto" playsinline muted style="display:none;"></video>
       </div>
 
-      <!-- CLIP 3: POTENCIA SACO -->
+      <!-- CLIP 3 -->
       <div class="clip-block">
-        <span class="metric-lbl">3. Clip: Fuerza, Impacto & Explosividad (Saco)</span>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="metric-lbl">3. Potencia & Explosividad Saco</span>
+          <button class="btn btn-outline" style="padding:2px 6px; font-size:9px;" onclick="recordDirectClip(3)">⏺️ Grabar en Vivo</button>
+        </div>
         <input type="file" id="clip3_file" accept="video/*" class="input-field" onchange="loadVideoClip(3, this)">
         <div class="row-2">
-          <input type="number" id="clip3_start" class="input-field" placeholder="Inicio (seg)" value="0" min="0">
-          <input type="number" id="clip3_end" class="input-field" placeholder="Fin (seg)" value="5" min="1">
+          <input type="number" id="clip3_start" class="input-field" placeholder="Inicio (seg)" value="0">
+          <input type="number" id="clip3_end" class="input-field" placeholder="Fin (seg)" value="5">
         </div>
         <video id="vclip3" preload="auto" playsinline muted style="display:none;"></video>
       </div>
 
-      <!-- CLIP 4: CADENCIA DE GOLPEO -->
+      <!-- CLIP 4 -->
       <div class="clip-block">
-        <span class="metric-lbl">4. Clip: Velocidad & Cadencia de Golpeo</span>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="metric-lbl">4. Cadencia de Golpeo</span>
+          <button class="btn btn-outline" style="padding:2px 6px; font-size:9px;" onclick="recordDirectClip(4)">⏺️ Grabar en Vivo</button>
+        </div>
         <input type="file" id="clip4_file" accept="video/*" class="input-field" onchange="loadVideoClip(4, this)">
         <div class="row-2">
-          <input type="number" id="clip4_start" class="input-field" placeholder="Inicio (seg)" value="0" min="0">
-          <input type="number" id="clip4_end" class="input-field" placeholder="Fin (seg)" value="5" min="1">
+          <input type="number" id="clip4_start" class="input-field" placeholder="Inicio (seg)" value="0">
+          <input type="number" id="clip4_end" class="input-field" placeholder="Fin (seg)" value="5">
         </div>
         <video id="vclip4" preload="auto" playsinline muted style="display:none;"></video>
       </div>
 
-      <!-- MÚSICA LOCAL -->
+      <!-- PISTA DE AUDIO LOCAL -->
       <div class="clip-block">
-        <span class="metric-lbl">🎵 Pista de Audio / Música de Fondo (Desde tu Galería)</span>
+        <span class="metric-lbl">🎵 Música de Fondo (Galería)</span>
         <input type="file" id="audio_music_file" accept="audio/*" class="input-field" onchange="loadAudioTrack(this)">
         <audio id="bgMusicTrack" preload="auto" style="display:none;"></audio>
       </div>
 
       <div class="row-2">
         <div>
-          <label style="font-size:10px; color:var(--dim); font-weight:700;">OPACIDAD TABLA TRASLÚCIDA</label>
+          <label style="font-size:10px; color:var(--dim); font-weight:700;">OPACIDAD TABLA (TRASLÚCIDA)</label>
           <input type="range" id="overlay_opacity" min="0.2" max="0.9" step="0.05" value="0.55" class="input-field">
         </div>
         <div>
@@ -413,21 +445,21 @@
         </div>
       </div>
 
-      <button class="btn btn-red" onclick="startRenderRetoSequence()">🎬 Renderizar Video Compuesto (4 Clips + Audio + Tabla Traslúcida)</button>
-      <div id="renderProgress" style="font-size:11px; color:#00ff66; text-align:center; display:none;">Procesando y componiendo video...</div>
+      <button class="btn btn-red" onclick="startRenderRetoSequence()">🎬 Renderizar Video Compuesto (4 Clips + Audio + Tabla)</button>
+      <div id="renderProgress" style="font-size:11px; color:#00ff66; text-align:center; display:none;">Procesando...</div>
     </div>
   </div>
 
-  <!-- TAB 4: HISTORIAL -->
+  <!-- TAB HISTORIAL -->
   <div id="tab-history" class="tab-content">
     <div class="apex-card">
-      <div class="card-title">Historial de Sparrings (FIFO 10)</div>
+      <div class="card-title">Historial (FIFO 10)</div>
       <div id="historyContainer"></div>
       <button class="btn btn-outline" onclick="clearHistory()">🗑️ Borrar Historial</button>
     </div>
   </div>
 
-  <!-- TAB 5: ADMIN -->
+  <!-- TAB ADMIN -->
   <div id="tab-admin" class="tab-content">
     <div class="apex-card">
       <div class="card-title">Panel Maestro // Gestión de Perfiles</div>
@@ -445,7 +477,7 @@
 
   <script>
     // ==========================================
-    // AUDIO SFX & VOZ MASCULINA
+    // AUDIO SFX & VOZ MASCULINA PROFUNDA
     // ==========================================
     let audioCtx = null;
     function initAudio() {
@@ -518,15 +550,35 @@
     function getRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
     // ==========================================
-    // MOTOR DE VISIÓN & TRACKING
+    // MARCA DE AGUA / LOGO APEX
+    // ==========================================
+    let apexWatermarkLogo = null;
+    function handleLogoUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      img.onload = () => {
+        apexWatermarkLogo = img;
+        speakFast("Logo Apex cargado como marca de agua.");
+      };
+    }
+
+    // ==========================================
+    // MOTOR DE VISIÓN, CÁMARA & POSE AI
     // ==========================================
     let cameraInstance = null;
+    let isCameraRunning = false;
     let latestLandmarks = null;
     let useFacingMode = "environment";
     let lastAutoTrigger = 0;
     let lastNoseX = null;
     let frameCounter = 0;
     let currentTabMode = 'tab-gaming';
+
+    let currentPoseTag = "EN GUARDIA";
+    let isRightArmSafe = true;
+    let isLeftArmSafe = true;
 
     const POSE_CONNECTIONS = [
       [11, 12], [11, 13], [13, 15], [12, 14], [14, 16],
@@ -562,59 +614,76 @@
     });
     pose.onResults(onPoseResults);
 
-    function toggleCamera() {
+    function toggleCameraPower() {
       initAudio();
       const videoElement = document.getElementById('webcamVideo');
-      
-      if (cameraInstance) {
-        useFacingMode = useFacingMode === "environment" ? "user" : "environment";
-        document.getElementById('btnCamGlobal').innerText = useFacingMode === "environment" ? "📷 Cámara Trasera" : "📷 Cámara Frontal";
-      }
+      const btn = document.getElementById('btnCamPower');
 
-      navigator.mediaDevices.getUserMedia({
-        video: { facingMode: useFacingMode, width: { ideal: 480 }, height: { ideal: 640 } }
-      }).then((stream) => {
-        videoElement.srcObject = stream;
-        videoElement.play();
-        
-        if (!cameraInstance) {
-          cameraInstance = new Camera(videoElement, {
-            onFrame: async () => {
-              frameCounter++;
-              if (frameCounter % 2 === 0) {
-                await pose.send({ image: videoElement });
-              }
-            },
-            width: 480,
-            height: 640
-          });
-          cameraInstance.start();
-          requestAnimationFrame(renderLoop);
+      if (!isCameraRunning) {
+        navigator.mediaDevices.getUserMedia({
+          video: { facingMode: useFacingMode, width: { ideal: 480 }, height: { ideal: 640 } }
+        }).then((stream) => {
+          videoElement.srcObject = stream;
+          videoElement.play();
+          
+          if (!cameraInstance) {
+            cameraInstance = new Camera(videoElement, {
+              onFrame: async () => {
+                frameCounter++;
+                if (frameCounter % 2 === 0) {
+                  await pose.send({ image: videoElement });
+                }
+              },
+              width: 480,
+              height: 640
+            });
+            cameraInstance.start();
+            requestAnimationFrame(renderLoop);
+          }
+          isCameraRunning = true;
+          btn.innerText = "🛑 Apagar Cámara";
+          btn.style.color = "#ff2a2a";
+          speakFast("Cámara encendida.");
+        }).catch(err => alert("Error de cámara: " + err));
+      } else {
+        if (videoElement.srcObject) {
+          videoElement.srcObject.getTracks().forEach(t => t.stop());
         }
-        document.getElementById('btnCamGlobal').innerText = "📷 Cámara Activa";
-        speakFast("Cámara lista.");
-      }).catch(err => alert("Error de cámara: " + err));
+        isCameraRunning = false;
+        latestLandmarks = null;
+        btn.innerText = "📷 Encender Cámara";
+        btn.style.color = "#fff";
+      }
+    }
+
+    function switchCameraFacing() {
+      useFacingMode = useFacingMode === "environment" ? "user" : "environment";
+      if (isCameraRunning) {
+        toggleCameraPower();
+        setTimeout(toggleCameraPower, 300);
+      }
     }
 
     function updateBiometricsUI(lm) {
       const sR = lm[12], eR = lm[14], wR = lm[16];
       const sL = lm[11], eL = lm[13], wL = lm[15];
       const hipR = lm[24], kneeR = lm[26], ankR = lm[28];
+      const nose = lm[0];
 
       if (sR && eR && wR) {
         angR_live = calculateAngle(sR, eR, wR);
         const el = document.getElementById('bio_codo_r');
         if (el) el.innerText = `${angR_live}°`;
 
-        const elSec = document.getElementById('bio_seguridad');
-        if (elSec) {
-          if (angR_live > 175) {
-            elSec.innerText = "ALERTA: RIESGO DE HIPEREXTENSIÓN";
-            elSec.style.color = "#ff2a2a";
-          } else {
-            elSec.innerText = "ÓPTIMO (SIN HIPEREXTENSIÓN)";
-            elSec.style.color = "#00ff66";
-          }
+        // Evaluación de Hiperextensión / Seguridad
+        if (angR_live > 175) {
+          isRightArmSafe = false;
+          currentPoseTag = "ALERTA: HIPEREXTENSIÓN DE CODO";
+        } else if (angR_live > 150 && wR.y < sR.y + 0.1) {
+          isRightArmSafe = true;
+          currentPoseTag = "CROSS / RECTO DE DERECHA";
+        } else {
+          isRightArmSafe = true;
         }
       }
 
@@ -622,6 +691,15 @@
         angL_live = calculateAngle(sL, eL, wL);
         const el = document.getElementById('bio_codo_l');
         if (el) el.innerText = `${angL_live}°`;
+
+        if (angL_live > 175) {
+          isLeftArmSafe = false;
+        } else if (angL_live > 150 && wL.y < sL.y + 0.1) {
+          isLeftArmSafe = true;
+          currentPoseTag = "JAB DE IZQUIERDA";
+        } else {
+          isLeftArmSafe = true;
+        }
       }
 
       if (sR && sL) {
@@ -635,6 +713,19 @@
         const el = document.getElementById('bio_rodilla');
         if (el) el.innerText = `${angKnee}°`;
       }
+
+      const elSec = document.getElementById('bio_seguridad');
+      const elTag = document.getElementById('bio_movement_tag');
+      if (elSec) {
+        if (!isRightArmSafe || !isLeftArmSafe) {
+          elSec.innerText = "RIESGO DE HIPEREXTENSIÓN";
+          elSec.style.color = "#ff2a2a";
+        } else {
+          elSec.innerText = "ÓPTIMO // TÉCNICA LIMPIA";
+          elSec.style.color = "#00ff66";
+        }
+      }
+      if (elTag) elTag.innerText = currentPoseTag;
     }
 
     function analyzeCombat(lm) {
@@ -679,47 +770,238 @@
     }
 
     // ==========================================
-    // GRABACIÓN DE SPARRING EN VIVO
+    // DIBUJADO DEL HUD NOIR & VECTORES DINÁMICOS
     // ==========================================
-    let mediaRecorder = null;
-    let recordedChunks = [];
-    let isRecordingSession = false;
-
-    function toggleSessionRecording() {
+    function drawHUD() {
       const canvas = document.getElementById('gamingCanvas');
-      const btn = document.getElementById('btnRecord');
+      const ctx = canvas.getContext('2d');
+      const video = document.getElementById('webcamVideo');
+      const f1 = document.getElementById('f1_name').value.toUpperCase();
+      const f2 = document.getElementById('f2_name').value.toUpperCase();
 
-      if (!isRecordingSession) {
-        recordedChunks = [];
-        const stream = canvas.captureStream(30);
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
-        mediaRecorder.onstop = saveRecordedSession;
-        mediaRecorder.start();
-        isRecordingSession = true;
-        btn.innerText = "⏹️ Detener Grabación";
-        btn.style.color = "#ff2a2a";
-        speakFast("Grabando sparring con análisis en vivo.");
+      if (video && video.readyState >= 2 && isCameraRunning) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
       } else {
-        mediaRecorder.stop();
-        isRecordingSession = false;
-        btn.innerText = "⏺️ Grabar Sparring";
-        btn.style.color = "#fff";
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // 1. DIBUJAR MARCA DE AGUA / LOGO APEX
+      if (apexWatermarkLogo) {
+        ctx.save();
+        ctx.globalAlpha = 0.22; // Marca de agua sutil
+        ctx.drawImage(apexWatermarkLogo, canvas.width - 110, 20, 90, 90);
+        ctx.restore();
+      }
+
+      // 2. ESQUELETO CON CAMBIO DE COLOR EN VIVO (Verde = Correcto / Rojo = Riesgo)
+      if (latestLandmarks) {
+        POSE_CONNECTIONS.forEach(([i, j]) => {
+          const p1 = latestLandmarks[i];
+          const p2 = latestLandmarks[j];
+          if (p1 && p2 && p1.visibility > 0.5 && p2.visibility > 0.5) {
+            ctx.beginPath();
+            ctx.moveTo(p1.x * canvas.width, p1.y * canvas.height);
+            ctx.lineTo(p2.x * canvas.width, p2.y * canvas.height);
+
+            // Vector de brazo derecho
+            if ((i === 12 && j === 14) || (i === 14 && j === 16)) {
+              ctx.strokeStyle = isRightArmSafe ? '#00ff66' : '#ff2a2a';
+              ctx.lineWidth = 4;
+            } else if ((i === 11 && j === 13) || (i === 13 && j === 15)) {
+              ctx.strokeStyle = isLeftArmSafe ? '#00ff66' : '#ff2a2a';
+              ctx.lineWidth = 4;
+            } else {
+              ctx.strokeStyle = '#ffffff';
+              ctx.lineWidth = 3;
+            }
+            ctx.stroke();
+          }
+        });
+
+        latestLandmarks.forEach((pt, idx) => {
+          if (pt.visibility > 0.5) {
+            ctx.fillStyle = (idx === 15 || idx === 16) ? '#ff2a2a' : '#ffffff';
+            ctx.beginPath();
+            ctx.arc(pt.x * canvas.width, pt.y * canvas.height, (idx === 15 || idx === 16) ? 6 : 3, 0, 2 * Math.PI);
+            ctx.fill();
+          }
+        });
+
+        // Etiqueta de Ángulo en Codo
+        if (currentTabMode === 'tab-bio') {
+          const eR = latestLandmarks[14];
+          if (eR && eR.visibility > 0.5) {
+            ctx.fillStyle = isRightArmSafe ? '#00ff66' : '#ff2a2a';
+            ctx.font = 'bold 14px monospace';
+            ctx.fillText(`${angR_live}°`, eR.x * canvas.width + 10, eR.y * canvas.height);
+          }
+        }
+      }
+
+      ctx.strokeStyle = '#222';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+      // CUADRO SUPERIOR IDENTIFICADOR DE MOVIMIENTOS
+      ctx.fillStyle = 'rgba(10, 10, 10, 0.75)';
+      ctx.fillRect(20, 16, canvas.width - 40, 26);
+      ctx.strokeStyle = '#333';
+      ctx.strokeRect(20, 16, canvas.width - 40, 26);
+      ctx.fillStyle = (currentPoseTag.includes('ALERTA')) ? '#ff2a2a' : '#00ff66';
+      ctx.font = '900 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`ANÁLISIS: ${currentPoseTag}`, 240, 33);
+
+      if (currentTabMode === 'tab-gaming') {
+        const m = Math.floor(currentSec / 60);
+        const s = currentSec % 60;
+        ctx.fillStyle = '#fff';
+        ctx.font = '900 28px monospace';
+        ctx.fillText(`${m}:${s < 10 ? '0' : ''}${s}`, 240, 75);
+
+        ctx.fillStyle = isResting ? '#ff2a2a' : '#888';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillText(isResting ? 'DESCANSO // ESQUINA' : `ROUND ${currentRound} DE ${totalRounds}`, 240, 95);
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#fff';
+        ctx.font = '900 12px sans-serif';
+        ctx.fillText(`■ ${f1}`, 20, 120);
+        ctx.strokeRect(20, 130, 190, 16);
+        ctx.fillRect(20, 130, 190 * (hp1 / 100), 16);
+
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#888';
+        ctx.fillText(`□ ${f2}`, 460, 120);
+        ctx.strokeRect(270, 130, 190, 16);
+        ctx.fillRect(270 + (190 * (1 - hp2 / 100)), 130, 190 * (hp2 / 100), 16);
+
+        ctx.font = '12px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#aaa';
+        ctx.fillText(`IMPACTOS: ${totalHits}  |  ESQUIVAS: ${totalDodges}`, 240, 168);
+
+        if (isKnockedDown) {
+          ctx.fillStyle = '#ff2a2a';
+          ctx.font = '900 48px monospace';
+          ctx.fillText(`CUENTA: ${kdSec}`, 240, 340);
+        }
       }
     }
 
-    function saveRecordedSession() {
-      const blob = new Blob(recordedChunks, { type: 'video/webm' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Apex_Sparring_${Date.now()}.webm`;
-      a.click();
-      speakFast("Video de sparring exportado con éxito.");
+    // ==========================================
+    // MODALIDAD 2: GRABACIÓN BIOMECÁNICA (MÁX 30s) + AUTO TABLA
+    // ==========================================
+    let bioMediaRecorder = null;
+    let bioChunks = [];
+    let isBioRecording = false;
+    let bioTimer = null;
+    let bioSecCount = 0;
+    let recordedBioBlobUrl = null;
+
+    function toggleBioSessionRecord() {
+      const canvas = document.getElementById('gamingCanvas');
+      const btn = document.getElementById('btnBioRecord');
+      const timerDisplay = document.getElementById('bioTimerDisplay');
+
+      if (!isBioRecording) {
+        if (!isCameraRunning) toggleCameraPower();
+        bioChunks = [];
+        bioSecCount = 0;
+        const stream = canvas.captureStream(30);
+        bioMediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+        bioMediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) bioChunks.push(e.data); };
+        bioMediaRecorder.onstop = handleBioRecordFinished;
+        bioMediaRecorder.start();
+
+        isBioRecording = true;
+        btn.innerText = "⏹️ Detener Análisis";
+        timerDisplay.style.display = 'block';
+        timerDisplay.innerText = "TIEMPO: 0s / 30s";
+        speakFast("Iniciando grabación biomecánica de 30 segundos.");
+
+        bioTimer = setInterval(() => {
+          bioSecCount++;
+          timerDisplay.innerText = `TIEMPO: ${bioSecCount}s / 30s`;
+          if (bioSecCount >= 30) {
+            toggleBioSessionRecord();
+          }
+        }, 1000);
+      } else {
+        clearInterval(bioTimer);
+        bioMediaRecorder.stop();
+        isBioRecording = false;
+        btn.innerText = "⏺️ Grabar Clip Biomecánico (30s)";
+        timerDisplay.style.display = 'none';
+      }
+    }
+
+    function handleBioRecordFinished() {
+      const blob = new Blob(bioChunks, { type: 'video/webm' });
+      recordedBioBlobUrl = URL.createObjectURL(blob);
+      const playerBox = document.getElementById('bioPlayerBox');
+      const vid = document.getElementById('bioPlaybackVideo');
+      vid.src = recordedBioBlobUrl;
+      playerBox.style.display = 'flex';
+      speakFast("Grabación finalizada. Lista para revisión en cámara lenta o renderizado final.");
+    }
+
+    function setPlaybackSpeed(speed) {
+      const vid = document.getElementById('bioPlaybackVideo');
+      vid.playbackRate = speed;
+      speakFast(speed < 1 ? "Reproduciendo a cero punto cinco, cámara lenta." : "Velocidad normal.");
+    }
+
+    // RENDERIZADOR BIOMECÁNICO FINAL (VIDEO + 5 SEGUNDOS DE TABLA TRASLÚCIDA)
+    async function renderBioAnalysisVideo() {
+      if (!recordedBioBlobUrl) return alert("Primero debes grabar un clip biomecánico.");
+      
+      const vid = document.getElementById('bioPlaybackVideo');
+      const canvas = document.getElementById('gamingCanvas');
+      const ctx = canvas.getContext('2d');
+      const stream = canvas.captureStream(30);
+
+      const exportRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      const exportChunks = [];
+      exportRecorder.ondataavailable = (e) => { if (e.data.size > 0) exportChunks.push(e.data); };
+      exportRecorder.start();
+
+      speakFast("Renderizando video biomecánico con tabla de resultados en los últimos cinco segundos.");
+      vid.currentTime = 0;
+      vid.playbackRate = 1.0;
+      await vid.play();
+
+      await new Promise(resolve => {
+        function checkEnd() {
+          if (vid.ended || vid.paused) {
+            resolve();
+          } else {
+            ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+            requestAnimationFrame(checkEnd);
+          }
+        }
+        checkEnd();
+      });
+
+      // 5 SEGUNDOS DE TABLA TRASLÚCIDA AL FINAL
+      await renderFinalOverlayScreen(vid, 150); // 150 frames = 5s
+
+      exportRecorder.stop();
+      exportRecorder.onstop = () => {
+        const blob = new Blob(exportChunks, { type: 'video/webm' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Apex_BioAnalysis_${Date.now()}.webm`;
+        a.click();
+        speakFast("Video biomecánico descargado exitosamente.");
+      };
     }
 
     // ==========================================
-    // RETO APEX // EDITOR 4 CLIPS + MÚSICA + OVERLAY
+    // MODALIDAD 3: RETO APEX (4 CLIPS + MÚSICA + TABLA)
     // ==========================================
     let isRetoRendering = false;
 
@@ -731,6 +1013,29 @@
       vid.onloadedmetadata = () => {
         document.getElementById(`clip${index}_end`).value = Math.min(6, Math.floor(vid.duration));
       };
+    }
+
+    function recordDirectClip(index) {
+      if (!isCameraRunning) toggleCameraPower();
+      speakFast(`Grabando clip ${index} en vivo.`);
+      const canvas = document.getElementById('gamingCanvas');
+      const stream = canvas.captureStream(30);
+      const rec = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      const ch = [];
+      rec.ondataavailable = e => { if (e.data.size > 0) ch.push(e.data); };
+      rec.start();
+
+      setTimeout(() => {
+        rec.stop();
+        rec.onstop = () => {
+          const blob = new Blob(ch, { type: 'video/webm' });
+          const vid = document.getElementById(`vclip${index}`);
+          vid.src = URL.createObjectURL(blob);
+          document.getElementById(`clip${index}_start`).value = 0;
+          document.getElementById(`clip${index}_end`).value = 5;
+          speakFast(`Clip ${index} capturado.`);
+        };
+      }, 5000);
     }
 
     function loadAudioTrack(input) {
@@ -748,26 +1053,18 @@
       const audio = document.getElementById('bgMusicTrack');
 
       if (!v1.src || !v2.src || !v3.src || !v4.src) {
-        return alert("Debes cargar los 4 videos del Reto Apex.");
+        return alert("Debes cargar o grabar los 4 clips del Reto Apex.");
       }
-
-      switchTab('tab-gaming', { target: document.querySelectorAll('.tab-btn')[2] });
-      const visorCard = document.getElementById('globalVisionCard');
-      visorCard.style.display = 'block';
 
       const progress = document.getElementById('renderProgress');
       progress.style.display = 'block';
-      progress.innerText = "Iniciando composición de los 4 clips...";
-
       isRetoRendering = true;
-      const canvas = document.getElementById('gamingCanvas');
-      const ctx = canvas.getContext('2d');
-      const stream = canvas.captureStream(30);
 
-      // Iniciar Grabador de Composición
+      const canvas = document.getElementById('gamingCanvas');
+      const stream = canvas.captureStream(30);
       const compRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
       const compChunks = [];
-      compRecorder.ondataavailable = (e) => { if (e.data.size > 0) compChunks.push(e.data); };
+      compRecorder.ondataavailable = e => { if (e.data.size > 0) compChunks.push(e.data); };
       compRecorder.start();
 
       if (audio.src) {
@@ -788,9 +1085,9 @@
         await playAndDrawClip(c.vid, c.s, c.e, c.title, c.met);
       }
 
-      // 4 Segundos Finales de Tabla Completa Traslúcida con Video de fondo
+      // 5 Segundos Finales de Tabla Completa Traslúcida
       progress.innerText = "Generando Striker Pass Certificado...";
-      await renderFinalOverlayScreen(clips[3].vid);
+      await renderFinalOverlayScreen(clips[3].vid, 150);
 
       if (audio.src) audio.pause();
       compRecorder.stop();
@@ -799,11 +1096,11 @@
         const blob = new Blob(compChunks, { type: 'video/webm' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `Reto_Apex_${document.getElementById('reto_striker_name').value.replace(/\\s+/g, '_')}.webm`;
+        a.download = `Reto_Apex_${document.getElementById('reto_striker_name').value.replace(/\s+/g, '_')}.webm`;
         a.click();
-        progress.innerText = "¡Video final renderizado y descargado!";
+        progress.innerText = "¡Video final descargado!";
         isRetoRendering = false;
-        speakFast("Reto Apex renderizado exitosamente con tabla traslúcida.");
+        speakFast("Reto Apex renderizado exitosamente.");
       };
     }
 
@@ -822,28 +1119,30 @@
             return;
           }
 
-          // 1. Dibujar Video Base 9:16
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-          // 2. Capa de oscurecimiento sutil
-          ctx.fillStyle = `rgba(0, 0, 0, 0.25)`;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          // Marca de agua sutil
+          if (apexWatermarkLogo) {
+            ctx.save();
+            ctx.globalAlpha = 0.25;
+            ctx.drawImage(apexWatermarkLogo, canvas.width - 90, 20, 70, 70);
+            ctx.restore();
+          }
 
-          // 3. Tarjeta Traslúcida Flotante
+          // Tarjeta Flotante Traslúcida
           ctx.fillStyle = `rgba(10, 10, 10, ${opacity})`;
-          ctx.fillRect(20, 20, canvas.width - 40, 90);
+          ctx.fillRect(20, 20, canvas.width - 40, 80);
           ctx.strokeStyle = '#ffffff';
           ctx.lineWidth = 2;
-          ctx.strokeRect(20, 20, canvas.width - 40, 90);
+          ctx.strokeRect(20, 20, canvas.width - 40, 80);
 
-          // Textos
           ctx.fillStyle = '#ff2a2a';
-          ctx.font = '900 12px sans-serif';
-          ctx.fillText(`RETO APEX // ${title}`, 35, 48);
+          ctx.font = '900 11px sans-serif';
+          ctx.fillText(`RETO APEX // ${title}`, 35, 45);
 
           ctx.fillStyle = '#ffffff';
-          ctx.font = '900 15px monospace';
-          ctx.fillText(metricText, 35, 78);
+          ctx.font = '900 14px monospace';
+          ctx.fillText(metricText, 35, 72);
 
           requestAnimationFrame(drawFrame);
         }
@@ -851,7 +1150,7 @@
       });
     }
 
-    function renderFinalOverlayScreen(lastVideo) {
+    function renderFinalOverlayScreen(lastVideo, totalFrames = 150) {
       return new Promise((resolve) => {
         const canvas = document.getElementById('gamingCanvas');
         const ctx = canvas.getContext('2d');
@@ -859,7 +1158,6 @@
         const level = document.getElementById('reto_cert_level').value.toUpperCase();
         const opacity = parseFloat(document.getElementById('overlay_opacity').value);
         let frames = 0;
-        const totalFrames = 120; // 4 segundos a 30fps
 
         function drawScreen() {
           if (frames >= totalFrames) {
@@ -867,19 +1165,25 @@
             return;
           }
 
-          // Fondo: Video de fondo traslúcido
           ctx.drawImage(lastVideo, 0, 0, canvas.width, canvas.height);
 
           // Filtro Traslúcido Noir Completo
           ctx.fillStyle = `rgba(5, 5, 5, ${opacity})`;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-          // Marco Blanco Sólido Noir
+          // Marca de Agua de fondo
+          if (apexWatermarkLogo) {
+            ctx.save();
+            ctx.globalAlpha = 0.18;
+            ctx.drawImage(apexWatermarkLogo, 140, 220, 200, 200);
+            ctx.restore();
+          }
+
+          // Marco Blanco Sólido
           ctx.strokeStyle = '#ffffff';
           ctx.lineWidth = 3;
           ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
 
-          // Encabezado
           ctx.fillStyle = '#ffffff';
           ctx.font = '900 20px sans-serif';
           ctx.textAlign = 'center';
@@ -889,7 +1193,6 @@
           ctx.font = 'bold 13px sans-serif';
           ctx.fillText(`ATLETA: ${striker}`, 240, 95);
 
-          // Tabla de 4 Resultados
           const rows = [
             { k: "1. CADENCIA SALTO", v: "148 SPM" },
             { k: "2. TÉCNICA & POSTURA", v: "94 / 100 PTS" },
@@ -917,7 +1220,6 @@
             y += 62;
           });
 
-          // Nivel y Marca
           ctx.fillStyle = '#ffffff';
           ctx.font = '900 15px sans-serif';
           ctx.textAlign = 'center';
@@ -935,7 +1237,7 @@
     }
 
     // ==========================================
-    // LOGICA DE COMBATE & DECISIÓN
+    // LOGICA DE COMBATE
     // ==========================================
     let isSparringActive = false;
     let totalRounds = 3, roundDuration = 180, restDuration = 60;
@@ -955,6 +1257,7 @@
 
     function startSparringSession() {
       initAudio();
+      if (!isCameraRunning) toggleCameraPower();
       isSparringActive = true;
       totalRounds = parseInt(document.getElementById('cfg_rounds').value);
       roundDuration = parseInt(document.getElementById('cfg_round_time').value) * 60;
@@ -1031,107 +1334,6 @@
           endMatch(true);
         }
       }, 1000);
-    }
-
-    function drawHUD() {
-      const canvas = document.getElementById('gamingCanvas');
-      const ctx = canvas.getContext('2d');
-      const video = document.getElementById('webcamVideo');
-      const f1 = document.getElementById('f1_name').value.toUpperCase();
-      const f2 = document.getElementById('f2_name').value.toUpperCase();
-
-      if (video && video.readyState >= 2) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      } else {
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
-
-      if (latestLandmarks) {
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 3;
-        POSE_CONNECTIONS.forEach(([i, j]) => {
-          const p1 = latestLandmarks[i];
-          const p2 = latestLandmarks[j];
-          if (p1 && p2 && p1.visibility > 0.5 && p2.visibility > 0.5) {
-            ctx.beginPath();
-            ctx.moveTo(p1.x * canvas.width, p1.y * canvas.height);
-            ctx.lineTo(p2.x * canvas.width, p2.y * canvas.height);
-            ctx.stroke();
-          }
-        });
-
-        latestLandmarks.forEach((pt, idx) => {
-          if (pt.visibility > 0.5) {
-            ctx.fillStyle = (idx === 15 || idx === 16) ? '#ff2a2a' : '#ffffff';
-            ctx.beginPath();
-            ctx.arc(pt.x * canvas.width, pt.y * canvas.height, (idx === 15 || idx === 16) ? 6 : 3, 0, 2 * Math.PI);
-            ctx.fill();
-          }
-        });
-
-        if (currentTabMode === 'tab-bio') {
-          const eR = latestLandmarks[14];
-          if (eR && eR.visibility > 0.5) {
-            ctx.fillStyle = '#00ff66';
-            ctx.font = 'bold 13px monospace';
-            ctx.fillText(`${angR_live}°`, eR.x * canvas.width + 10, eR.y * canvas.height);
-          }
-        }
-      }
-
-      ctx.strokeStyle = '#222';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
-
-      if (currentTabMode === 'tab-gaming') {
-        const m = Math.floor(currentSec / 60);
-        const s = currentSec % 60;
-        ctx.fillStyle = '#fff';
-        ctx.font = '900 28px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(`${m}:${s < 10 ? '0' : ''}${s}`, 240, 50);
-
-        ctx.fillStyle = isResting ? '#ff2a2a' : '#888';
-        ctx.font = 'bold 11px sans-serif';
-        ctx.fillText(isResting ? 'DESCANSO // ESQUINA' : `ROUND ${currentRound} DE ${totalRounds}`, 240, 70);
-
-        ctx.textAlign = 'left';
-        ctx.fillStyle = '#fff';
-        ctx.font = '900 12px sans-serif';
-        ctx.fillText(`■ ${f1}`, 20, 95);
-        ctx.strokeRect(20, 105, 190, 16);
-        ctx.fillRect(20, 105, 190 * (hp1 / 100), 16);
-
-        ctx.textAlign = 'right';
-        ctx.fillStyle = '#888';
-        ctx.fillText(`□ ${f2}`, 460, 95);
-        ctx.strokeRect(270, 105, 190, 16);
-        ctx.fillRect(270 + (190 * (1 - hp2 / 100)), 105, 190 * (hp2 / 100), 16);
-
-        ctx.font = '12px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#aaa';
-        ctx.fillText(`IMPACTOS: ${totalHits}  |  ESQUIVAS: ${totalDodges}`, 240, 140);
-
-        if (isKnockedDown) {
-          ctx.fillStyle = '#ff2a2a';
-          ctx.font = '900 48px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText(`CUENTA: ${kdSec}`, 240, 340);
-        }
-      } else if (currentTabMode === 'tab-bio') {
-        ctx.fillStyle = '#00ff66';
-        ctx.font = '900 13px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(`● RASTREO BIOMECÁNICO ACTIVO`, 240, 45);
-
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 11px monospace';
-        ctx.fillText(`CODO DER: ${angR_live}°  |  CODO IZQ: ${angL_live}°`, 240, 68);
-      }
     }
 
     function endMatch(isKo = false) {
@@ -1298,7 +1500,7 @@
       renderHistory();
     }
 
-    function switchTab(id, e) {
+    function switchMode(id, e) {
       currentTabMode = id;
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1310,7 +1512,7 @@
       
       if (id === 'tab-gaming' || id === 'tab-bio' || id === 'tab-reto') {
         visorCard.style.display = 'block';
-        if (id === 'tab-bio') visorTitle.innerText = "Visor Biomecánico // Telemetría Vectorial";
+        if (id === 'tab-bio') visorTitle.innerText = "Visor Biomecánico // Análisis de Técnica";
         else if (id === 'tab-reto') visorTitle.innerText = "Studio // Renderizador 9:16 Reto Apex";
         else visorTitle.innerText = "Visor En Vivo // Telemetría Combate";
       } else {
