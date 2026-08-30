@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Apex CombatOS // Live Pro</title>
+  <title>Apex CombatOS // Fast Vision 60FPS</title>
   <!-- MediaPipe Pose & Camera Utils -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
@@ -241,10 +241,10 @@
 
     <!-- HUD -->
     <div class="apex-card">
-      <div class="card-title">HUD En Vivo // Telemetría Biomecánica</div>
+      <div class="card-title">HUD En Vivo // Visión Ultrarrápida</div>
       <div class="canvas-container">
         <video id="webcamVideo" playsinline autoplay muted></video>
-        <canvas id="gamingCanvas" width="720" height="1280"></canvas>
+        <canvas id="gamingCanvas" width="480" height="640"></canvas>
       </div>
       
       <div class="row-2" style="margin-top:6px;">
@@ -268,8 +268,8 @@
           EXTENSIÓN: <b id="ui_ext" style="color:#fff;">--</b>
         </div>
         <div style="font-size:12px; color:var(--dim);">
-          ESTADO: <b style="color:#fff;">Rastreo Activo</b><br>
-          MOTOR: <b style="color:#fff;">Noir AI v4</b>
+          FPS ESTIMADOS: <b style="color:#fff;">30+ FPS</b><br>
+          MOTOR: <b style="color:#fff;">Mobile Lite v5</b>
         </div>
       </div>
     </div>
@@ -301,9 +301,6 @@
   </div>
 
   <script>
-    // ==========================================
-    // AUDIO SFX
-    // ==========================================
     let audioCtx = null;
     function initAudio() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -343,30 +340,16 @@
       } catch(e) {}
     }
 
-    // ==========================================
-    // VOZ MASCULINA FORZADA & REACCIÓN INSTANTÁNEA
-    // ==========================================
     let maleVoice = null;
-
     function initVoices() {
       if (!('speechSynthesis' in window)) return;
       const vList = window.speechSynthesis.getVoices();
-      
       const esVoices = vList.filter(v => v.lang.toLowerCase().startsWith('es'));
-      
       maleVoice = esVoices.find(v => {
-        const name = v.name.toLowerCase();
-        return name.includes('male') || 
-               name.includes('david') || 
-               name.includes('jorge') || 
-               name.includes('carlos') || 
-               name.includes('raul') || 
-               name.includes('pablo') || 
-               name.includes('standard-b') || 
-               name.includes('standard-c');
-      }) || esVoices.find(v => !v.name.toLowerCase().includes('female') && !v.name.toLowerCase().includes('sabina') && !v.name.toLowerCase().includes('monica')) || esVoices[0];
+        const n = v.name.toLowerCase();
+        return n.includes('male') || n.includes('david') || n.includes('jorge') || n.includes('carlos') || n.includes('raul') || n.includes('standard-b');
+      }) || esVoices[0];
     }
-
     if ('speechSynthesis' in window) {
       window.speechSynthesis.onvoiceschanged = initVoices;
       initVoices();
@@ -374,49 +357,29 @@
 
     function speakFast(text, pitch = 0.60) {
       if (!('speechSynthesis' in window)) return;
-      
       window.speechSynthesis.cancel();
       window.speechSynthesis.resume();
-
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = 'es-ES';
       if (maleVoice) utter.voice = maleVoice;
       utter.rate = 1.35;
       utter.pitch = pitch;
-      
       window.speechSynthesis.speak(utter);
     }
 
-    const FAST_IMPACTS = [
-      "¡Directo!",
-      "¡Gancho al cuerpo!",
-      "¡Entró el uno dos!",
-      "¡Golpe de poder!",
-      "¡Cruzado limpio!",
-      "¡Upper al mentón!",
-      "¡Combinación sólida!"
-    ];
-
-    const FAST_DODGES = [
-      "¡Buena esquiva!",
-      "¡Nivel Apex!",
-      "¡Paso lateral!",
-      "¡Cabeceo perfecto!",
-      "¡Cero daño!"
-    ];
-
-    function getRandom(arr) {
-      return arr[Math.floor(Math.random() * arr.length)];
-    }
+    const FAST_IMPACTS = ["¡Directo!", "¡Gancho al cuerpo!", "¡Uno dos!", "¡Golpe de poder!", "¡Cruzado limpio!", "¡Upper al mentón!"];
+    const FAST_DODGES = ["¡Buena esquiva!", "¡Nivel Apex!", "¡Paso lateral!", "¡Cabeceo limpio!", "¡Cero daño!"];
+    function getRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
     // ==========================================
-    // MEDIAPIPE POSE & ESQUELETO COMPLETO
+    // MOTOR DE VISIÓN ULTRA LIGERO (60 FPS)
     // ==========================================
     let cameraInstance = null;
     let latestLandmarks = null;
     let useFacingMode = "environment";
     let lastAutoTrigger = 0;
     let lastNoseX = null;
+    let frameCounter = 0;
 
     const POSE_CONNECTIONS = [
       [11, 12], [11, 13], [13, 15], [12, 14], [14, 16],
@@ -436,17 +399,17 @@
       if (latestLandmarks && isSparringActive) {
         analyzeBiomechanics(latestLandmarks);
       }
-      drawHUD();
     }
 
+    // Modelo complejidad 0 (Ultra Rápido para CPU móvil)
     const pose = new Pose({
       locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
     });
     pose.setOptions({
-      modelComplexity: 1,
+      modelComplexity: 0, // MÁXIMA VELOCIDAD
       smoothLandmarks: true,
-      minDetectionConfidence: 0.6,
-      minTrackingConfidence: 0.6
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
     });
     pose.onResults(onPoseResults);
 
@@ -460,7 +423,7 @@
       }
 
       navigator.mediaDevices.getUserMedia({
-        video: { facingMode: useFacingMode, width: 720, height: 1280 }
+        video: { facingMode: useFacingMode, width: { ideal: 480 }, height: { ideal: 640 } }
       }).then((stream) => {
         videoElement.srcObject = stream;
         videoElement.play();
@@ -468,20 +431,25 @@
         if (!cameraInstance) {
           cameraInstance = new Camera(videoElement, {
             onFrame: async () => {
-              await pose.send({ image: videoElement });
+              frameCounter++;
+              // Procesar 1 de cada 2 frames para liberar procesador y dar 30 FPS fluidos
+              if (frameCounter % 2 === 0) {
+                await pose.send({ image: videoElement });
+              }
             },
-            width: 720,
-            height: 1280
+            width: 480,
+            height: 640
           });
           cameraInstance.start();
+          requestAnimationFrame(renderLoop);
         }
-        speakFast("Cámara lista.");
+        speakFast("Cámara fluida activa.");
       }).catch(err => alert("Error de cámara: " + err));
     }
 
     function analyzeBiomechanics(lm) {
       const now = Date.now();
-      if (now - lastAutoTrigger < 2500) return;
+      if (now - lastAutoTrigger < 2000) return;
 
       const nose = lm[0];
       const shoulderR = lm[12];
@@ -516,12 +484,18 @@
 
       if (nose && hip && nose.y > hip.y && !isKnockedDown) {
         triggerKnockdown();
-        lastAutoTrigger = now + 6000;
+        lastAutoTrigger = now + 5000;
       }
     }
 
+    // Loop de renderizado desacoplado a 60 FPS nativos
+    function renderLoop() {
+      drawHUD();
+      requestAnimationFrame(renderLoop);
+    }
+
     // ==========================================
-    // LOGICA DE COMBATE & HUD
+    // LOGICA DE COMBATE
     // ==========================================
     let isSparringActive = false;
     let totalRounds = 3, roundDuration = 180, restDuration = 60;
@@ -557,7 +531,6 @@
       
       if (timer) clearInterval(timer);
       timer = setInterval(gameLoopTick, 1000);
-      drawHUD();
     }
 
     function gameLoopTick() {
@@ -587,7 +560,6 @@
           speakFast(`¡Round ${currentRound}! ¡Box!`, 0.6);
         }
       }
-      drawHUD();
     }
 
     function triggerEvent(type) {
@@ -601,7 +573,6 @@
         totalDodges++;
         speakFast(getRandom(FAST_DODGES));
       }
-      drawHUD();
     }
 
     function triggerKnockdown() {
@@ -613,7 +584,6 @@
 
       const kdInterval = setInterval(() => {
         kdSec--;
-        drawHUD();
         if (kdSec <= 0) {
           clearInterval(kdInterval);
           isKnockedDown = false;
@@ -632,7 +602,7 @@
 
       if (video && video.readyState >= 2) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.40)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       } else {
         ctx.fillStyle = '#000';
@@ -641,7 +611,7 @@
 
       if (latestLandmarks) {
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 3;
         POSE_CONNECTIONS.forEach(([i, j]) => {
           const p1 = latestLandmarks[i];
           const p2 = latestLandmarks[j];
@@ -657,50 +627,51 @@
           if (pt.visibility > 0.5) {
             ctx.fillStyle = (idx === 15 || idx === 16) ? '#ff2a2a' : '#ffffff';
             ctx.beginPath();
-            ctx.arc(pt.x * canvas.width, pt.y * canvas.height, (idx === 15 || idx === 16) ? 7 : 4, 0, 2 * Math.PI);
+            ctx.arc(pt.x * canvas.width, pt.y * canvas.height, (idx === 15 || idx === 16) ? 6 : 3, 0, 2 * Math.PI);
             ctx.fill();
           }
         });
       }
 
       ctx.strokeStyle = '#222';
-      ctx.lineWidth = 4;
-      ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+      ctx.lineWidth = 3;
+      ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
 
       const m = Math.floor(currentSec / 60);
       const s = currentSec % 60;
       ctx.fillStyle = '#fff';
-      ctx.font = '900 36px monospace';
+      ctx.font = '900 28px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(`${m}:${s < 10 ? '0' : ''}${s}`, 360, 80);
+      ctx.fillText(`${m}:${s < 10 ? '0' : ''}${s}`, 240, 50);
 
       ctx.fillStyle = isResting ? '#ff2a2a' : '#888';
-      ctx.font = 'bold 13px sans-serif';
-      ctx.fillText(isResting ? 'DESCANSO // ESQUINA' : `ROUND ${currentRound} DE ${totalRounds}`, 360, 108);
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillText(isResting ? 'DESCANSO // ESQUINA' : `ROUND ${currentRound} DE ${totalRounds}`, 240, 70);
 
+      // Barras
       ctx.textAlign = 'left';
       ctx.fillStyle = '#fff';
-      ctx.font = '900 15px sans-serif';
-      ctx.fillText(`■ ${f1}`, 40, 140);
-      ctx.strokeRect(40, 155, 280, 22);
-      ctx.fillRect(40, 155, 280 * (hp1 / 100), 22);
+      ctx.font = '900 12px sans-serif';
+      ctx.fillText(`■ ${f1}`, 20, 95);
+      ctx.strokeRect(20, 105, 190, 16);
+      ctx.fillRect(20, 105, 190 * (hp1 / 100), 16);
 
       ctx.textAlign = 'right';
       ctx.fillStyle = '#888';
-      ctx.fillText(`□ ${f2}`, 680, 140);
-      ctx.strokeRect(400, 155, 280, 22);
-      ctx.fillRect(400 + (280 * (1 - hp2 / 100)), 155, 280 * (hp2 / 100), 22);
+      ctx.fillText(`□ ${f2}`, 460, 95);
+      ctx.strokeRect(270, 105, 190, 16);
+      ctx.fillRect(270 + (190 * (1 - hp2 / 100)), 105, 190 * (hp2 / 100), 16);
 
-      ctx.font = '14px monospace';
+      ctx.font = '12px monospace';
       ctx.textAlign = 'center';
       ctx.fillStyle = '#aaa';
-      ctx.fillText(`IMPACTOS: ${totalHits}  |  ESQUIVAS: ${totalDodges}`, 360, 205);
+      ctx.fillText(`IMPACTOS: ${totalHits}  |  ESQUIVAS: ${totalDodges}`, 240, 140);
 
       if (isKnockedDown) {
         ctx.fillStyle = '#ff2a2a';
-        ctx.font = '900 70px monospace';
+        ctx.font = '900 48px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(`CUENTA: ${kdSec}`, 360, 600);
+        ctx.fillText(`CUENTA: ${kdSec}`, 240, 340);
       }
     }
 
@@ -709,74 +680,67 @@
       if (timer) clearInterval(timer);
       const f1 = document.getElementById('f1_name').value;
       const f2 = document.getElementById('f2_name').value;
-      let winner = f1;
 
       saveHistory({
         id: Date.now(),
         date: new Date().toLocaleDateString(),
-        f1, f2, winner, totalHits, totalDodges
+        f1, f2, winner: f1, totalHits, totalDodges
       });
 
-      renderScoreboard(winner, isKo);
+      renderScoreboard(f1, isKo);
     }
 
     function renderScoreboard(winner, isKo) {
       const canvas = document.getElementById('gamingCanvas');
       const ctx = canvas.getContext('2d');
-      const f1 = document.getElementById('f1_name').value.toUpperCase();
 
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 4;
-      ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
+      ctx.lineWidth = 3;
+      ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
 
       ctx.fillStyle = '#fff';
-      ctx.font = '900 30px sans-serif';
+      ctx.font = '900 22px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('RESULTADOS OFICIALES', 360, 110);
+      ctx.fillText('RESULTADOS OFICIALES', 240, 80);
 
       ctx.fillStyle = '#ff2a2a';
-      ctx.font = 'bold 20px sans-serif';
-      ctx.fillText(isKo ? 'VICTORIA POR KNOCKOUT' : 'FINAL DEL COMBATE', 360, 150);
+      ctx.font = 'bold 16px sans-serif';
+      ctx.fillText(isKo ? 'VICTORIA POR KNOCKOUT' : 'FINAL DEL COMBATE', 240, 110);
 
       ctx.fillStyle = '#fff';
-      ctx.font = 'bold 24px sans-serif';
-      ctx.fillText(`🏆 GANADOR: ${winner.toUpperCase()}`, 360, 220);
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillText(`🏆 GANADOR: ${winner.toUpperCase()}`, 240, 160);
 
       const rows = [
-        { k: "TOTAL IMPACTOS", v1: totalHits, v2: "-" },
-        { k: "ESQUIVAS NIVEL APEX", v1: totalDodges, v2: "-" },
-        { k: "ESTADO FINAL", v1: "COMPLETO", v2: "-" }
+        { k: "TOTAL IMPACTOS", v1: totalHits },
+        { k: "ESQUIVAS NIVEL APEX", v1: totalDodges },
+        { k: "ESTADO FINAL", v1: "COMPLETO" }
       ];
 
-      let y = 290;
+      let y = 210;
       rows.forEach((r, i) => {
         ctx.fillStyle = i % 2 === 0 ? '#111' : '#080808';
-        ctx.fillRect(50, y, 620, 50);
+        ctx.fillRect(30, y, 420, 40);
         ctx.fillStyle = '#888';
         ctx.textAlign = 'left';
-        ctx.font = 'bold 14px sans-serif';
-        ctx.fillText(r.k, 70, y + 32);
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText(r.k, 45, y + 25);
         ctx.fillStyle = '#fff';
-        ctx.textAlign = 'center';
-        ctx.fillText(r.v1, 400, y + 32);
-        ctx.fillText(r.v2, 570, y + 32);
-        y += 60;
+        ctx.textAlign = 'right';
+        ctx.fillText(r.v1, 430, y + 25);
+        y += 48;
       });
 
       ctx.fillStyle = '#888';
-      ctx.font = '12px monospace';
+      ctx.font = '11px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('APEX BOXING // NOIR TECH LAB • CALI', 360, 1200);
+      ctx.fillText('APEX BOXING // NOIR TECH LAB • CALI', 240, 600);
     }
 
-    // ==========================================
-    // AUTH & HISTORIAL
-    // ==========================================
     const DEFAULT_ADMIN = { user: "admin", pass: "apex2026", role: "admin", active: true };
-
     function getUsers() {
       let users = JSON.parse(localStorage.getItem('apex_users') || 'null');
       if (!users) {
@@ -791,25 +755,16 @@
       const u = document.getElementById('loginUser').value.trim();
       const p = document.getElementById('loginPass').value.trim();
       const users = getUsers();
-
       const found = users.find(x => x.user === u && x.pass === p);
       if (found) {
-        if (!found.active) {
-          document.getElementById('loginError').style.display = 'block';
-          document.getElementById('loginError').innerText = 'Acceso deshabilitado';
-          return;
-        }
+        if (!found.active) return alert('Acceso deshabilitado');
         sessionStorage.setItem('apex_current_user', JSON.stringify(found));
         document.getElementById('authModal').style.display = 'none';
         document.getElementById('navTabs').style.display = 'flex';
-        
-        if (found.role === 'admin') {
-          document.getElementById('adminTabBtn').style.display = 'block';
-        }
+        if (found.role === 'admin') document.getElementById('adminTabBtn').style.display = 'block';
         renderUsersList();
       } else {
         document.getElementById('loginError').style.display = 'block';
-        document.getElementById('loginError').innerText = 'Usuario o contraseña incorrectos';
       }
     }
 
@@ -822,16 +777,13 @@
       const u = document.getElementById('new_username').value.trim();
       const p = document.getElementById('new_password').value.trim();
       if (!u || !p) return alert('Completa los campos');
-
       let users = getUsers();
       if (users.find(x => x.user === u)) return alert('El usuario ya existe');
-
       users.push({ user: u, pass: p, role: "coach", active: true });
       localStorage.setItem('apex_users', JSON.stringify(users));
       document.getElementById('new_username').value = '';
       document.getElementById('new_password').value = '';
       renderUsersList();
-      alert('Perfil creado');
     }
 
     function renderUsersList() {
@@ -871,9 +823,9 @@
         <div class="history-item">
           <div>
             <b>#${i+1} 🏆 ${x.winner}</b>
-            <div style="font-size:10px; color:var(--dim);">${x.f1} vs ${x.f2} (Impactos: ${x.totalHits})</div>
+            <div style="font-size:10px; color:var(--dim);">${x.f1} vs ${x.f2} (Hits: ${x.totalHits})</div>
           </div>
-          <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" onclick="navigator.clipboard.writeText('Resultado Apex: Ganador ${x.winner}'); alert('Copiado');">Compartir</button>
+          <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" onclick="navigator.clipboard.writeText('Resultado Apex: ${x.winner}'); alert('Copiado');">Compartir</button>
         </div>
       `).join('');
     }
