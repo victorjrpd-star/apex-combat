@@ -3,19 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>APEX BOXING // Cinemática Biomecánica</title>
+  <title>APEX BOXING // CombatOS Pro</title>
+  <!-- MediaPipe Pose & Camera Utils -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
   <style>
     :root {
-      --bg: #030303;
-      --card-bg: #0a0a0a;
-      --card-border: #1a1a1a;
+      --bg: #050505;
+      --card-bg: rgba(18, 18, 18, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
       --text: #ffffff;
-      --dim: #777777;
+      --dim: #888888;
       --red: #ff2a2a;
       --green: #00ff66;
-      --accent: #111111;
+      --cyan: #00f0ff;
+      --accent: #141414;
     }
     * {
       box-sizing: border-box;
@@ -28,102 +30,51 @@
       background: var(--bg);
       color: var(--text);
       padding: 12px;
-      padding-bottom: 90px;
+      padding-bottom: 95px;
+      min-height: 100vh;
     }
-    .auth-overlay {
-      position: fixed;
-      inset: 0;
-      background: #000;
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .auth-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      width: 100%;
-      max-width: 360px;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .brand-title {
-      text-align: center;
-      font-size: 20px;
-      font-weight: 900;
-      letter-spacing: 3px;
-      color: #fff;
-    }
-    .brand-sub {
-      text-align: center;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      color: var(--dim);
-      margin-top: -8px;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-    }
-    .nav-tabs {
-      display: flex;
-      gap: 6px;
-      border-bottom: 2px solid var(--card-border);
-      padding-bottom: 8px;
-      margin-bottom: 12px;
-      overflow-x: auto;
-    }
-    .tab-btn {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      color: var(--dim);
-      padding: 8px 12px;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      border-radius: 4px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .tab-btn.active {
-      background: var(--text);
-      color: #000;
-      border-color: var(--text);
-    }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+
+    /* GLASSMORPHISM CARDS */
     .apex-card {
       background: var(--card-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border: 1px solid var(--card-border);
-      border-radius: 6px;
-      padding: 14px;
-      margin-bottom: 12px;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 14px;
       display: flex;
       flex-direction: column;
       gap: 12px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     }
     .card-title {
-      font-size: 11px;
+      font-size: 11.5px;
       font-weight: 900;
-      letter-spacing: 1px;
+      letter-spacing: 1.2px;
       text-transform: uppercase;
       border-left: 3px solid var(--text);
-      padding-left: 8px;
+      padding-left: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
+
+    /* INPUTS & BUTTONS */
     .input-field {
       width: 100%;
-      background: #000;
+      background: rgba(0, 0, 0, 0.6);
       border: 1px solid var(--card-border);
-      padding: 10px;
-      border-radius: 4px;
+      padding: 12px;
+      border-radius: 6px;
       color: #fff;
       font-size: 13px;
+      transition: border 0.2s ease;
     }
-    .input-field:focus { outline: 1px solid var(--text); }
+    .input-field:focus {
+      outline: none;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
     .row-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -138,25 +89,32 @@
       background: var(--text);
       color: #000;
       border: none;
-      padding: 11px;
+      padding: 12px;
       font-weight: 900;
       font-size: 11px;
-      letter-spacing: 1px;
+      letter-spacing: 1.2px;
       text-transform: uppercase;
-      border-radius: 4px;
+      border-radius: 6px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
+      transition: all 0.2s ease;
     }
-    .btn-red { background: var(--red); color: #fff; }
+    .btn:active {
+      transform: scale(0.98);
+    }
+    .btn-red { background: var(--red); color: #fff; box-shadow: 0 0 15px rgba(255, 42, 42, 0.3); }
+    .btn-green { background: var(--green); color: #000; }
     .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--card-border); }
+
+    /* VISOR CANVAS */
     .canvas-container {
       width: 100%;
       background: #000;
       border: 1px solid var(--card-border);
-      border-radius: 6px;
+      border-radius: 10px;
       position: relative;
       display: flex;
       align-items: center;
@@ -165,22 +123,90 @@
     }
     video { display: none; }
     canvas { width: 100%; height: auto; max-height: 480px; object-fit: contain; }
-    .preview-box {
-      background: #000;
-      border: 1px solid #222;
-      border-radius: 6px;
-      padding: 10px;
+
+    /* BOTTOM NAV BAR */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(10, 10, 10, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 6px;
+      z-index: 9000;
+    }
+    .nav-item {
+      background: transparent;
+      border: none;
+      color: var(--dim);
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      align-items: center;
+      gap: 4px;
+      font-size: 8.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 6px;
+      flex: 1;
+      transition: color 0.2s;
+    }
+    .nav-item.active {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .nav-item span.icon {
+      font-size: 16px;
+    }
+
+    /* PREVIEWS */
+    .preview-box {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
       margin-top: 8px;
     }
     .preview-media {
       width: 100%;
       max-height: 380px;
-      border-radius: 4px;
-      background: #050505;
+      border-radius: 6px;
+      background: #000;
     }
+
+    /* TABLAS DE GESTIÓN */
+    .user-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    .user-table th {
+      text-align: left;
+      padding: 8px;
+      color: var(--dim);
+      border-bottom: 1px solid var(--card-border);
+    }
+    .user-table td {
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+    .badge {
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 8.5px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .badge-active { background: rgba(0, 255, 102, 0.15); color: var(--green); }
+    .badge-paused { background: rgba(255, 42, 42, 0.15); color: var(--red); }
   </style>
 </head>
 <body>
@@ -188,9 +214,11 @@
   <!-- LOGIN -->
   <div id="authModal" class="auth-overlay">
     <div class="auth-card">
-      <div class="brand-title">APEX BOXING</div>
-      <div class="brand-sub">Escuela de Strikers</div>
-      <div style="font-size:11px; text-align:center; color:var(--dim); font-weight:900; margin-bottom:6px;">CINEMÁTICA BIOMECÁNICA // LOGIN</div>
+      <div style="text-align:center;">
+        <div style="font-size:22px; font-weight:900; letter-spacing:3px;">APEX BOXING</div>
+        <div style="font-size:10px; font-weight:700; color:var(--dim); letter-spacing:2px; text-transform:uppercase;">Escuela de Strikers</div>
+      </div>
+      <div style="font-size:10px; text-align:center; color:var(--dim); font-weight:900; border-bottom:1px solid var(--card-border); padding-bottom:8px;">COMBAT OS PRO // AUTH</div>
       <div>
         <label style="font-size:10px; color:var(--dim); font-weight:700;">USUARIO</label>
         <input type="text" id="loginUser" class="input-field" placeholder="admin" value="admin">
@@ -200,27 +228,20 @@
         <input type="password" id="loginPass" class="input-field" placeholder="••••••••" value="apex2026">
       </div>
       <button class="btn" onclick="handleLogin()">Acceder al Sistema</button>
-      <div id="loginError" style="font-size:11px; color:var(--red); text-align:center; display:none;">Credenciales inválidas</div>
+      <div id="loginError" style="font-size:11px; color:var(--red); text-align:center; display:none;">Credenciales inválidas o cuenta pausada</div>
     </div>
   </div>
 
-  <!-- NAVEGACIÓN (SÓLO 2 MÓDULOS) -->
-  <div class="nav-tabs" id="navTabs" style="display:none;">
-    <button class="tab-btn active" onclick="switchLabMode('mode-photo-report', event)">📸 1. Análisis Libre (Ficha WhatsApp)</button>
-    <button class="tab-btn" onclick="switchLabMode('mode-video-10s', event)">🎬 2. Video Post-Procesado (10s)</button>
-    <button class="tab-btn btn-outline" style="margin-left:auto;" onclick="handleLogout()">Salir</button>
-  </div>
-
-  <!-- VISOR GLOBAL -->
+  <!-- VISOR GLOBAL PERSISTENTE -->
   <div class="apex-card" id="globalVisionCard" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <div>
         <div class="card-title" id="visorTitle">APEX BOXING // Cinemática en Vivo</div>
-        <div style="font-size:9px; color:var(--dim); font-weight:700; margin-left:8px; margin-top:2px;">Escuela de Strikers</div>
+        <div style="font-size:9px; color:var(--dim); font-weight:700; margin-left:10px; margin-top:2px;">Escuela de Strikers</div>
       </div>
       <div style="display:flex; gap:6px;">
-        <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" onclick="switchCameraFacing()">🔄 Girar</button>
-        <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" id="btnCamPower" onclick="toggleCameraPower()">📷 Encender Cámara</button>
+        <button class="btn btn-outline" style="padding:5px 8px; font-size:9.5px;" onclick="switchCameraFacing()">🔄 Girar</button>
+        <button class="btn btn-outline" style="padding:5px 8px; font-size:9.5px;" id="btnCamPower" onclick="toggleCameraPower()">📷 Cámara</button>
       </div>
     </div>
     
@@ -230,47 +251,45 @@
     </div>
   </div>
 
-  <!-- MÓDULO 1: ANÁLISIS LIBRE -> FICHA DE IMAGEN WHATSAPP CON ÚLTIMO CUADRO DE FONDO -->
-  <div id="mode-photo-report" class="tab-content active">
+  <!-- 1. MÓDULO 1: ANÁLISIS LIBRE (FICHA WHATSAPP) -->
+  <div id="tab-m1" class="tab-content active" style="display:none;">
     <div class="apex-card">
-      <div class="card-title">Módulo 1 // Escáner Biomecánico Libre (Ficha PNG)</div>
-      <p style="font-size:11px; color:var(--dim);">Selecciona la duración de tu sesión libre. La IA detectará movimientos peligrosos y virtudes técnicas. Al finalizar, generará una imagen sobre el último fotograma con tabla translúcida lista para WhatsApp.</p>
+      <div class="card-title">Módulo 1 // Escáner Libre & Ficha WhatsApp</div>
+      <p style="font-size:11px; color:var(--dim);">Evalúa tu sombra durante el tiempo elegido. La IA detectará movimientos peligrosos y virtudes, generando una ficha PNG sobre tu último fotograma lista para compartir.</p>
       
       <div>
         <label style="font-size:10px; color:var(--dim); font-weight:700;">DURACIÓN DEL ANÁLISIS (SEGUNDOS)</label>
         <input type="number" id="m1_duration" class="input-field" value="15" min="5" max="60">
       </div>
 
-      <button class="btn btn-red" id="btnStartM1" onclick="startModule1Analysis()">🔍 Iniciar Análisis Libre</button>
+      <button class="btn btn-red" id="btnStartM1" onclick="startModule1Analysis()">🔍 Iniciar Escáner Libre</button>
       <div id="m1StatusMsg" style="font-size:12px; font-weight:900; color:#00ff66; text-align:center; display:none;">ESCANEO ACTIVO</div>
 
-      <!-- PREVIEW IMAGEN MÓDULO 1 -->
       <div id="m1PreviewBox" class="preview-box" style="display:none;">
-        <span style="font-size:10px; color:var(--dim); font-weight:700;">FICHA TÉCNICA OFICIAL // LISTA PARA WHATSAPP</span>
+        <span style="font-size:10px; color:var(--dim); font-weight:700;">FICHA PNG GENERADA // WHATSAPP READY</span>
         <img id="m1PreviewImg" class="preview-media" src="" alt="Ficha WhatsApp">
         <div class="row-2">
-          <button class="btn btn-red" onclick="downloadM1Image()">⬇️ Descargar Ficha PNG</button>
-          <button class="btn btn-outline" onclick="discardM1Image()">🗑️ Repetir Análisis</button>
+          <button class="btn btn-red" onclick="downloadM1Image()">⬇️ Descargar Ficha</button>
+          <button class="btn btn-outline" onclick="discardM1Image()">🗑️ Repetir</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- MÓDULO 2: VIDEO DE 10s (CAPTURA EN CRUDO -> POST-PROCESAMIENTO CON AUDIO INCORPORADO) -->
-  <div id="mode-video-10s" class="tab-content">
+  <!-- 2. MÓDULO 2: VIDEO 10s CON AUDIO & POST-PROCESADO -->
+  <div id="tab-m2" class="tab-content" style="display:none;">
     <div class="apex-card">
-      <div class="card-title">Módulo 2 // Captura 10s & Video Post-Procesado con Audio</div>
-      <p style="font-size:11px; color:var(--dim);">Graba 10 segundos continuos en crudo. La IA post-procesará el video, cambiará los vectores a rojo ante fallos, animará la cadena cinética en impactos y añadirá el audio sincronizado de voz ("Iniciando análisis" / "Análisis finalizado") directamente dentro del archivo de video.</p>
+      <div class="card-title">Módulo 2 // Captura 10s & Video con Audio Sincronizado</div>
+      <p style="font-size:11px; color:var(--dim);">Graba 10 segundos continuos en crudo. La IA procesará los vectores dinámicos (rojo en fallos, cadena cinética cian) e insertará el audio de voz en el archivo exportable.</p>
       
-      <button class="btn btn-red" id="btnStartM2" onclick="startModule2VideoPipeline()">🎬 Grabar Video 10s & Procesar</button>
+      <button class="btn btn-red" id="btnStartM2" onclick="startModule2VideoPipeline()">🎬 Grabar 10s & Procesar con Audio</button>
       <div id="m2StatusMsg" style="font-size:12px; font-weight:900; color:#00ff66; text-align:center; display:none;">GRABANDO: 10s</div>
 
-      <!-- PREVIEW VIDEO MÓDULO 2 CON BOTÓN PLAY/PAUSE EXPLÍCITO -->
       <div id="m2PreviewBox" class="preview-box" style="display:none;">
-        <span style="font-size:10px; color:var(--dim); font-weight:700;">PREVISUALIZACIÓN // VIDEO ANALIZADO CON AUDIO</span>
+        <span style="font-size:10px; color:var(--dim); font-weight:700;">VIDEO ANALIZADO // REPRODUCE ANTES DE DESCARGAR</span>
         <video id="m2PreviewVideo" class="preview-media" playsinline controls></video>
         <div class="row-3">
-          <button class="btn btn-outline" onclick="playPausePreviewVideo()">▶️ / ⏸️ Reproducir</button>
+          <button class="btn btn-outline" onclick="playPausePreviewVideo()">▶️ / ⏸️ Play</button>
           <button class="btn btn-red" onclick="downloadM2Video()">⬇️ Descargar</button>
           <button class="btn btn-outline" onclick="discardM2Video()">🗑️ Descartar</button>
         </div>
@@ -278,9 +297,270 @@
     </div>
   </div>
 
+  <!-- 3. MÓDULO 3: CARGA & ANÁLISIS DE VIDEO EXTERNO -->
+  <div id="tab-m3" class="tab-content" style="display:none;">
+    <div class="apex-card">
+      <div class="card-title">Módulo 3 // Cargar Video & Renderizar Biomecánica</div>
+      <p style="font-size:11px; color:var(--dim);">Carga un video grabado desde tu galería. La IA analizará cada fotograma, dibujará el esqueleto vectorial, estampará la marca Apex y te devolverá el video listo con su ficha.</p>
+      
+      <div>
+        <label style="font-size:10px; color:var(--dim); font-weight:700;">SELECCIONAR ARCHIVO DE VIDEO</label>
+        <input type="file" id="m3_video_file" accept="video/*" class="input-field" onchange="loadModule3File(this)">
+        <video id="m3SourceVideo" preload="auto" playsinline muted style="display:none;"></video>
+      </div>
+
+      <button class="btn btn-red" id="btnStartM3" onclick="processUploadedVideo()">⚙️ Analizar & Renderizar Video</button>
+      <div id="m3ProgressMsg" style="font-size:12px; font-weight:900; color:#00ff66; text-align:center; display:none;">Procesando fotogramas...</div>
+
+      <div id="m3PreviewBox" class="preview-box" style="display:none;">
+        <span style="font-size:10px; color:var(--dim); font-weight:700;">VIDEO PROCESADO // VECTORES & MARCA APEX</span>
+        <video id="m3PreviewVideo" class="preview-media" playsinline controls></video>
+        <div class="row-2">
+          <button class="btn btn-red" onclick="downloadM3Video()">⬇️ Descargar Video</button>
+          <button class="btn btn-outline" onclick="discardM3Video()">🗑️ Descartar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. MÓDULO 4: COACH INTERACTIVO POR VOZ (TIEMPO REAL) -->
+  <div id="tab-m4" class="tab-content" style="display:none;">
+    <div class="apex-card">
+      <div class="card-title">Módulo 4 // Coach por Voz & Corrección en Vivo</div>
+      <p style="font-size:11px; color:var(--dim);">Párate frente a la cámara sin necesidad de grabar. La IA te dará instrucciones habladas y feedback inmediato según tu postura y ejecución.</p>
+      
+      <div class="row-2">
+        <button class="btn btn-outline" id="btnCoachModeA" onclick="setCoachSubMode('A')">🗣️ 1. Comando & Respuesta</button>
+        <button class="btn btn-outline" id="btnCoachModeB" onclick="setCoachSubMode('B')">🥊 2. Combo Libre</button>
+      </div>
+
+      <!-- SUBMODO A -->
+      <div id="coachSubModeA" style="display:none; flex-direction:column; gap:10px;">
+        <p style="font-size:10.5px; color:var(--dim);">La IA dictará un golpe o instrucción técnica. Tienes 3 segundos para ejecutar y evaluará tu biomecánica por voz.</p>
+        <button class="btn btn-red" onclick="startCoachDrillA()">🔥 Iniciar Drill por Comando</button>
+      </div>
+
+      <!-- SUBMODO B -->
+      <div id="coachSubModeB" style="display:none; flex-direction:column; gap:10px;">
+        <p style="font-size:10.5px; color:var(--dim);">Lanza tus combinaciones libres. Selecciona el tiempo y la IA te dará el diagnóstico hablado de técnica, postura y potencia.</p>
+        <div>
+          <label style="font-size:10px; color:var(--dim); font-weight:700;">TIEMPO DE EVALUACIÓN (SEG)</label>
+          <input type="number" id="coach_b_duration" class="input-field" value="15" min="5" max="60">
+        </div>
+        <button class="btn btn-red" onclick="startCoachDrillB()">⚡ Iniciar Análisis de Combo</button>
+      </div>
+
+      <div id="coachVoiceStatus" style="font-size:12px; font-weight:900; color:#00f0ff; text-align:center; display:none; padding:10px; background:rgba(0,240,255,0.08); border-radius:6px;">COACH ATENTO...</div>
+    </div>
+  </div>
+
+  <!-- 5. MÓDULO 5: GESTIÓN DE USUARIOS (SOLO ADMIN) -->
+  <div id="tab-m5" class="tab-content" style="display:none;">
+    <div class="apex-card">
+      <div class="card-title">Módulo 5 // Control de Acceso & Usuarios</div>
+      <p style="font-size:11px; color:var(--dim);">Panel exclusivo para el Administrador. Crea usuarios para tus alumnos y entrénalos con acceso controlado.</p>
+      
+      <div class="row-2">
+        <input type="text" id="newUserName" class="input-field" placeholder="Nombre completo">
+        <input type="text" id="newUserLogin" class="input-field" placeholder="Usuario (login)">
+      </div>
+      <div>
+        <input type="password" id="newUserPass" class="input-field" placeholder="Contraseña">
+      </div>
+      <button class="btn btn-green" onclick="createNewUser()">➕ Crear Nuevo Usuario</button>
+
+      <div style="margin-top:10px;">
+        <span style="font-size:10px; color:var(--dim); font-weight:700;">USUARIOS REGISTRADOS EN APEX</span>
+        <div style="overflow-x:auto; margin-top:6px;">
+          <table class="user-table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Usuario</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="userTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVEGACIÓN INFERIOR ESTILO APP -->
+  <div class="bottom-nav" id="bottomNav" style="display:none;">
+    <button class="nav-item active" onclick="switchNav('tab-m1', this)">
+      <span class="icon">📸</span>
+      <span>Ficha</span>
+    </button>
+    <button class="nav-item" onclick="switchNav('tab-m2', this)">
+      <span class="icon">🎬</span>
+      <span>Video 10s</span>
+    </button>
+    <button class="nav-item" onclick="switchNav('tab-m3', this)">
+      <span class="icon">📂</span>
+      <span>Cargar</span>
+    </button>
+    <button class="nav-item" onclick="switchNav('tab-m4', this)">
+      <span class="icon">🥊</span>
+      <span>Coach</span>
+    </button>
+    <button class="nav-item" id="navAdminBtn" onclick="switchNav('tab-m5', this)">
+      <span class="icon">👥</span>
+      <span>Usuarios</span>
+    </button>
+    <button class="nav-item" onclick="handleLogout()">
+      <span class="icon">🚪</span>
+      <span>Salir</span>
+    </button>
+  </div>
+
   <canvas id="offscreenCanvas" width="480" height="640" style="display:none;"></canvas>
 
   <script>
+    // ==========================================
+    // SISTEMA DE GESTIÓN DE USUARIOS (PERSISTENTE)
+    // ==========================================
+    const DEFAULT_USERS = [
+      { id: '1', name: 'Administrador Apex', user: 'admin', pass: 'apex2026', status: 'active', role: 'admin' },
+      { id: '2', name: 'Víctor Garcés', user: 'striker1', pass: '1234', status: 'active', role: 'user' }
+    ];
+
+    function getUsers() {
+      const stored = localStorage.getItem('apex_users_db');
+      if (!stored) {
+        localStorage.setItem('apex_users_db', JSON.stringify(DEFAULT_USERS));
+        return DEFAULT_USERS;
+      }
+      return JSON.parse(stored);
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem('apex_users_db', JSON.stringify(users));
+      renderUserTable();
+    }
+
+    let currentUser = null;
+
+    function handleLogin() {
+      initAudio();
+      const u = document.getElementById('loginUser').value.trim();
+      const p = document.getElementById('loginPass').value.trim();
+      const users = getUsers();
+
+      const found = users.find(x => x.user.toLowerCase() === u.toLowerCase() && x.pass === p);
+
+      if (found) {
+        if (found.status === 'paused') {
+          return alert('Tu cuenta está pausada por el administrador.');
+        }
+        currentUser = found;
+        document.getElementById('authModal').style.display = 'none';
+        document.getElementById('bottomNav').style.display = 'flex';
+        document.getElementById('globalVisionCard').style.display = 'block';
+        document.getElementById('tab-m1').style.display = 'block';
+
+        if (found.role !== 'admin') {
+          document.getElementById('navAdminBtn').style.display = 'none';
+        } else {
+          document.getElementById('navAdminBtn').style.display = 'flex';
+          renderUserTable();
+        }
+
+        speakFast("Bienvenido a Apex Combat OS.");
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    }
+
+    function handleLogout() {
+      location.reload();
+    }
+
+    function renderUserTable() {
+      const users = getUsers();
+      const tbody = document.getElementById('userTableBody');
+      tbody.innerHTML = '';
+
+      users.forEach(u => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><b>${u.name}</b></td>
+          <td>${u.user}</td>
+          <td><span class="badge ${u.status === 'active' ? 'badge-active' : 'badge-paused'}">${u.status}</span></td>
+          <td>
+            ${u.role !== 'admin' ? `
+              <button class="btn btn-outline" style="padding:4px 6px; font-size:8.5px; display:inline-block;" onclick="toggleUserStatus('${u.id}')">${u.status === 'active' ? '⏸️ Pausar' : '▶️ Activar'}</button>
+              <button class="btn btn-red" style="padding:4px 6px; font-size:8.5px; display:inline-block; margin-left:4px;" onclick="deleteUser('${u.id}')">🗑️</button>
+            ` : '<span style="color:var(--dim); font-size:9px;">Admin Master</span>'}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function createNewUser() {
+      const name = document.getElementById('newUserName').value.trim();
+      const user = document.getElementById('newUserLogin').value.trim();
+      const pass = document.getElementById('newUserPass').value.trim();
+
+      if (!name || !user || !pass) return alert('Completa todos los campos.');
+
+      const users = getUsers();
+      if (users.find(x => x.user.toLowerCase() === user.toLowerCase())) {
+        return alert('Este nombre de usuario ya existe.');
+      }
+
+      users.push({
+        id: Date.now().toString(),
+        name,
+        user,
+        pass,
+        status: 'active',
+        role: 'user'
+      });
+
+      saveUsers(users);
+      document.getElementById('newUserName').value = '';
+      document.getElementById('newUserLogin').value = '';
+      document.getElementById('newUserPass').value = '';
+      alert('Usuario creado exitosamente.');
+    }
+
+    function toggleUserStatus(id) {
+      const users = getUsers();
+      const u = users.find(x => x.id === id);
+      if (u) {
+        u.status = u.status === 'active' ? 'paused' : 'active';
+        saveUsers(users);
+      }
+    }
+
+    function deleteUser(id) {
+      if (!confirm('¿Eliminar este usuario de forma permanente?')) return;
+      let users = getUsers();
+      users = users.filter(x => x.id !== id);
+      saveUsers(users);
+    }
+
+    function switchNav(tabId, el) {
+      document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).style.display = 'block';
+      if (el) el.classList.add('active');
+
+      const title = document.getElementById('visorTitle');
+      if (tabId === 'tab-m1') title.innerText = 'APEX BOXING // Análisis Libre';
+      else if (tabId === 'tab-m2') title.innerText = 'APEX BOXING // Video 10s & Audio';
+      else if (tabId === 'tab-m3') title.innerText = 'APEX BOXING // Cargar & Renderizar';
+      else if (tabId === 'tab-m4') title.innerText = 'APEX BOXING // Coach por Voz';
+      else if (tabId === 'tab-m5') title.innerText = 'APEX BOXING // Control de Acceso';
+    }
+
+    // ==========================================
+    // AUDIO & LOCUCIÓN NATIVA
+    // ==========================================
     let audioCtx = null;
     let audioDestNode = null;
 
@@ -308,7 +588,6 @@
       } catch(e) {}
     }
 
-    // Sintetizador de audio con osciladores para que la voz/tonos se graben directo en el archivo de video
     function playAudioCue(text, sendToStream = false) {
       try {
         initAudio();
@@ -372,6 +651,9 @@
       window.speechSynthesis.speak(utter);
     }
 
+    // ==========================================
+    // MOTOR DE CÁMARA & POSE
+    // ==========================================
     let cameraInstance = null;
     let isCameraRunning = false;
     let latestLandmarks = null;
@@ -429,7 +711,6 @@
       const hR = lm[24], hL = lm[23], kR = lm[26], kL = lm[25], aR = lm[28], aL = lm[27];
       const nose = lm[0];
 
-      // 1. HIPEREXTENSIÓN DE CODO
       if (sR && eR && wR) {
         const angR = calculateAngle(sR, eR, wR);
         if (angR > 175) {
@@ -447,7 +728,6 @@
         }
       }
 
-      // 2. PÉRDIDA DE EQUILIBRIO
       if (nose && aR && aL) {
         const midAnkX = (aR.x + aL.x) / 2;
         const dev = Math.abs(nose.x - midAnkX);
@@ -458,7 +738,6 @@
         }
       }
 
-      // 3. ROTACIÓN DE CADERA
       if (hR && hL && kR && kL) {
         const hipTilt = Math.abs(hR.y - hL.y);
         if (hipTilt > 0.08) {
@@ -468,7 +747,6 @@
         }
       }
 
-      // 4. GUARDIA & UPPERCUT
       if (wR && sR && (wR.y < sR.y + 0.08)) m1Metrics.goodGuardFrames++;
       if (wR && eR && sR) {
         const angR = calculateAngle(sR, eR, wR);
@@ -501,7 +779,7 @@
             cameraInstance.start();
           }
           isCameraRunning = true;
-          btn.innerText = "🛑 Apagar Cámara";
+          btn.innerText = "🛑 Apagar";
           btn.style.color = "#ff2a2a";
           requestAnimationFrame(renderLiveVisor);
           speakFast("Cámara lista.");
@@ -510,7 +788,7 @@
         if (videoElement.srcObject) videoElement.srcObject.getTracks().forEach(t => t.stop());
         isCameraRunning = false;
         latestLandmarks = null;
-        btn.innerText = "📷 Encender Cámara";
+        btn.innerText = "📷 Cámara";
         btn.style.color = "#fff";
       }
     }
@@ -790,9 +1068,9 @@
       document.getElementById('m1PreviewImg').src = '';
     }
 
-    // ==========================================
-    // MÓDULO 2: CAPTURA 10s & POST-PROCESAMIENTO
-    // ==========================================
+    // =========================================================================
+    // MÓDULO 2: CAPTURA 10s & POST-PROCESAMIENTO CON AUDIO SINCRONIZADO
+    // =========================================================================
     let m2GeneratedVideoBlob = null;
 
     async function startModule2VideoPipeline() {
@@ -900,11 +1178,8 @@
 
     function playPausePreviewVideo() {
       const vid = document.getElementById('m2PreviewVideo');
-      if (vid.paused) {
-        vid.play();
-      } else {
-        vid.pause();
-      }
+      if (vid.paused) vid.play();
+      else vid.pause();
     }
 
     function downloadM2Video() {
@@ -925,31 +1200,162 @@
       speakFast("Video descartado.");
     }
 
-    // ==========================================
-    // AUTH & NAVEGACIÓN
-    // ==========================================
-    function handleLogin() {
-      initAudio();
-      const u = document.getElementById('loginUser').value.trim();
-      const p = document.getElementById('loginPass').value.trim();
-      if (u === "admin" && p === "apex2026") {
-        document.getElementById('authModal').style.display = 'none';
-        document.getElementById('navTabs').style.display = 'flex';
-        document.getElementById('globalVisionCard').style.display = 'block';
-      } else {
-        document.getElementById('loginError').style.display = 'block';
+    // =========================================================================
+    // MÓDULO 3: CARGA & ANÁLISIS DE VIDEO EXTERNO
+    // =========================================================================
+    let m3UploadedBlob = null;
+
+    function loadModule3File(input) {
+      const f = input.files[0];
+      if (!f) return;
+      const vid = document.getElementById('m3SourceVideo');
+      vid.src = URL.createObjectURL(f);
+      speakFast("Video cargado. Listo para procesar.");
+    }
+
+    async function processUploadedVideo() {
+      const vid = document.getElementById('m3SourceVideo');
+      if (!vid.src) return alert('Debes cargar un archivo de video primero.');
+
+      const progress = document.getElementById('m3ProgressMsg');
+      progress.style.display = 'block';
+      progress.innerText = "Analizando video y renderizando vectores...";
+
+      const canvas = document.getElementById('gamingCanvas');
+      const ctx = canvas.getContext('2d');
+      const stream = canvas.captureStream(30);
+
+      const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      const chunks = [];
+      recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+      recorder.start();
+
+      vid.currentTime = 0;
+      await vid.play();
+
+      async function step() {
+        if (vid.ended || vid.paused) {
+          recorder.stop();
+          recorder.onstop = () => {
+            m3UploadedBlob = new Blob(chunks, { type: 'video/webm' });
+            const prevBox = document.getElementById('m3PreviewBox');
+            const prevVid = document.getElementById('m3PreviewVideo');
+            prevVid.src = URL.createObjectURL(m3UploadedBlob);
+            prevBox.style.display = 'flex';
+            progress.innerText = "¡Video analizado y renderizado!";
+            speakFast("Video analizado y listo para descargar.");
+          };
+          return;
+        }
+
+        ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(0,0,0,0.15)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        try {
+          await pose.send({ image: vid });
+        } catch(e) {}
+
+        drawApexWatermark(ctx);
+
+        if (latestLandmarks) {
+          drawDynamicSkeleton(ctx, latestLandmarks, canvas.width, canvas.height);
+        }
+
+        drawBottomBar(ctx, canvas.width, canvas.height, "APEX // VIDEO ANALIZADO POR IA");
+        requestAnimationFrame(step);
       }
+      step();
     }
 
-    function handleLogout() {
-      location.reload();
+    function downloadM3Video() {
+      if (!m3UploadedBlob) return;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(m3UploadedBlob);
+      a.download = `Apex_Analisis_Externo_${Date.now()}.webm`;
+      a.click();
     }
 
-    function switchLabMode(id, e) {
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      if (e && e.target) e.target.classList.add('active');
+    function discardM3Video() {
+      m3UploadedBlob = null;
+      document.getElementById('m3PreviewBox').style.display = 'none';
+      document.getElementById('m3PreviewVideo').src = '';
+    }
+
+    // =========================================================================
+    // MÓDULO 4: COACH POR VOZ EN TIEMPO REAL
+    // =========================================================================
+    let currentCoachMode = 'A';
+
+    function setCoachSubMode(mode) {
+      currentCoachMode = mode;
+      document.getElementById('coachSubModeA').style.display = mode === 'A' ? 'flex' : 'none';
+      document.getElementById('coachSubModeB').style.display = mode === 'B' ? 'flex' : 'none';
+      document.getElementById('btnCoachModeA').classList.toggle('btn-red', mode === 'A');
+      document.getElementById('btnCoachModeB').classList.toggle('btn-red', mode === 'B');
+    }
+
+    async function startCoachDrillA() {
+      if (!isCameraRunning) toggleCameraPower();
+      const statusBox = document.getElementById('coachVoiceStatus');
+      statusBox.style.display = 'block';
+
+      const drills = [
+        { cmd: "¡Lanza Jab directo al mentón!", check: "jab" },
+        { cmd: "¡Cross de potencia con pivote de cadera!", check: "cross" },
+        { cmd: "¡Guardia alta cubriendo mentón!", check: "guard" },
+        { cmd: "¡Uppercut derecho explosivo!", check: "uppercut" }
+      ];
+
+      for (let i = 0; i < drills.length; i++) {
+        const d = drills[i];
+        statusBox.innerText = `COACH: ${d.cmd}`;
+        playAudioCue(d.cmd);
+
+        await new Promise(r => setTimeout(r, 3500));
+
+        let feedback = "¡Bien ejecutado! Buena alineación.";
+        if (latestLandmarks) {
+          const sR = latestLandmarks[12], eR = latestLandmarks[14], wR = latestLandmarks[16];
+          if (sR && eR && wR && calculateAngle(sR, eR, wR) > 175) {
+            feedback = "¡Cuidado! Estás hiperextendiendo el codo.";
+          }
+        }
+        statusBox.innerText = `EVALUACIÓN: ${feedback}`;
+        speakFast(feedback);
+        await new Promise(r => setTimeout(r, 2500));
+      }
+
+      statusBox.innerText = "DRILL COMPLETADO.";
+      speakFast("Excelente entrenamiento. Drill completado.");
+    }
+
+    async function startCoachDrillB() {
+      if (!isCameraRunning) toggleCameraPower();
+      const sec = parseInt(document.getElementById('coach_b_duration').value) || 15;
+      const statusBox = document.getElementById('coachVoiceStatus');
+      statusBox.style.display = 'block';
+
+      speakFast(`Iniciando evaluación de combo libre. ${sec} segundos.`);
+
+      let hyperExtDetected = 0;
+
+      for (let s = sec; s >= 1; s--) {
+        statusBox.innerText = `EVALUANDO COMBO // ${s}s`;
+        if (latestLandmarks) {
+          const sR = latestLandmarks[12], eR = latestLandmarks[14], wR = latestLandmarks[16];
+          if (sR && eR && wR && calculateAngle(sR, eR, wR) > 175) hyperExtDetected++;
+        }
+        await new Promise(r => setTimeout(r, 1000));
+      }
+
+      let voiceDiagnosis = "Análisis completado. Tu técnica fue sólida y mantuviste buena potencia.";
+      if (hyperExtDetected > 2) {
+        voiceDiagnosis = "Atención: detecté peligro de hiperextensión en los remates. Flexiona ligeramente al impactar.";
+      }
+
+      statusBox.innerText = `DIAGNÓSTICO: ${voiceDiagnosis}`;
+      speakFast(voiceDiagnosis);
     }
   </script>
 </body>
