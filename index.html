@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>APEX BOXING // Biomechanical Engine</title>
+  <title>APEX BOXING // Biomechanical Engine Pro</title>
+  <!-- MediaPipe Pose & Camera Utils -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
   <style>
@@ -32,7 +33,7 @@
       min-height: 100vh;
     }
 
-    /* ESTÉTICA NOIR MINIMALISTA */
+    /* NOIR MINIMALISTA */
     .apex-card {
       background: var(--card-bg);
       backdrop-filter: blur(16px);
@@ -116,7 +117,7 @@
     video { display: none; }
     canvas { width: 100%; height: auto; max-height: 480px; object-fit: contain; }
 
-    /* NAVEGACIÓN INFERIOR MINIMALISTA */
+    /* NAVEGACIÓN INFERIOR */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -197,7 +198,8 @@
       text-transform: uppercase;
     }
     .badge-active { border: 1px solid var(--green); color: var(--green); }
-    .badge-paused { border: 1px solid var(--red); color: var(--red); }
+    .badge-expired { border: 1px solid var(--red); color: var(--red); }
+    .badge-paused { border: 1px solid #ffaa00; color: #ffaa00; }
   </style>
 </head>
 <body>
@@ -206,7 +208,6 @@
   <div id="authModal" class="auth-overlay">
     <div class="auth-card" style="background:#000; border:1px solid rgba(255,255,255,0.15);">
       <div style="text-align:center;">
-        <!-- LOGO NOIR VECTORIAL MINIMALISTA -->
         <svg width="60" height="60" viewBox="0 0 100 100" style="margin-bottom:6px;">
           <polygon points="50,10 90,85 10,85" fill="none" stroke="#ffffff" stroke-width="3"/>
           <polygon points="50,28 78,80 22,80" fill="none" stroke="#ffffff" stroke-width="1.5"/>
@@ -224,7 +225,7 @@
         <input type="password" id="loginPass" class="input-field" placeholder="••••••••" value="apex2026">
       </div>
       <button class="btn" onclick="handleLogin()">ACCEDER AL SISTEMA</button>
-      <div id="loginError" style="font-size:10px; color:var(--red); text-align:center; display:none; font-weight:bold;">Credenciales inválidas o cuenta pausada</div>
+      <div id="loginError" style="font-size:10px; color:var(--red); text-align:center; display:none; font-weight:bold;">Credenciales inválidas o membresía vencida</div>
     </div>
   </div>
 
@@ -247,11 +248,11 @@
     </div>
   </div>
 
-  <!-- 1. MÓDULO 1: ANÁLISIS LIBRE (FICHA WHATSAPP DESCARGABLE) -->
+  <!-- 1. MÓDULO 1: ANÁLISIS LIBRE -->
   <div id="tab-m1" class="tab-content active" style="display:none;">
     <div class="apex-card">
       <div class="card-title">1. ANÁLISIS LIBRE // FICHA WHATSAPP</div>
-      <p style="font-size:10.5px; color:var(--dim); line-height:1.4;">Filtro de ventana temporal y validación estricta de 3 fases. Al finalizar genera una ficha PNG sobre tu último fotograma descargable.</p>
+      <p style="font-size:10.5px; color:var(--dim); line-height:1.4;">Filtro de ventana temporal y validación de 3 fases. Genera una ficha PNG sobre tu último fotograma descargable.</p>
       
       <div>
         <label style="font-size:9px; color:var(--dim); font-weight:900;">DURACIÓN DEL MUESTREO (SEG)</label>
@@ -276,7 +277,7 @@
   <div id="tab-m2" class="tab-content" style="display:none;">
     <div class="apex-card">
       <div class="card-title">2. VIDEO 10s // AUDIO DE VOZ & CADENA CINÉTICA</div>
-      <p style="font-size:10.5px; color:var(--dim); line-height:1.4;">Grabación en crudo y post-procesado con vectores dinámicos (rojo en fallos, cian en cadena cinética) con voz grave incrustada en el archivo.</p>
+      <p style="font-size:10.5px; color:var(--dim); line-height:1.4;">Grabación en crudo y post-procesado con vectores dinámicos (rojo en fallos, cian en cadena cinética) con voz natural incrustada en el archivo.</p>
       
       <button class="btn btn-outline" id="btnStartM2" onclick="startModule2VideoPipeline()">GRABAR Y PROCESAR 10s</button>
       <div id="m2StatusMsg" style="font-size:11px; font-weight:900; color:var(--green); text-align:center; display:none;">GRABANDO: 10s</div>
@@ -293,11 +294,11 @@
     </div>
   </div>
 
-  <!-- 3. MÓDULO 3: CARGAR VIDEO & ANALIZAR -->
+  <!-- 3. MÓDULO 3: CARGAR VIDEO, RALENTIZAR & ANALIZAR + FICHA -->
   <div id="tab-m3" class="tab-content" style="display:none;">
     <div class="apex-card">
-      <div class="card-title">3. CARGAR VIDEO EXTERNO // RENDER COMPLETO</div>
-      <p style="font-size:10.5px; color:var(--dim); line-height:1.4;">Sube un video de la galería. La IA analizará los fotogramas, trazará los vectores cinéticos y te entregará el video procesado con botón de descarga.</p>
+      <div class="card-title">3. CARGAR VIDEO EXTERNO // SLOW-MO & RENDER</div>
+      <p style="font-size:10.5px; color:var(--dim); line-height:1.4;">Sube un video. El motor lo ralentiza a 0.5x para que la IA siga cada articulación con precisión. Exporta el video analizado y genera una ficha PNG sobre un fotograma central.</p>
       
       <div>
         <label style="font-size:9px; color:var(--dim); font-weight:900;">ARCHIVO DE VIDEO</label>
@@ -305,37 +306,49 @@
         <video id="m3SourceVideo" preload="auto" playsinline muted style="display:none;"></video>
       </div>
 
-      <button class="btn btn-outline" id="btnStartM3" onclick="processUploadedVideo()">PROCESAR Y RENDERIZAR</button>
-      <div id="m3ProgressMsg" style="font-size:11px; font-weight:900; color:var(--green); text-align:center; display:none;">Procesando fotogramas...</div>
+      <button class="btn btn-outline" id="btnStartM3" onclick="processUploadedVideoSlowMo()">PROCESAR A 0.5X Y RENDERIZAR</button>
+      <div id="m3ProgressMsg" style="font-size:11px; font-weight:900; color:var(--green); text-align:center; display:none;">Ralentizando y procesando fotogramas...</div>
 
       <div id="m3PreviewBox" class="preview-box" style="display:none;">
-        <span style="font-size:9px; color:var(--dim); font-weight:900;">VIDEO RENDERIZADO // LISTO</span>
+        <span style="font-size:9px; color:var(--dim); font-weight:900;">VIDEO RENDERIZADO CON VECTORES</span>
         <video id="m3PreviewVideo" class="preview-media" playsinline controls></video>
         <div class="row-2">
-          <button class="btn" onclick="downloadM3Video()">⬇️ DESCARGAR</button>
+          <button class="btn" onclick="downloadM3Video()">⬇️ DESCARGAR VIDEO</button>
           <button class="btn btn-outline" onclick="discardM3Video()">DESCARTAR</button>
         </div>
+      </div>
+
+      <div id="m3FichaPreviewBox" class="preview-box" style="display:none;">
+        <span style="font-size:9px; color:var(--dim); font-weight:900;">FICHA PNG DEL VIDEO (FOTOGRAMA CENTRAL)</span>
+        <img id="m3FichaPreviewImg" class="preview-media" src="" alt="Ficha Video">
+        <button class="btn" onclick="downloadM3Ficha()">⬇️ DESCARGAR FICHA PNG</button>
       </div>
     </div>
   </div>
 
-  <!-- 4. MÓDULO 4: COACH ESTRICTO (8 GOLPES + ESQUIVAS + DESPLAZAMIENTOS) -->
+  <!-- 4. MÓDULO 4: COACH ESTRICTO -->
   <div id="tab-m4" class="tab-content" style="display:none;">
     <div class="apex-card">
       <div class="card-title">4. COACH EN TIEMPO REAL // EVALUADOR ESTRICTO</div>
-      <p style="font-size:10.5px; color:var(--dim); line-height:1.4;">Evaluación estricta de los 8 golpes oficiales, esquivas y pivotes. Si el gesto no cumple el rango biomecánico exacto, la IA ordenará repetirlo.</p>
+      <p style="font-size:10.5px; color:var(--dim); line-height:1.4;">15 instrucciones aleatorias con tiempo pausado de escucha (3s) y ejecución (5s). Calificación final con ficha gráfica sobre fotograma de fondo.</p>
       
       <div class="row-2">
-        <button class="btn btn-outline" id="btnCoachModeA" onclick="setCoachSubMode('A')">1. COMANDO Y GESTO</button>
+        <button class="btn btn-outline" id="btnCoachModeA" onclick="setCoachSubMode('A')">1. DRILL ALEATORIO</button>
         <button class="btn btn-outline" id="btnCoachModeB" onclick="setCoachSubMode('B')">2. COMBO LIBRE</button>
       </div>
 
       <!-- SUBMODO A -->
       <div id="coachSubModeA" style="display:none; flex-direction:column; gap:8px;">
         <div style="font-size:10px; color:var(--dim); margin-top:4px;">
-          <b>Dinámica:</b> La IA solicita un gesto técnico con su descripción biomecánica. Tienes 4 segundos para ejecutarlo con precisión.
+          <b>Dinámica:</b> La IA selecciona 5 drills aleatorios de su catálogo de 15. Da la orden por voz, espera 3s a que te prepares y abre 5s para validar estrictamente.
         </div>
-        <button class="btn" onclick="startCoachDrillA()">INICIAR DRILL ESTRICTO (8 GOLPES / ESQUIVAS)</button>
+        <button class="btn" onclick="startRandomCoachDrillA()">INICIAR 5 DRILLS ALEATORIOS</button>
+
+        <div id="coachAFichaBox" class="preview-box" style="display:none;">
+          <span style="font-size:9px; color:var(--dim); font-weight:900;">FICHA FINAL DEL DRILL // DESCARGABLE</span>
+          <img id="coachAFichaImg" class="preview-media" src="" alt="Ficha Coach">
+          <button class="btn" onclick="downloadCoachAReport()">⬇️ DESCARGAR FICHA PNG</button>
+        </div>
       </div>
 
       <!-- SUBMODO B -->
@@ -358,29 +371,31 @@
     </div>
   </div>
 
-  <!-- 5. MÓDULO 5: GESTIÓN DE USUARIOS (ADMIN) -->
+  <!-- 5. MÓDULO 5: GESTIÓN DE USUARIOS CON VIGENCIA TEMPORAL -->
   <div id="tab-m5" class="tab-content" style="display:none;">
     <div class="apex-card">
-      <div class="card-title">5. CONTROL DE ACCESO // USUARIOS APEX</div>
-      <p style="font-size:10.5px; color:var(--dim);">Panel de administración para dar de alta, pausar o revocar accesos a los atletas de forma persistente.</p>
+      <div class="card-title">5. CONTROL DE ACCESO // VIGENCIA DE MEMBRESÍA</div>
+      <p style="font-size:10.5px; color:var(--dim);">Abre este panel como administrador en el móvil del atleta y asígnale su membresía con los días exactos de vigencia. La app calculará la expiración y se bloqueará automáticamente al vencerse.</p>
       
       <div class="row-2">
-        <input type="text" id="newUserName" class="input-field" placeholder="Nombre completo">
+        <input type="text" id="newUserName" class="input-field" placeholder="Nombre del Striker">
         <input type="text" id="newUserLogin" class="input-field" placeholder="Usuario">
       </div>
-      <div>
+      <div class="row-2">
         <input type="password" id="newUserPass" class="input-field" placeholder="Contraseña">
+        <input type="number" id="newUserDays" class="input-field" placeholder="Vigencia en días" value="30" min="1" max="365">
       </div>
-      <button class="btn" onclick="createNewUser()">CREAR USUARIO</button>
+      <button class="btn" onclick="createNewUser()">CREAR MEMBRESÍA</button>
 
       <div style="margin-top:10px;">
-        <span style="font-size:9px; color:var(--dim); font-weight:900; letter-spacing:1px;">STRIKERS REGISTRADOS</span>
+        <span style="font-size:9px; color:var(--dim); font-weight:900; letter-spacing:1px;">STRIKERS & MEMBRESÍAS ACTIVAS</span>
         <div style="overflow-x:auto; margin-top:6px;">
           <table class="user-table">
             <thead>
               <tr>
                 <th>Nombre</th>
                 <th>Usuario</th>
+                <th>Expira</th>
                 <th>Estado</th>
                 <th>Acción</th>
               </tr>
@@ -392,7 +407,7 @@
     </div>
   </div>
 
-  <!-- BARRA DE NAVEGACIÓN INFERIOR (ICONOS VECTORIALES BLANCOS FINOS) -->
+  <!-- NAVEGACIÓN INFERIOR -->
   <div class="bottom-nav" id="bottomNav" style="display:none;">
     <button class="nav-item active" onclick="switchNav('tab-m1', this)">
       <svg viewBox="0 0 24 24"><path d="M4 7h4l2-3h4l2 3h4a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -424,12 +439,18 @@
 
   <script>
     // =========================================================================
-    // 1. SISTEMA DE GESTIÓN DE USUARIOS (PERSISTENTE)
+    // 1. SISTEMA DE GESTIÓN DE USUARIOS CON VIGENCIA AUTOMÁTICA
     // =========================================================================
     const DEFAULT_USERS = [
-      { id: '1', name: 'Administrador Apex', user: 'admin', pass: 'apex2026', status: 'active', role: 'admin' },
-      { id: '2', name: 'Víctor Garcés', user: 'striker1', pass: '1234', status: 'active', role: 'user' }
+      { id: '1', name: 'Administrador Apex', user: 'admin', pass: 'apex2026', expiresAt: '2099-12-31', status: 'active', role: 'admin' },
+      { id: '2', name: 'Víctor Garcés', user: 'striker1', pass: '1234', expiresAt: calculateExpiryDate(30), status: 'active', role: 'user' }
     ];
+
+    function calculateExpiryDate(days) {
+      const d = new Date();
+      d.setDate(d.getDate() + parseInt(days));
+      return d.toISOString().split('T')[0];
+    }
 
     function getUsers() {
       const stored = localStorage.getItem('apex_users_db');
@@ -456,9 +477,11 @@
       const found = users.find(x => x.user.toLowerCase() === u.toLowerCase() && x.pass === p);
 
       if (found) {
-        if (found.status === 'paused') {
-          return alert('Tu cuenta está pausada por el administrador.');
+        const today = new Date().toISOString().split('T')[0];
+        if (found.role !== 'admin' && (found.status === 'paused' || found.expiresAt < today)) {
+          return alert(`Acceso denegado: Tu membresía expiró el ${found.expiresAt}. Contacta a tu entrenador.`);
         }
+
         currentUser = found;
         document.getElementById('authModal').style.display = 'none';
         document.getElementById('bottomNav').style.display = 'flex';
@@ -472,7 +495,7 @@
           renderUserTable();
         }
 
-        speakDeep("Bienvenido al sistema cinemático Apex Boxing.");
+        speakNaturalCoach("Bienvenido al sistema Apex Boxing.");
       } else {
         document.getElementById('loginError').style.display = 'block';
       }
@@ -486,17 +509,20 @@
       const users = getUsers();
       const tbody = document.getElementById('userTableBody');
       tbody.innerHTML = '';
+      const today = new Date().toISOString().split('T')[0];
 
       users.forEach(u => {
+        const isExpired = u.role !== 'admin' && u.expiresAt < today;
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><b>${u.name}</b></td>
           <td>${u.user}</td>
-          <td><span class="badge ${u.status === 'active' ? 'badge-active' : 'badge-paused'}">${u.status}</span></td>
+          <td>${u.role === 'admin' ? 'Ilimitado' : u.expiresAt}</td>
+          <td><span class="badge ${isExpired ? 'badge-expired' : (u.status === 'active' ? 'badge-active' : 'badge-paused')}">${isExpired ? 'Vencida' : u.status}</span></td>
           <td>
             ${u.role !== 'admin' ? `
-              <button class="btn btn-outline" style="padding:4px 6px; font-size:8px; display:inline-block;" onclick="toggleUserStatus('${u.id}')">${u.status === 'active' ? 'Pausar' : 'Activar'}</button>
-              <button class="btn btn-red" style="padding:4px 6px; font-size:8px; display:inline-block; margin-left:4px;" onclick="deleteUser('${u.id}')">Eliminar</button>
+              <button class="btn btn-outline" style="padding:4px 6px; font-size:8px; display:inline-block;" onclick="renewUserDays('${u.id}', 30)">+30d</button>
+              <button class="btn btn-red" style="padding:4px 6px; font-size:8px; display:inline-block; margin-left:4px;" onclick="deleteUser('${u.id}')">🗑️</button>
             ` : '<span style="color:var(--dim); font-size:9px;">Master</span>'}
           </td>
         `;
@@ -508,12 +534,13 @@
       const name = document.getElementById('newUserName').value.trim();
       const user = document.getElementById('newUserLogin').value.trim();
       const pass = document.getElementById('newUserPass').value.trim();
+      const days = document.getElementById('newUserDays').value.trim() || 30;
 
-      if (!name || !user || !pass) return alert('Completa todos los campos.');
+      if (!name || !user || !pass) return alert('Completa todos los campos requeridos.');
 
       const users = getUsers();
       if (users.find(x => x.user.toLowerCase() === user.toLowerCase())) {
-        return alert('Este nombre de usuario ya existe.');
+        return alert('Este nombre de usuario ya existe en este dispositivo.');
       }
 
       users.push({
@@ -521,6 +548,7 @@
         name,
         user,
         pass,
+        expiresAt: calculateExpiryDate(days),
         status: 'active',
         role: 'user'
       });
@@ -529,15 +557,17 @@
       document.getElementById('newUserName').value = '';
       document.getElementById('newUserLogin').value = '';
       document.getElementById('newUserPass').value = '';
-      alert('Usuario creado.');
+      alert(`Membresía activada exitosamente por ${days} días.`);
     }
 
-    function toggleUserStatus(id) {
+    function renewUserDays(id, days) {
       const users = getUsers();
       const u = users.find(x => x.id === id);
       if (u) {
-        u.status = u.status === 'active' ? 'paused' : 'active';
+        u.expiresAt = calculateExpiryDate(days);
+        u.status = 'active';
         saveUsers(users);
+        alert(`Membresía renovada por ${days} días adicionales a partir de hoy.`);
       }
     }
 
@@ -557,13 +587,13 @@
       const title = document.getElementById('visorTitle');
       if (tabId === 'tab-m1') title.innerText = 'APEX BOXING // ANÁLISIS LIBRE';
       else if (tabId === 'tab-m2') title.innerText = 'APEX BOXING // VIDEO 10s CON AUDIO';
-      else if (tabId === 'tab-m3') title.innerText = 'APEX BOXING // CARGA & RENDER';
+      else if (tabId === 'tab-m3') title.innerText = 'APEX BOXING // CARGA & SLOW-MO';
       else if (tabId === 'tab-m4') title.innerText = 'APEX BOXING // COACH ESTRICTO';
-      else if (tabId === 'tab-m5') title.innerText = 'APEX BOXING // CONTROL DE ACCESO';
+      else if (tabId === 'tab-m5') title.innerText = 'APEX BOXING // VIGENCIA DE MEMBRESÍA';
     }
 
     // =========================================================================
-    // 2. AUDIO & VOZ GRAVE DE ENTRENADOR
+    // 2. AUDIO & VOZ NATURAL DE ENTRENADOR
     // =========================================================================
     let audioCtx = null;
     let audioDestNode = null;
@@ -581,31 +611,30 @@
         initAudio();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        // Tono grave marcial
-        osc.frequency.setValueAtTime(160, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.35);
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+        osc.frequency.setValueAtTime(260, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(130, audioCtx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
 
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         if (sendToStream && audioDestNode) gain.connect(audioDestNode);
 
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.4);
+        osc.stop(audioCtx.currentTime + 0.35);
       } catch(e) {}
 
-      speakDeep(text);
+      speakNaturalCoach(text);
     }
 
-    let deepVoice = null;
+    let coachVoice = null;
     function initVoices() {
       if (!('speechSynthesis' in window)) return;
       const vList = window.speechSynthesis.getVoices();
       const esVoices = vList.filter(v => v.lang.toLowerCase().startsWith('es'));
-      deepVoice = esVoices.find(v => {
+      coachVoice = esVoices.find(v => {
         const n = v.name.toLowerCase();
-        return n.includes('jorge') || n.includes('carlos') || n.includes('diego') || n.includes('male');
+        return n.includes('jorge') || n.includes('carlos') || n.includes('diego') || n.includes('male') || n.includes('david');
       }) || esVoices[0];
     }
     if ('speechSynthesis' in window) {
@@ -613,20 +642,20 @@
       initVoices();
     }
 
-    function speakDeep(text) {
+    function speakNaturalCoach(text) {
       if (!('speechSynthesis' in window)) return;
       window.speechSynthesis.cancel();
       window.speechSynthesis.resume();
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = 'es-ES';
-      if (deepVoice) utter.voice = deepVoice;
-      utter.rate = 1.05;
-      utter.pitch = 0.25; // Tono grave profundo
+      if (coachVoice) utter.voice = coachVoice;
+      utter.rate = 1.0;
+      utter.pitch = 0.70;
       window.speechSynthesis.speak(utter);
     }
 
     // =========================================================================
-    // 3. MOTOR BIOMECÁNICO: FILTRO DE MEDIA MÓVIL & FASES DE GOLPE
+    // 3. MOTOR BIOMECÁNICO & FILTRO TEMPORAL
     // =========================================================================
     let cameraInstance = null;
     let isCameraRunning = false;
@@ -641,7 +670,6 @@
       [23, 25], [24, 26], [25, 27], [26, 28]
     ];
 
-    // BUFFER DE MEDIA MÓVIL (5 FRAMES) PARA ELIMINAR TEMBLOR
     let landmarkHistory = [];
     const HISTORY_SIZE = 5;
 
@@ -674,7 +702,6 @@
       return Math.round(angle);
     }
 
-    // GESTIÓN ESTRICTA DE FASES (Guardia -> Extensión -> Retracción)
     let punchPhaseR = 'GUARD';
     let punchPhaseL = 'GUARD';
 
@@ -718,7 +745,6 @@
       const hR = lm[24], hL = lm[23], kR = lm[26], kL = lm[25], aR = lm[28], aL = lm[27];
       const nose = lm[0];
 
-      // 1. HIPEREXTENSIÓN DE CODO
       if (sR && eR && wR) {
         const angR = calculateAngle(sR, eR, wR);
         if (angR > 175) {
@@ -734,7 +760,6 @@
         }
       }
 
-      // 2. EQUILIBRIO Y EJE DE GRAVEDAD
       if (nose && aR && aL) {
         const midAnkX = (aR.x + aL.x) / 2;
         const dev = Math.abs(nose.x - midAnkX);
@@ -744,7 +769,6 @@
         }
       }
 
-      // 3. ROTACIÓN DE CADERA
       if (hR && hL) {
         const hipTilt = Math.abs(hR.y - hL.y);
         if (hipTilt > 0.07) {
@@ -753,12 +777,10 @@
         }
       }
 
-      // 4. DETECCIÓN ESTRICTA DE FASES EN GOLPES
       if (sR && eR && wR && sL && eL && wL) {
         const angR = calculateAngle(sR, eR, wR);
         const angL = calculateAngle(sL, eL, wL);
 
-        // Brazo Derecho
         if (punchPhaseR === 'GUARD' && angR > 150 && angR <= 175) {
           punchPhaseR = 'EXTENDED';
         } else if (punchPhaseR === 'EXTENDED' && angR < 100) {
@@ -766,7 +788,6 @@
           m1Metrics.validCrossCount++;
         }
 
-        // Brazo Izquierdo
         if (punchPhaseL === 'GUARD' && angL > 150 && angL <= 175) {
           punchPhaseL = 'EXTENDED';
         } else if (punchPhaseL === 'EXTENDED' && angL < 100) {
@@ -802,7 +823,7 @@
           btn.innerText = "APAGAR";
           btn.style.color = "#ff2a2a";
           requestAnimationFrame(renderLiveVisor);
-          speakDeep("Cámara activa.");
+          speakNaturalCoach("Cámara activa.");
         }).catch(err => alert("Error de cámara: " + err));
       } else {
         if (videoElement.srcObject) videoElement.srcObject.getTracks().forEach(t => t.stop());
@@ -854,7 +875,6 @@
     }
 
     function drawApexWatermark(ctx) {
-      // LOGO VECTORIAL MINIMALISTA NOIR
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
@@ -919,7 +939,6 @@
         }
       });
 
-      // CADENA CINÉTICA CIAN
       if (sR && eR && wR && hR && aR) {
         const ang = calculateAngle(sR, eR, wR);
         if (ang > 150 && ang <= 175) {
@@ -945,7 +964,7 @@
     }
 
     // =========================================================================
-    // 4. MÓDULO 1: ANÁLISIS LIBRE -> FICHA PNG DESCARGABLE
+    // 4. MÓDULO 1: ANÁLISIS LIBRE
     // =========================================================================
     let m1GeneratedImageUri = null;
 
@@ -1061,7 +1080,7 @@
         const imgPreview = document.getElementById('m1PreviewImg');
         imgPreview.src = m1GeneratedImageUri;
         document.getElementById('m1PreviewBox').style.display = 'flex';
-        speakDeep("Ficha cinemática lista para descargar.");
+        speakNaturalCoach("Ficha cinemática lista para descargar.");
       };
 
       bgImg.src = backgroundImgUrl;
@@ -1081,7 +1100,7 @@
     }
 
     // =========================================================================
-    // 5. MÓDULO 2: VIDEO 10s CON AUDIO INTEGRADO
+    // 5. MÓDULO 2: VIDEO 10s
     // =========================================================================
     let m2GeneratedVideoBlob = null;
 
@@ -1154,7 +1173,7 @@
                 isPipelineActive = false;
                 msg.style.display = 'none';
                 requestAnimationFrame(renderLiveVisor);
-                speakDeep("Video post-procesado con éxito.");
+                speakNaturalCoach("Video post-procesado con éxito.");
                 resolve();
               };
               return;
@@ -1204,25 +1223,26 @@
     }
 
     // =========================================================================
-    // 6. MÓDULO 3: CARGA & ANÁLISIS DE VIDEO EXTERNO
+    // 6. MÓDULO 3: CARGA & SLOW-MO 0.5X
     // =========================================================================
     let m3UploadedBlob = null;
+    let m3FichaUri = null;
 
     function loadModule3File(input) {
       const f = input.files[0];
       if (!f) return;
       const vid = document.getElementById('m3SourceVideo');
       vid.src = URL.createObjectURL(f);
-      speakDeep("Video cargado. Listo para renderizar.");
+      speakNaturalCoach("Video cargado. Listo para ralentizar y analizar.");
     }
 
-    async function processUploadedVideo() {
+    async function processUploadedVideoSlowMo() {
       const vid = document.getElementById('m3SourceVideo');
       if (!vid.src) return alert('Debes seleccionar un video primero.');
 
       const progress = document.getElementById('m3ProgressMsg');
       progress.style.display = 'block';
-      progress.innerText = "Procesando fotogramas con IA...";
+      progress.innerText = "Ralentizando a 0.5x y analizando fotogramas con IA...";
 
       const canvas = document.getElementById('gamingCanvas');
       const ctx = canvas.getContext('2d');
@@ -1233,8 +1253,15 @@
       recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
       recorder.start();
 
+      vid.playbackRate = 0.5;
       vid.currentTime = 0;
       await vid.play();
+
+      let middleFrameUrl = null;
+      const midTime = vid.duration ? vid.duration / 2 : 2.5;
+
+      let hyperExtCount = 0;
+      let punchCount = 0;
 
       async function step() {
         if (vid.ended || vid.paused) {
@@ -1245,8 +1272,10 @@
             const prevVid = document.getElementById('m3PreviewVideo');
             prevVid.src = URL.createObjectURL(m3UploadedBlob);
             prevBox.style.display = 'flex';
-            progress.innerText = "¡Video renderizado con éxito!";
-            speakDeep("Renderizado completado.");
+            progress.innerText = "¡Video renderizado a 0.5x con éxito!";
+            speakNaturalCoach("Video procesado en cámara lenta y analizado.");
+
+            generateM3Ficha(middleFrameUrl, punchCount, hyperExtCount);
           };
           return;
         }
@@ -1259,34 +1288,118 @@
           await pose.send({ image: vid });
         } catch(e) {}
 
+        if (!middleFrameUrl && vid.currentTime >= midTime) {
+          middleFrameUrl = canvas.toDataURL('image/jpeg', 0.95);
+        }
+
         drawApexWatermark(ctx);
 
         if (latestLandmarks) {
           drawDynamicSkeleton(ctx, latestLandmarks, canvas.width, canvas.height);
+          const sR = latestLandmarks[12], eR = latestLandmarks[14], wR = latestLandmarks[16];
+          if (sR && eR && wR) {
+            const ang = calculateAngle(sR, eR, wR);
+            if (ang > 175) hyperExtCount++;
+            if (ang > 145 && ang <= 175) punchCount++;
+          }
         }
 
-        drawBottomBar(ctx, canvas.width, canvas.height, "APEX // VIDEO ANALIZADO POR IA");
+        drawBottomBar(ctx, canvas.width, canvas.height, "APEX // SLOW-MO 0.5X BIOMECHANICAL ANALYSIS");
         requestAnimationFrame(step);
       }
       step();
+    }
+
+    function generateM3Ficha(bgUrl, punches, errors) {
+      if (!bgUrl) bgUrl = document.getElementById('gamingCanvas').toDataURL('image/jpeg', 0.95);
+      const cvs = document.getElementById('offscreenCanvas');
+      const ctx = cvs.getContext('2d');
+      const bgImg = new Image();
+
+      bgImg.onload = () => {
+        ctx.drawImage(bgImg, 0, 0, cvs.width, cvs.height);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.80)';
+        ctx.fillRect(0, 0, cvs.width, cvs.height);
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(12, 12, cvs.width - 24, cvs.height - 24);
+
+        drawApexWatermark(ctx);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('STRIKER PASS // FICHA DE VIDEO EXTERNO', 240, 68);
+
+        ctx.fillStyle = '#ff2a2a';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText('ANÁLISIS RALENTIZADO A 0.5X // FOTOGRAMA CENTRAL', 240, 86);
+
+        const cards = [
+          { k: "GESTOS ANALIZADOS", v: `${punches} IMPACTOS DETECTADOS` },
+          { k: "ALERTAS DE CODO", v: errors > 0 ? `${errors} HIPEREXTENSIONES` : "0 RIESGOS (ÓPTIMO)" },
+          { k: "CALIDAD DE SEGUIMIENTO", v: "ALTA PRECISIÓN 0.5X" }
+        ];
+
+        let y = 115;
+        cards.forEach(c => {
+          ctx.fillStyle = 'rgba(10, 10, 10, 0.92)';
+          ctx.fillRect(24, y, 432, 54);
+          ctx.strokeStyle = '#222';
+          ctx.strokeRect(24, y, 432, 54);
+
+          ctx.fillStyle = '#aaaaaa';
+          ctx.font = 'bold 9px monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(c.k, 36, y + 20);
+
+          ctx.fillStyle = '#00ff66';
+          ctx.font = '900 12.5px monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(c.v, 36, y + 38);
+
+          y += 66;
+        });
+
+        ctx.fillStyle = '#777777';
+        ctx.font = '9px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('APEX BOXING ESCUELA DE STRIKERS • CALI', 240, 600);
+
+        m3FichaUri = cvs.toDataURL('image/png');
+        document.getElementById('m3FichaPreviewImg').src = m3FichaUri;
+        document.getElementById('m3FichaPreviewBox').style.display = 'flex';
+      };
+      bgImg.src = bgUrl;
     }
 
     function downloadM3Video() {
       if (!m3UploadedBlob) return;
       const a = document.createElement('a');
       a.href = URL.createObjectURL(m3UploadedBlob);
-      a.download = `Apex_Render_${Date.now()}.webm`;
+      a.download = `Apex_SlowMo_${Date.now()}.webm`;
+      a.click();
+    }
+
+    function downloadM3Ficha() {
+      if (!m3FichaUri) return;
+      const a = document.createElement('a');
+      a.href = m3FichaUri;
+      a.download = `Apex_Ficha_Video_${Date.now()}.png`;
       a.click();
     }
 
     function discardM3Video() {
       m3UploadedBlob = null;
+      m3FichaUri = null;
       document.getElementById('m3PreviewBox').style.display = 'none';
+      document.getElementById('m3FichaPreviewBox').style.display = 'none';
       document.getElementById('m3PreviewVideo').src = '';
     }
 
     // =========================================================================
-    // 7. MÓDULO 4: COACH ESTRICTO (8 GOLPES + ESQUIVAS + DESPLAZAMIENTOS)
+    // 7. MÓDULO 4: COACH ESTRICTO (15 INSTRUCCIONES + PAUSAS)
     // =========================================================================
     let currentCoachMode = 'A';
 
@@ -1298,124 +1411,164 @@
       document.getElementById('btnCoachModeB').classList.toggle('btn-outline', mode !== 'B');
     }
 
-    // CATÁLOGO DE LOS 8 GOLPES + ESQUIVAS CON PARÁMETROS BIOMECÁNICOS
-    const BOXING_CATALOG = [
-      {
-        name: "1. Jab de Izquierda",
-        desc: "Extensión directa del brazo izquierdo (150° a 170°). Mantén guardia derecha arriba.",
-        type: "jab"
-      },
-      {
-        name: "2. Cross de Derecha",
-        desc: "Extensión directa del brazo derecho con pivote de cadera.",
-        type: "cross"
-      },
-      {
-        name: "3. Hook Izquierdo a la Cabeza",
-        desc: "Codo izquierdo flexionado a 90° en plano horizontal a la altura del mentón.",
-        type: "hook_L"
-      },
-      {
-        name: "4. Hook Derecho a la Cabeza",
-        desc: "Codo derecho flexionado a 90° con rotación de torso.",
-        type: "hook_R"
-      },
-      {
-        name: "5. Uppercut Izquierdo",
-        desc: "Ascendente desde la cintura, codo flexionado entre 75° y 110°.",
-        type: "upper_L"
-      },
-      {
-        name: "6. Uppercut Derecho",
-        desc: "Ascendente con empuje de pierna trasera y flexión de 90°.",
-        type: "upper_R"
-      },
-      {
-        name: "7. Hook al Hígado / Cuerpo",
-        desc: "Impacto semicircular bajo, nivel de costillas.",
-        type: "body_hook"
-      },
-      {
-        name: "8. Overhand Derecho",
-        desc: "Golpe en curva descendente por encima de la línea del hombro.",
-        type: "overhand"
-      },
-      {
-        name: "9. Esquiva Circular (Roll / Weave)",
-        desc: "Flexión de piernas y desplazamiento en U del tronco.",
-        type: "weave"
-      },
-      {
-        name: "10. Desplazamiento / Pivote",
-        desc: "Pivote lateral de 45° manteniendo la base de apoyo.",
-        type: "pivot"
-      }
+    const RANDOM_DRILL_POOL = [
+      { name: "Jab Directo Izquierdo", desc: "Extiende el brazo izquierdo recto al mentón.", type: "jab" },
+      { name: "Cross de Derecha", desc: "Recto de derecha con rotación de cadera.", type: "cross" },
+      { name: "Hook Izquierdo", desc: "Gancho horizontal a la mandíbula con codo a 90 grados.", type: "hook_L" },
+      { name: "Hook Derecho", desc: "Gancho derecho con rotación de hombros.", type: "hook_R" },
+      { name: "Uppercut Izquierdo", desc: "Ascendente vertical desde la guardia.", type: "upper_L" },
+      { name: "Uppercut Derecho", desc: "Ascendente de derecha con empuje de pierna.", type: "upper_R" },
+      { name: "Hook al Hígado", desc: "Semicircular a la zona media izquierda.", type: "body_hook" },
+      { name: "Overhand Derecho", desc: "Curva descendente por encima del hombro.", type: "overhand" },
+      { name: "Esquiva en U (Roll)", desc: "Flexiona rodillas y pasa el tronco en arco.", type: "weave" },
+      { name: "Pivote Lateral 45°", desc: "Gira sobre la pierna adelantada saliendo de la línea.", type: "pivot" },
+      { name: "Bloqueo de Guardia Alta", desc: "Pega ambos guantes a la frente cerrando codos.", type: "guard" },
+      { name: "Jab Doble (1-1)", desc: "Dos jabs consecutivos rápidos con paso.", type: "double_jab" },
+      { name: "Combo 1-2 (Jab-Cross)", desc: "Uno, dos directo sin bajar la guardia.", type: "one_two" },
+      { name: "Esquiva Atrás (Pull Back)", desc: "Lleva el peso a la pierna trasera sacando el mentón.", type: "pull" },
+      { name: "Paso de Salida Lateral", desc: "Desplazamiento rápido hacia la izquierda.", type: "step" }
     ];
 
-    async function startCoachDrillA() {
+    let coachAReportUri = null;
+
+    async function startRandomCoachDrillA() {
       if (!isCameraRunning) toggleCameraPower();
       const statusBox = document.getElementById('coachVoiceStatus');
       statusBox.style.display = 'block';
 
-      for (let i = 0; i < BOXING_CATALOG.length; i++) {
-        const item = BOXING_CATALOG[i];
-        let validated = false;
-        let attempts = 0;
+      const shuffled = [...RANDOM_DRILL_POOL].sort(() => 0.5 - Math.random()).slice(0, 5);
+      let passedCount = 0;
+      let midFrameUrl = null;
 
-        while (!validated && attempts < 2) {
-          attempts++;
-          statusBox.innerText = `EJECUTA: ${item.name}\n${item.desc}`;
-          playAudioCue(`Atento: ${item.name}. ${item.desc}`);
+      speakNaturalCoach("Iniciando sesión de cinco ejercicios técnicos aleatorios.");
+      await new Promise(r => setTimeout(r, 2000));
 
-          await new Promise(r => setTimeout(r, 4500));
+      for (let i = 0; i < shuffled.length; i++) {
+        const item = shuffled[i];
+        statusBox.innerText = `EJERCICIO ${i+1}/5: ${item.name}\n${item.desc}`;
+        
+        playAudioCue(`Atento: ${item.name}. ${item.desc}`);
 
-          // VALIDACIÓN BIOMECÁNICA ESTRICTA
-          let isGestureCorrect = false;
+        await new Promise(r => setTimeout(r, 3500));
+
+        statusBox.innerText = `¡EJECUTA AHORA: ${item.name}!`;
+
+        let isCorrect = false;
+        const startTime = Date.now();
+
+        while (Date.now() - startTime < 5000) {
           if (latestLandmarks) {
             const sR = latestLandmarks[12], sL = latestLandmarks[11];
             const eR = latestLandmarks[14], eL = latestLandmarks[13];
             const wR = latestLandmarks[16], wL = latestLandmarks[15];
 
-            if (item.type === 'jab' && sL && eL && wL) {
-              const ang = calculateAngle(sL, eL, wL);
-              if (ang >= 145 && ang <= 175) isGestureCorrect = true;
-            } else if (item.type === 'cross' && sR && eR && wR) {
-              const ang = calculateAngle(sR, eR, wR);
-              if (ang >= 145 && ang <= 175) isGestureCorrect = true;
-            } else if ((item.type === 'hook_L' || item.type === 'hook_R') && sR && eR && wR) {
-              const angR = calculateAngle(sR, eR, wR);
-              const angL = sL ? calculateAngle(sL, eL, wL) : 0;
-              if ((angR >= 75 && angR <= 115) || (angL >= 75 && angL <= 115)) isGestureCorrect = true;
-            } else if ((item.type === 'upper_L' || item.type === 'upper_R') && sR && eR && wR) {
-              const angR = calculateAngle(sR, eR, wR);
-              if (angR >= 70 && angR <= 120 && wR.y < sR.y) isGestureCorrect = true;
+            if ((item.type === 'jab' || item.type === 'double_jab') && sL && eL && wL) {
+              if (calculateAngle(sL, eL, wL) >= 145) isCorrect = true;
+            } else if ((item.type === 'cross' || item.type === 'one_two') && sR && eR && wR) {
+              if (calculateAngle(sR, eR, wR) >= 145) isCorrect = true;
+            } else if ((item.type.includes('hook')) && sR && eR && wR) {
+              if (calculateAngle(sR, eR, wR) >= 75 && calculateAngle(sR, eR, wR) <= 120) isCorrect = true;
+            } else if ((item.type.includes('upper')) && sR && eR && wR) {
+              if (calculateAngle(sR, eR, wR) >= 70 && wR.y < sR.y) isCorrect = true;
             } else {
-              // Esquivas / Desplazamientos
-              if (latestLandmarks[0] && Math.abs(latestLandmarks[0].x - 0.5) > 0.08) isGestureCorrect = true;
+              if (latestLandmarks[0] && Math.abs(latestLandmarks[0].x - 0.5) > 0.06) isCorrect = true;
             }
           }
-
-          if (isGestureCorrect) {
-            validated = true;
-            statusBox.innerText = `APROBADO: ${item.name} ejecutado con éxito.`;
-            speakDeep("Correcto. Parámetro cumplido.");
-            await new Promise(r => setTimeout(r, 2000));
-          } else {
-            if (attempts < 2) {
-              statusBox.innerText = `NO VÁLIDO. Repite: ${item.name}`;
-              speakDeep(`Gesto no detectado o incompleto. Repite: ${item.name}.`);
-              await new Promise(r => setTimeout(r, 2500));
-            } else {
-              statusBox.innerText = `FALLIDO. Pasando al siguiente gesto.`;
-              speakDeep("Gesto no cumplido. Avanzamos al siguiente.");
-              await new Promise(r => setTimeout(r, 2000));
-            }
-          }
+          if (isCorrect) break;
+          await new Promise(r => setTimeout(r, 100));
         }
+
+        if (i === 2) {
+          midFrameUrl = document.getElementById('gamingCanvas').toDataURL('image/jpeg', 0.95);
+        }
+
+        if (isCorrect) {
+          passedCount++;
+          statusBox.innerText = `BIEN: ${item.name} aprobado.`;
+          speakNaturalCoach("Correcto. Parámetro cumplido.");
+        } else {
+          statusBox.innerText = `NO VÁLIDO: ${item.name} incompleto.`;
+          speakNaturalCoach("Gesto incompleto. Mantén la técnica.");
+        }
+
+        await new Promise(r => setTimeout(r, 2500));
       }
 
-      statusBox.innerText = "DRILL ESTRICTO COMPLETADO.";
-      speakDeep("Drill oficial completado.");
+      statusBox.innerText = `SESIÓN FINALIZADA // APROBADOS: ${passedCount}/5`;
+      speakNaturalCoach(`Sesión completada. Lograste ${passedCount} de 5 ejercicios correctos.`);
+
+      generateCoachAFicha(midFrameUrl, passedCount);
+    }
+
+    function generateCoachAFicha(bgUrl, score) {
+      if (!bgUrl) bgUrl = document.getElementById('gamingCanvas').toDataURL('image/jpeg', 0.95);
+      const cvs = document.getElementById('offscreenCanvas');
+      const ctx = cvs.getContext('2d');
+      const bgImg = new Image();
+
+      bgImg.onload = () => {
+        ctx.drawImage(bgImg, 0, 0, cvs.width, cvs.height);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.82)';
+        ctx.fillRect(0, 0, cvs.width, cvs.height);
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(12, 12, cvs.width - 24, cvs.height - 24);
+
+        drawApexWatermark(ctx);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('STRIKER PASS // CALIFICACIÓN DE DRILL', 240, 68);
+
+        ctx.fillStyle = score >= 4 ? '#00ff66' : '#ff2a2a';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillText(score >= 4 ? 'NIVEL: TÉCNICA APROBADA' : 'NIVEL: REQUIERE PRÁCTICA', 240, 88);
+
+        const rows = [
+          { k: "CALIFICACIÓN DE SESIÓN", v: `${score} / 5 ACIERTOS` },
+          { k: "EFECTIVIDAD TÉCNICA", v: `${score * 20}% CUMPLIDO` },
+          { k: "RITMO Y TIEMPOS", v: "FLUIDO // 5S RESPUESTA" }
+        ];
+
+        let y = 120;
+        rows.forEach(r => {
+          ctx.fillStyle = 'rgba(10, 10, 10, 0.92)';
+          ctx.fillRect(24, y, 432, 54);
+          ctx.strokeStyle = '#222';
+          ctx.strokeRect(24, y, 432, 54);
+
+          ctx.fillStyle = '#888888';
+          ctx.font = 'bold 9px monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(r.k, 36, y + 20);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 13px monospace';
+          ctx.fillText(r.v, 36, y + 38);
+
+          y += 68;
+        });
+
+        ctx.fillStyle = '#777777';
+        ctx.font = '9px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('APEX BOXING ESCUELA DE STRIKERS • CALI', 240, 600);
+
+        coachAReportUri = cvs.toDataURL('image/png');
+        document.getElementById('coachAFichaImg').src = coachAReportUri;
+        document.getElementById('coachAFichaBox').style.display = 'flex';
+      };
+      bgImg.src = bgUrl;
+    }
+
+    function downloadCoachAReport() {
+      if (!coachAReportUri) return;
+      const a = document.createElement('a');
+      a.href = coachAReportUri;
+      a.download = `Apex_Calificacion_Drill_${Date.now()}.png`;
+      a.click();
     }
 
     let coachBReportUri = null;
@@ -1426,10 +1579,9 @@
       const statusBox = document.getElementById('coachVoiceStatus');
       statusBox.style.display = 'block';
 
-      speakDeep(`Iniciando evaluación de combo libre. Tienes ${sec} segundos.`);
+      speakNaturalCoach(`Iniciando evaluación de combo libre de ${sec} segundos.`);
 
       let hyperExt = 0;
-      let unbalance = 0;
       let totalPunches = 0;
 
       for (let s = sec; s >= 1; s--) {
@@ -1453,9 +1605,8 @@
       }
 
       statusBox.innerText = `DIAGNÓSTICO: ${voiceDiagnosis}`;
-      speakDeep(voiceDiagnosis);
+      speakNaturalCoach(voiceDiagnosis);
 
-      // Generar Reporte de Combo Descargable
       const cvs = document.getElementById('offscreenCanvas');
       const ctx = cvs.getContext('2d');
       ctx.fillStyle = '#000000';
@@ -1479,6 +1630,7 @@
 
       ctx.fillStyle = '#777777';
       ctx.font = '9px monospace';
+      ctx.textAlign = 'center';
       ctx.fillText('APEX BOXING ESCUELA DE STRIKERS • CALI', 240, 600);
 
       coachBReportUri = cvs.toDataURL('image/png');
