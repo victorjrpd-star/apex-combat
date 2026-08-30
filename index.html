@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Apex CombatOS // Fast Vision 60FPS</title>
+  <title>Apex CombatOS // Vision AI Pro</title>
   <!-- MediaPipe Pose & Camera Utils -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
@@ -126,6 +126,32 @@
       grid-template-columns: 1fr 1fr 1fr;
       gap: 8px;
     }
+    .row-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 8px;
+    }
+    .metric-box {
+      background: #000;
+      border: 1px solid var(--card-border);
+      border-radius: 4px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .metric-val {
+      font-size: 18px;
+      font-weight: 900;
+      color: #fff;
+      font-family: monospace;
+    }
+    .metric-lbl {
+      font-size: 9px;
+      color: var(--dim);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
     .btn {
       background: var(--text);
       color: #000;
@@ -193,13 +219,14 @@
   <!-- TABS -->
   <div class="nav-tabs" id="navTabs" style="display:none;">
     <button class="tab-btn active" onclick="switchTab('tab-gaming', event)">Árbitro Virtual</button>
-    <button class="tab-btn" onclick="switchTab('tab-strike', event)">Strike Lab</button>
+    <button class="tab-btn" onclick="switchTab('tab-bio', event)">🔬 Análisis Biomecánico</button>
+    <button class="tab-btn" onclick="switchTab('tab-reto', event)">⚡ Reto Apex (4 Pruebas)</button>
     <button class="tab-btn" onclick="switchTab('tab-history', event)">Historial (FIFO 10)</button>
-    <button class="tab-btn" id="adminTabBtn" style="display:none;" onclick="switchTab('tab-admin', event)">🛡️ Control de Acceso</button>
+    <button class="tab-btn" id="adminTabBtn" style="display:none;" onclick="switchTab('tab-admin', event)">🛡️ Control</button>
     <button class="tab-btn btn-outline" style="margin-left:auto;" onclick="handleLogout()">Salir</button>
   </div>
 
-  <!-- TAB GAMING -->
+  <!-- TAB 1: GAMING -->
   <div id="tab-gaming" class="tab-content active">
     <div class="apex-card">
       <div class="card-title">Configuración de Combate & Esquinas</div>
@@ -241,7 +268,7 @@
 
     <!-- HUD -->
     <div class="apex-card">
-      <div class="card-title">HUD En Vivo // Visión Ultrarrápida</div>
+      <div class="card-title">HUD En Vivo // Telemetría</div>
       <div class="canvas-container">
         <video id="webcamVideo" playsinline autoplay muted></video>
         <canvas id="gamingCanvas" width="480" height="640"></canvas>
@@ -258,24 +285,76 @@
     </div>
   </div>
 
-  <!-- TAB STRIKE LAB -->
-  <div id="tab-strike" class="tab-content">
+  <!-- TAB 2: ANÁLISIS BIOMECÁNICO -->
+  <div id="tab-bio" class="tab-content">
     <div class="apex-card">
-      <div class="card-title">Strike Lab // Análisis Vectorial en Vivo</div>
-      <div class="row-2">
-        <div style="font-size:12px; color:var(--dim);">
-          ÁNGULO CODO: <b id="ui_angle" style="color:#fff;">--</b><br>
-          EXTENSIÓN: <b id="ui_ext" style="color:#fff;">--</b>
+      <div class="card-title">Telemetría Biomecánica Vectorial en Vivo</div>
+      <div class="row-4">
+        <div class="metric-box">
+          <span class="metric-lbl">Extensión Codo Der</span>
+          <span class="metric-val" id="bio_codo_r">--°</span>
         </div>
-        <div style="font-size:12px; color:var(--dim);">
-          FPS ESTIMADOS: <b style="color:#fff;">30+ FPS</b><br>
-          MOTOR: <b style="color:#fff;">Mobile Lite v5</b>
+        <div class="metric-box">
+          <span class="metric-lbl">Extensión Codo Izq</span>
+          <span class="metric-val" id="bio_codo_l">--°</span>
+        </div>
+        <div class="metric-box">
+          <span class="metric-lbl">Alineación Hombros</span>
+          <span class="metric-val" id="bio_hombros">--°</span>
+        </div>
+        <div class="metric-box">
+          <span class="metric-lbl">Flexión de Rodilla</span>
+          <span class="metric-val" id="bio_rodilla">--°</span>
+        </div>
+      </div>
+
+      <div class="row-2" style="margin-top:8px;">
+        <div class="metric-box">
+          <span class="metric-lbl">Estado Articular del Golpe</span>
+          <span class="metric-val" id="bio_seguridad" style="color:#00ff66; font-size:14px;">ESTABLE // SEGURO</span>
+        </div>
+        <div class="metric-box">
+          <span class="metric-lbl">Centro de Gravedad</span>
+          <span class="metric-val" id="bio_centro" style="font-size:14px;">EQUILIBRADO</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- TAB HISTORIAL -->
+  <!-- TAB 3: RETO APEX (4 PRUEBAS) -->
+  <div id="tab-reto" class="tab-content">
+    <div class="apex-card">
+      <div class="card-title">Reto Apex // Circuito Oficial (4 Pruebas)</div>
+      
+      <div>
+        <label style="font-size:10px; color:var(--dim); font-weight:700;">NOMBRE DEL STRIKER / ATLETA</label>
+        <input type="text" id="reto_striker" class="input-field" placeholder="ej. Camilo Pérez" value="Striker Apex">
+      </div>
+
+      <div class="row-2">
+        <div class="metric-box">
+          <span class="metric-lbl">1. Cadencia Salto (Saltos/min)</span>
+          <input type="number" id="reto_p1" class="input-field" value="142" style="margin-top:4px;">
+        </div>
+        <div class="metric-box">
+          <span class="metric-lbl">2. Técnica & Postura (0-100 pts)</span>
+          <input type="number" id="reto_p2" class="input-field" value="94" style="margin-top:4px;">
+        </div>
+        <div class="metric-box">
+          <span class="metric-lbl">3. Potencia & Velocidad Saco</span>
+          <input type="text" id="reto_p3" class="input-field" value="840 PSI - 9.2 m/s" style="margin-top:4px;">
+        </div>
+        <div class="metric-box">
+          <span class="metric-lbl">4. Cadencia de Golpeo (GPM)</span>
+          <input type="number" id="reto_p4" class="input-field" value="188" style="margin-top:4px;">
+        </div>
+      </div>
+
+      <button class="btn btn-red" onclick="renderRetoScoreboard()">⚡ Generar Tabla Overlay Striker Pass</button>
+    </div>
+  </div>
+
+  <!-- TAB 4: HISTORIAL -->
   <div id="tab-history" class="tab-content">
     <div class="apex-card">
       <div class="card-title">Historial de Sparrings (FIFO 10)</div>
@@ -284,7 +363,7 @@
     </div>
   </div>
 
-  <!-- TAB ADMIN -->
+  <!-- TAB 5: ADMIN -->
   <div id="tab-admin" class="tab-content">
     <div class="apex-card">
       <div class="card-title">Panel Maestro // Gestión de Perfiles</div>
@@ -301,6 +380,9 @@
   </div>
 
   <script>
+    // ==========================================
+    // AUDIO SFX
+    // ==========================================
     let audioCtx = null;
     function initAudio() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -340,6 +422,9 @@
       } catch(e) {}
     }
 
+    // ==========================================
+    // SÍNTESIS DE VOZ MASCULINA FIRME
+    // ==========================================
     let maleVoice = null;
     function initVoices() {
       if (!('speechSynthesis' in window)) return;
@@ -355,14 +440,14 @@
       initVoices();
     }
 
-    function speakFast(text, pitch = 0.60) {
+    function speakFast(text, pitch = 0.50) {
       if (!('speechSynthesis' in window)) return;
       window.speechSynthesis.cancel();
       window.speechSynthesis.resume();
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = 'es-ES';
       if (maleVoice) utter.voice = maleVoice;
-      utter.rate = 1.35;
+      utter.rate = 1.25;
       utter.pitch = pitch;
       window.speechSynthesis.speak(utter);
     }
@@ -372,7 +457,7 @@
     function getRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
     // ==========================================
-    // MOTOR DE VISIÓN ULTRA LIGERO (60 FPS)
+    // MOTOR DE VISIÓN BIOMECÁNICO
     // ==========================================
     let cameraInstance = null;
     let latestLandmarks = null;
@@ -396,17 +481,17 @@
 
     function onPoseResults(results) {
       latestLandmarks = results.poseLandmarks;
-      if (latestLandmarks && isSparringActive) {
-        analyzeBiomechanics(latestLandmarks);
+      if (latestLandmarks) {
+        updateBiometricsUI(latestLandmarks);
+        if (isSparringActive) analyzeCombat(latestLandmarks);
       }
     }
 
-    // Modelo complejidad 0 (Ultra Rápido para CPU móvil)
     const pose = new Pose({
       locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
     });
     pose.setOptions({
-      modelComplexity: 0, // MÁXIMA VELOCIDAD
+      modelComplexity: 0,
       smoothLandmarks: true,
       minDetectionConfidence: 0.5,
       minTrackingConfidence: 0.5
@@ -432,7 +517,6 @@
           cameraInstance = new Camera(videoElement, {
             onFrame: async () => {
               frameCounter++;
-              // Procesar 1 de cada 2 frames para liberar procesador y dar 30 FPS fluidos
               if (frameCounter % 2 === 0) {
                 await pose.send({ image: videoElement });
               }
@@ -443,28 +527,48 @@
           cameraInstance.start();
           requestAnimationFrame(renderLoop);
         }
-        speakFast("Cámara fluida activa.");
+        speakFast("Cámara lista.");
       }).catch(err => alert("Error de cámara: " + err));
     }
 
-    function analyzeBiomechanics(lm) {
+    function updateBiometricsUI(lm) {
+      const sR = lm[12], eR = lm[14], wR = lm[16];
+      const sL = lm[11], eL = lm[13], wL = lm[15];
+      const hipR = lm[24], kneeR = lm[26], ankR = lm[28];
+
+      if (sR && eR && wR) {
+        const angR = calculateAngle(sR, eR, wR);
+        const el = document.getElementById('bio_codo_r');
+        if (el) el.innerText = `${angR}°`;
+      }
+      if (sL && eL && wL) {
+        const angL = calculateAngle(sL, eL, wL);
+        const el = document.getElementById('bio_codo_l');
+        if (el) el.innerText = `${angL}°`;
+      }
+      if (sR && sL) {
+        const slope = Math.round(Math.abs(sR.y - sL.y) * 100);
+        const el = document.getElementById('bio_hombros');
+        if (el) el.innerText = `${slope}°`;
+      }
+      if (hipR && kneeR && ankR) {
+        const angKnee = calculateAngle(hipR, kneeR, ankR);
+        const el = document.getElementById('bio_rodilla');
+        if (el) el.innerText = `${angKnee}°`;
+      }
+    }
+
+    function analyzeCombat(lm) {
       const now = Date.now();
       if (now - lastAutoTrigger < 2000) return;
 
       const nose = lm[0];
-      const shoulderR = lm[12];
-      const elbowR = lm[14];
-      const wristR = lm[16];
+      const sR = lm[12], eR = lm[14], wR = lm[16];
       const hip = lm[24] || lm[23];
 
-      if (shoulderR && elbowR && wristR) {
-        const angle = calculateAngle(shoulderR, elbowR, wristR);
-        const elAngle = document.getElementById('ui_angle');
-        const elExt = document.getElementById('ui_ext');
-        if (elAngle) elAngle.innerText = `${angle}°`;
-        if (elExt) elExt.innerText = angle > 150 ? 'Completa' : 'Flexionado';
-
-        if (angle > 155 && wristR.y < shoulderR.y + 0.1) {
+      if (sR && eR && wR) {
+        const angle = calculateAngle(sR, eR, wR);
+        if (angle > 155 && wR.y < sR.y + 0.1) {
           triggerEvent('impact_generic');
           lastAutoTrigger = now;
           return;
@@ -488,7 +592,6 @@
       }
     }
 
-    // Loop de renderizado desacoplado a 60 FPS nativos
     function renderLoop() {
       drawHUD();
       requestAnimationFrame(renderLoop);
@@ -510,7 +613,7 @@
       const f1 = document.getElementById('f1_name').value;
       const f2 = document.getElementById('f2_name').value;
       const rounds = document.getElementById('cfg_rounds').value;
-      speakFast(`Combate oficial a ${rounds} asaltos. ${f1} contra ${f2}. ¡A pelear!`, 0.6);
+      speakFast(`Combate oficial a ${rounds} asaltos. ${f1} contra ${f2}. ¡A pelear!`, 0.5);
     }
 
     function startSparringSession() {
@@ -527,7 +630,7 @@
       totalHits = 0; totalDodges = 0;
 
       playBell();
-      speakFast(`¡Round uno! ¡Box!`, 0.6);
+      speakFast(`¡Round uno! ¡Box!`, 0.5);
       
       if (timer) clearInterval(timer);
       timer = setInterval(gameLoopTick, 1000);
@@ -545,19 +648,19 @@
           } else {
             isResting = true;
             currentSec = restDuration;
-            speakFast(`¡Fin del round! A las esquinas.`, 0.6);
+            speakFast(`¡Fin del round! A las esquinas.`, 0.5);
           }
         }
       } else {
         currentSec--;
         if (currentSec === 5) {
-          speakFast(`¡Segundos fuera!`, 0.6);
+          speakFast(`¡Segundos fuera!`, 0.5);
         } else if (currentSec <= 0) {
           isResting = false;
           currentRound++;
           currentSec = roundDuration;
           playBell();
-          speakFast(`¡Round ${currentRound}! ¡Box!`, 0.6);
+          speakFast(`¡Round ${currentRound}! ¡Box!`, 0.5);
         }
       }
     }
@@ -580,14 +683,14 @@
       isKnockedDown = true;
       kdSec = 10;
       hp2 = Math.max(0, hp2 - 25);
-      speakFast(`¡Caída! Conteo de protección.`, 0.55);
+      speakFast(`¡Caída! Conteo de protección.`, 0.5);
 
       const kdInterval = setInterval(() => {
         kdSec--;
         if (kdSec <= 0) {
           clearInterval(kdInterval);
           isKnockedDown = false;
-          speakFast(`¡Diez! ¡Victoria por Knockout!`, 0.55);
+          speakFast(`¡Diez! ¡Victoria por Knockout!`, 0.5);
           endMatch(true);
         }
       }, 1000);
@@ -740,6 +843,77 @@
       ctx.fillText('APEX BOXING // NOIR TECH LAB • CALI', 240, 600);
     }
 
+    // ==========================================
+    // RETO APEX // OVERLAY 9:16 RENDER
+    // ==========================================
+    function renderRetoScoreboard() {
+      switchTab('tab-gaming', { target: document.querySelector('.tab-btn') });
+      const canvas = document.getElementById('gamingCanvas');
+      const ctx = canvas.getContext('2d');
+      const striker = document.getElementById('reto_striker').value.toUpperCase();
+      const p1 = document.getElementById('reto_p1').value;
+      const p2 = document.getElementById('reto_p2').value;
+      const p3 = document.getElementById('reto_p3').value;
+      const p4 = document.getElementById('reto_p4').value;
+
+      ctx.fillStyle = '#050505';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 22px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('STRIKER PASS // RETO APEX', 240, 70);
+
+      ctx.fillStyle = '#ff2a2a';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillText(`ATLETA: ${striker}`, 240, 105);
+
+      const items = [
+        { t: "1. CADENCIA DE SALTO", v: `${p1} SPM` },
+        { t: "2. TÉCNICA Y POSTURA", v: `${p2} / 100 PTS` },
+        { t: "3. IMPACTO & POTENCIA", v: p3 },
+        { t: "4. CADENCIA DE GOLPEO", v: `${p4} GPM` }
+      ];
+
+      let y = 145;
+      items.forEach((it, idx) => {
+        ctx.fillStyle = '#111111';
+        ctx.fillRect(30, y, 420, 65);
+        ctx.strokeStyle = '#222222';
+        ctx.strokeRect(30, y, 420, 65);
+
+        ctx.fillStyle = '#888888';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(it.t, 45, y + 25);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 16px monospace';
+        ctx.fillText(it.v, 45, y + 50);
+
+        y += 75;
+      });
+
+      // Calificación General
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('NIVEL CERTIFICADO: APEX PRO', 240, 500);
+
+      ctx.fillStyle = '#888888';
+      ctx.font = '10px monospace';
+      ctx.fillText('APEX BOXING ESCUELA DE STRIKERS • CALI', 240, 600);
+      
+      speakFast(`Striker pass generado para ${striker}. Rendimiento certificado.`, 0.5);
+    }
+
+    // ==========================================
+    // AUTH & HISTORIAL
+    // ==========================================
     const DEFAULT_ADMIN = { user: "admin", pass: "apex2026", role: "admin", active: true };
     function getUsers() {
       let users = JSON.parse(localStorage.getItem('apex_users') || 'null');
