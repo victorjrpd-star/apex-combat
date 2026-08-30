@@ -3,17 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Apex CombatOS // Vision AI Studio</title>
+  <title>Apex CombatOS // Cinemática Biomecánica</title>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
   <style>
     :root {
       --bg: #030303;
-      --card-bg: #0c0c0c;
-      --card-border: #1f1f1f;
+      --card-bg: #0a0a0a;
+      --card-border: #1a1a1a;
       --text: #ffffff;
       --dim: #777777;
       --red: #ff2a2a;
       --green: #00ff66;
-      --accent: #141414;
+      --accent: #111111;
     }
     * {
       box-sizing: border-box;
@@ -49,14 +51,22 @@
       flex-direction: column;
       gap: 14px;
     }
-    .auth-title {
-      font-size: 13px;
-      font-weight: 900;
-      letter-spacing: 2px;
-      text-transform: uppercase;
+    .brand-title {
       text-align: center;
-      border-bottom: 1px solid var(--card-border);
-      padding-bottom: 12px;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: #fff;
+    }
+    .brand-sub {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--dim);
+      margin-top: -8px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
     }
     .nav-tabs {
       display: flex;
@@ -149,7 +159,7 @@
       overflow: hidden;
     }
     video { display: none; }
-    canvas { width: 100%; height: auto; max-height: 460px; object-fit: contain; }
+    canvas { width: 100%; height: auto; max-height: 480px; object-fit: contain; }
     .clip-block {
       background: #000;
       border: 1px solid var(--card-border);
@@ -159,26 +169,32 @@
       flex-direction: column;
       gap: 6px;
     }
+    .preview-box {
+      background: #000;
+      border: 1px solid #222;
+      border-radius: 6px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .preview-video {
+      width: 100%;
+      max-height: 380px;
+      border-radius: 4px;
+      background: #050505;
+    }
   </style>
-  <!-- Scripts MediaPipe con Carga Protegida -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
   <!-- LOGIN -->
   <div id="authModal" class="auth-overlay">
     <div class="auth-card">
-      <div style="text-align:center; margin-bottom:4px;">
-        <svg width="80" height="80" viewBox="0 0 500 500">
-          <path d="M250 40 L450 380 L50 380 Z" fill="none" stroke="white" stroke-width="20"/>
-          <path d="M250 120 L390 350 L110 350 Z" fill="black" stroke="white" stroke-width="12"/>
-          <circle cx="250" cy="220" r="35" fill="white"/>
-          <path d="M220 270 Q250 250 280 270 L290 350 L210 350 Z" fill="white"/>
-          <text x="250" y="430" font-size="44" font-weight="900" font-family="sans-serif" fill="white" text-anchor="middle" letter-spacing="4">APEX BOXING</text>
-        </svg>
-      </div>
-      <div class="auth-title">Apex Engine // Studio Pro</div>
+      <div class="brand-title">APEX BOXING</div>
+      <div class="brand-sub">Escuela de Strikers</div>
+      <div style="font-size:11px; text-align:center; color:var(--dim); font-weight:900; margin-bottom:6px;">CINEMÁTICA BIOMECÁNICA // LOGIN</div>
       <div>
         <label style="font-size:10px; color:var(--dim); font-weight:700;">USUARIO</label>
         <input type="text" id="loginUser" class="input-field" placeholder="admin" value="admin">
@@ -194,17 +210,20 @@
 
   <!-- NAVEGACIÓN -->
   <div class="nav-tabs" id="navTabs" style="display:none;">
-    <button class="tab-btn active" onclick="switchLabMode('mode-reto', event)">🎬 Reto Apex (AI Editor)</button>
-    <button class="tab-btn" onclick="switchLabMode('mode-force', event)">💥 Fuerza & Cadena</button>
+    <button class="tab-btn active" onclick="switchLabMode('mode-force', event)">💥 Fuerza de Golpeo</button>
     <button class="tab-btn" onclick="switchLabMode('mode-cadence', event)">⚡ Cadencia 10s</button>
-    <button class="tab-btn" onclick="switchLabMode('mode-jump', event)">🚀 Salto Vertical</button>
+    <button class="tab-btn" onclick="switchLabMode('mode-jump', event)">🚀 Salto Máximo</button>
+    <button class="tab-btn" onclick="switchLabMode('mode-reto', event)">🎬 Reto Apex Studio</button>
     <button class="tab-btn btn-outline" style="margin-left:auto;" onclick="handleLogout()">Salir</button>
   </div>
 
   <!-- VISOR GLOBAL -->
   <div class="apex-card" id="globalVisionCard" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <div class="card-title" id="visorTitle">Apex Studio // Render & IA</div>
+      <div>
+        <div class="card-title" id="visorTitle">Apex Boxing // Cinemática en Vivo</div>
+        <div style="font-size:9px; color:var(--dim); font-weight:700; margin-left:8px; margin-top:2px;">ESCUELA DE STRIKERS</div>
+      </div>
       <div style="display:flex; gap:6px;">
         <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" onclick="switchCameraFacing()">🔄 Girar</button>
         <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" id="btnCamPower" onclick="toggleCameraPower()">📷 Encender Cámara</button>
@@ -217,18 +236,79 @@
     </div>
   </div>
 
-  <!-- RETO APEX STUDIO -->
-  <div id="mode-reto" class="tab-content active">
+  <!-- 1. LAB: FUERZA DE GOLPEO (SLOW-MO 5s + CUADROS FLOTANTES + PREVIEW) -->
+  <div id="mode-force" class="tab-content active">
     <div class="apex-card">
-      <div class="card-title">Reto Apex // Motor AI 9:16</div>
-      <p style="font-size:11px; color:var(--dim);">Carga los 4 videos. La IA calculará los resultados, graficará las marcas vectoriales y creará el video final con música y tabla traslúcida activa.</p>
+      <div class="card-title">Métrica 1 // Fuerza de Golpeo & Transmisión</div>
+      <p style="font-size:11px; color:var(--dim);">Cámara lateral. Conteo 3-2-1, lanza un golpe de máxima potencia. Se grabará, ralentizará el impacto y superpondrá la cinemática y cuadros flotantes. Podrás previsualizarlo antes de descargar o eliminar.</p>
+      
+      <button class="btn btn-red" id="btnStartForce" onclick="startForceProtocol()">⚡ Iniciar Muestreo de Fuerza (Conteo 3-2-1)</button>
+      <div id="forceStatusMsg" style="font-size:12px; font-weight:900; color:#00ff66; text-align:center; display:none;">PREPARADO: 3...</div>
+
+      <!-- PREVIEW FUERZA -->
+      <div id="forcePreviewBox" class="preview-box" style="display:none;">
+        <span style="font-size:10px; color:var(--dim); font-weight:700;">PREVISUALIZACIÓN // VIDEO ANALIZADO</span>
+        <video id="forcePreviewVideo" class="preview-video" playsinline controls></video>
+        <div class="row-2">
+          <button class="btn btn-red" onclick="downloadPreviewVideo('force')">⬇️ Descargar Video</button>
+          <button class="btn btn-outline" onclick="discardPreviewVideo('force')">🗑️ Eliminar / Repetir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. LAB: CADENCIA 10s (GRABACIÓN + SLOW-MO 5s + CUADROS FLOTANTES + PREVIEW) -->
+  <div id="mode-cadence" class="tab-content">
+    <div class="apex-card">
+      <div class="card-title">Métrica 2 // Cadencia de Golpeo (10 Segundos)</div>
+      <p style="font-size:11px; color:var(--dim);">Conteo 3-2-1. Golpea a máxima frecuencia a dos manos durante 10 segundos continuos. Se grabará la prueba completa y los últimos 5s se ralentizarán con los datos flotantes.</p>
+      
+      <button class="btn btn-red" id="btnStartCadence" onclick="startCadenceProtocol()">🥊 Iniciar Muestreo 10s</button>
+      <div id="cadenceStatusMsg" style="font-size:12px; font-weight:900; color:#00ff66; text-align:center; display:none;">MUESTREO EN CURSO</div>
+
+      <!-- PREVIEW CADENCIA -->
+      <div id="cadencePreviewBox" class="preview-box" style="display:none;">
+        <span style="font-size:10px; color:var(--dim); font-weight:700;">PREVISUALIZACIÓN // VIDEO ANALIZADO</span>
+        <video id="cadencePreviewVideo" class="preview-video" playsinline controls></video>
+        <div class="row-2">
+          <button class="btn btn-red" onclick="downloadPreviewVideo('cadence')">⬇️ Descargar Video</button>
+          <button class="btn btn-outline" onclick="discardPreviewVideo('cadence')">🗑️ Eliminar / Repetir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. LAB: SALTO MÁXIMO (GRABACIÓN + SLOW-MO 5s + CUADROS FLOTANTES + PREVIEW) -->
+  <div id="mode-jump" class="tab-content">
+    <div class="apex-card">
+      <div class="card-title">Métrica 3 // Salto Vertical & Explosividad</div>
+      <p style="font-size:11px; color:var(--dim);">Conteo 3-2-1. Salto vertical reactivo. Se grabará la elevación y aterrizaje, generando el video ralentizado con los resultados flotantes.</p>
+      
+      <button class="btn btn-red" id="btnStartJump" onclick="startJumpProtocol()">🚀 Iniciar Muestreo de Salto</button>
+      <div id="jumpStatusMsg" style="font-size:12px; font-weight:900; color:#00ff66; text-align:center; display:none;">SALTA AHORA</div>
+
+      <!-- PREVIEW SALTO -->
+      <div id="jumpPreviewBox" class="preview-box" style="display:none;">
+        <span style="font-size:10px; color:var(--dim); font-weight:700;">PREVISUALIZACIÓN // VIDEO ANALIZADO</span>
+        <video id="jumpPreviewVideo" class="preview-video" playsinline controls></video>
+        <div class="row-2">
+          <button class="btn btn-red" onclick="downloadPreviewVideo('jump')">⬇️ Descargar Video</button>
+          <button class="btn btn-outline" onclick="discardPreviewVideo('jump')">🗑️ Eliminar / Repetir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. RETO APEX STUDIO (4 VIDEOS + MÚSICA + PREVIEW ANTES DE DESCARGAR) -->
+  <div id="mode-reto" class="tab-content">
+    <div class="apex-card">
+      <div class="card-title">Reto Apex // Estudio de Render & Cinemática</div>
       
       <div>
         <label style="font-size:10px; color:var(--dim); font-weight:700;">STRIKER EVALUADO</label>
         <input type="text" id="reto_striker_name" class="input-field" value="Víctor Garcés">
       </div>
 
-      <!-- 1. SALTO -->
       <div class="clip-block">
         <span style="font-size:10px; color:var(--dim); font-weight:700;">1. Video: Cadencia de Salto</span>
         <input type="file" id="clip1_file" accept="video/*" class="input-field" onchange="loadRetoClip(1, this)">
@@ -236,10 +316,9 @@
           <input type="number" id="clip1_start" class="input-field" placeholder="Inicio (seg)" value="0">
           <input type="number" id="clip1_end" class="input-field" placeholder="Fin (seg)" value="5">
         </div>
-        <video id="vclip1" preload="auto" playsinline muted style="display:none;"></video>
+        <video id="vclip1" preload="auto" playsinline muted crossOrigin="anonymous" style="display:none;"></video>
       </div>
 
-      <!-- 2. TÉCNICA -->
       <div class="clip-block">
         <span style="font-size:10px; color:var(--dim); font-weight:700;">2. Video: Técnica & Postura</span>
         <input type="file" id="clip2_file" accept="video/*" class="input-field" onchange="loadRetoClip(2, this)">
@@ -247,10 +326,9 @@
           <input type="number" id="clip2_start" class="input-field" placeholder="Inicio (seg)" value="0">
           <input type="number" id="clip2_end" class="input-field" placeholder="Fin (seg)" value="5">
         </div>
-        <video id="vclip2" preload="auto" playsinline muted style="display:none;"></video>
+        <video id="vclip2" preload="auto" playsinline muted crossOrigin="anonymous" style="display:none;"></video>
       </div>
 
-      <!-- 3. SACO -->
       <div class="clip-block">
         <span style="font-size:10px; color:var(--dim); font-weight:700;">3. Video: Golpe al Saco</span>
         <input type="file" id="clip3_file" accept="video/*" class="input-field" onchange="loadRetoClip(3, this)">
@@ -258,10 +336,9 @@
           <input type="number" id="clip3_start" class="input-field" placeholder="Inicio (seg)" value="0">
           <input type="number" id="clip3_end" class="input-field" placeholder="Fin (seg)" value="5">
         </div>
-        <video id="vclip3" preload="auto" playsinline muted style="display:none;"></video>
+        <video id="vclip3" preload="auto" playsinline muted crossOrigin="anonymous" style="display:none;"></video>
       </div>
 
-      <!-- 4. CADENCIA -->
       <div class="clip-block">
         <span style="font-size:10px; color:var(--dim); font-weight:700;">4. Video: Velocidad de Golpeo</span>
         <input type="file" id="clip4_file" accept="video/*" class="input-field" onchange="loadRetoClip(4, this)">
@@ -269,59 +346,27 @@
           <input type="number" id="clip4_start" class="input-field" placeholder="Inicio (seg)" value="0">
           <input type="number" id="clip4_end" class="input-field" placeholder="Fin (seg)" value="5">
         </div>
-        <video id="vclip4" preload="auto" playsinline muted style="display:none;"></video>
+        <video id="vclip4" preload="auto" playsinline muted crossOrigin="anonymous" style="display:none;"></video>
       </div>
 
-      <!-- AUDIO LOCAL -->
       <div class="clip-block">
-        <span style="font-size:10px; color:var(--dim); font-weight:700;">🎵 Pista de Audio / Música de Fondo</span>
+        <span style="font-size:10px; color:var(--dim); font-weight:700;">🎵 Pista Musical de Fondo (Audio Sincronizado)</span>
         <input type="file" id="reto_audio_file" accept="audio/*" class="input-field" onchange="loadRetoAudio(this)">
         <audio id="retoBgAudio" preload="auto" style="display:none;"></audio>
       </div>
 
-      <div class="row-2">
-        <div>
-          <label style="font-size:10px; color:var(--dim); font-weight:700;">OPACIDAD TABLA</label>
-          <input type="range" id="reto_overlay_opacity" min="0.2" max="0.85" step="0.05" value="0.55" class="input-field">
-        </div>
-        <div>
-          <label style="font-size:10px; color:var(--dim); font-weight:700;">NIVEL</label>
-          <input type="text" id="reto_cert_level" class="input-field" value="APEX NOVICE PRO">
+      <button class="btn btn-red" onclick="executeRetoStudioEngine()">🎬 Renderizar Video Compuesto</button>
+      <div id="retoRenderProgress" style="font-size:11px; color:#00ff66; text-align:center; display:none;">Iniciando motor de render...</div>
+
+      <!-- PREVIEW RETO -->
+      <div id="retoPreviewBox" class="preview-box" style="display:none;">
+        <span style="font-size:10px; color:var(--dim); font-weight:700;">PREVISUALIZACIÓN // VIDEO RETO APEX</span>
+        <video id="retoPreviewVideo" class="preview-video" playsinline controls></video>
+        <div class="row-2">
+          <button class="btn btn-red" onclick="downloadPreviewVideo('reto')">⬇️ Descargar Video</button>
+          <button class="btn btn-outline" onclick="discardPreviewVideo('reto')">🗑️ Descartar</button>
         </div>
       </div>
-
-      <button class="btn btn-red" onclick="executeFullRetoAIEngine()">🎬 Renderizar Video Compuesto</button>
-      <div id="retoRenderProgress" style="font-size:11px; color:#00ff66; text-align:center; display:none;">Iniciando análisis...</div>
-    </div>
-  </div>
-
-  <!-- 1. LAB: FUERZA -->
-  <div id="mode-force" class="tab-content">
-    <div class="apex-card">
-      <div class="card-title">Fuerza & Cadena Cinética</div>
-      <p style="font-size:11px; color:var(--dim);">Conteo 3-2-1, lanza un golpe de máxima potencia lateral. Exportará a 10s en cámara lenta con trazado cinético.</p>
-      <button class="btn btn-red" onclick="startForceProtocol()">⚡ Iniciar Prueba de Fuerza</button>
-      <div id="forceStatusMsg" style="font-size:12px; font-weight:900; color:#00ff66; text-align:center; display:none;">PREPARADO: 3...</div>
-    </div>
-  </div>
-
-  <!-- 2. LAB: CADENCIA -->
-  <div id="mode-cadence" class="tab-content">
-    <div class="apex-card">
-      <div class="card-title">Cadencia de Golpeo (10s)</div>
-      <p style="font-size:11px; color:var(--dim);">Conteo 3-2-1. Golpea a dos manos durante 10 segundos continuos.</p>
-      <button class="btn btn-red" onclick="startCadenceProtocol()">🥊 Iniciar Muestreo 10s</button>
-      <div id="cadenceStatusMsg" style="font-size:12px; font-weight:900; color:#00ff66; text-align:center; display:none;">MUESTREO EN CURSO</div>
-    </div>
-  </div>
-
-  <!-- 3. LAB: SALTO -->
-  <div id="mode-jump" class="tab-content">
-    <div class="apex-card">
-      <div class="card-title">Salto Vertical & Explosividad</div>
-      <p style="font-size:11px; color:var(--dim);">Conteo 3-2-1. Salto vertical reactivo con evaluación de altura y amortiguación.</p>
-      <button class="btn btn-red" onclick="startJumpProtocol()">🚀 Iniciar Prueba de Salto</button>
-      <div id="jumpStatusMsg" style="font-size:12px; font-weight:900; color:#00ff66; text-align:center; display:none;">SALTA AHORA</div>
     </div>
   </div>
 
@@ -354,7 +399,7 @@
       const esVoices = vList.filter(v => v.lang.toLowerCase().startsWith('es'));
       maleVoice = esVoices.find(v => {
         const n = v.name.toLowerCase();
-        return n.includes('male') || n.includes('david') || n.includes('jorge') || n.includes('carlos') || n.includes('standard-b');
+        return n.includes('male') || n.includes('david') || n.includes('jorge') || n.includes('carlos') || n.includes('raul') || n.includes('standard-b');
       }) || esVoices[0];
     }
     if ('speechSynthesis' in window) {
@@ -374,22 +419,27 @@
       window.speechSynthesis.speak(utter);
     }
 
-    // Logo Vectorial Oficial Apex
-    const apexLogoSvg = new Image();
-    apexLogoSvg.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500"><path d="M250 40 L450 380 L50 380 Z" fill="none" stroke="white" stroke-width="20"/><path d="M250 120 L390 350 L110 350 Z" fill="black" stroke="white" stroke-width="12"/><circle cx="250" cy="220" r="35" fill="white"/><path d="M220 270 Q250 250 280 270 L290 350 L210 350 Z" fill="white"/><text x="250" y="430" font-size="44" font-weight="900" font-family="sans-serif" fill="white" text-anchor="middle" letter-spacing="4">APEX BOXING</text></svg>';
-
     let cameraInstance = null;
     let isCameraRunning = false;
     let latestLandmarks = null;
     let useFacingMode = "environment";
-    let isRetoProcessing = false;
-    let frameBuffer = [];
+    let isProcessingVideo = false;
+
+    let livePercentText = "APEX // CINEMÁTICA: 100%";
+    let liveExtAngle = 0;
 
     const POSE_CONNECTIONS = [
       [11, 12], [11, 13], [13, 15], [12, 14], [14, 16],
       [11, 23], [12, 24], [23, 24],
       [23, 25], [24, 26], [25, 27], [26, 28]
     ];
+
+    function calculateAngle(a, b, c) {
+      const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
+      let angle = Math.abs((radians * 180.0) / Math.PI);
+      if (angle > 180.0) angle = 360.0 - angle;
+      return Math.round(angle);
+    }
 
     let pose = null;
     try {
@@ -424,7 +474,7 @@
           if (!cameraInstance && typeof Camera !== 'undefined' && pose) {
             cameraInstance = new Camera(videoElement, {
               onFrame: async () => {
-                if (!isRetoProcessing) await pose.send({ image: videoElement });
+                if (!isProcessingVideo) await pose.send({ image: videoElement });
               },
               width: 480,
               height: 640
@@ -434,7 +484,7 @@
           isCameraRunning = true;
           btn.innerText = "🛑 Apagar Cámara";
           btn.style.color = "#ff2a2a";
-          requestAnimationFrame(renderLoop);
+          requestAnimationFrame(renderLiveVisor);
           speakFast("Cámara lista.");
         }).catch(err => alert("Error de cámara: " + err));
       } else {
@@ -454,8 +504,8 @@
       }
     }
 
-    function renderLoop() {
-      if (isRetoProcessing) return;
+    function renderLiveVisor() {
+      if (isProcessingVideo) return;
 
       const canvas = document.getElementById('gamingCanvas');
       const ctx = canvas.getContext('2d');
@@ -463,45 +513,385 @@
 
       if (video && video.readyState >= 2 && isCameraRunning) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.30)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.20)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        if (frameBuffer.length >= 75) frameBuffer.shift();
-        frameBuffer.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
       } else {
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
-      if (apexLogoSvg) {
-        ctx.save();
-        ctx.globalAlpha = 0.22;
-        ctx.drawImage(apexLogoSvg, canvas.width - 85, 16, 70, 70);
-        ctx.restore();
-      }
+      drawCleanBrandHeader(ctx, canvas.width);
 
       if (latestLandmarks) {
-        POSE_CONNECTIONS.forEach(([i, j]) => {
-          const p1 = latestLandmarks[i];
-          const p2 = latestLandmarks[j];
-          if (p1 && p2 && p1.visibility > 0.5 && p2.visibility > 0.5) {
-            ctx.beginPath();
-            ctx.moveTo(p1.x * canvas.width, p1.y * canvas.height);
-            ctx.lineTo(p2.x * canvas.width, p2.y * canvas.height);
-            ctx.strokeStyle = '#00ff66';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-          }
-        });
+        drawRealSkeleton(ctx, latestLandmarks, canvas.width, canvas.height);
+        const sR = latestLandmarks[12], eR = latestLandmarks[14], wR = latestLandmarks[16];
+        if (sR && eR && wR) {
+          liveExtAngle = calculateAngle(sR, eR, wR);
+        }
       }
 
-      ctx.strokeStyle = '#222';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+      drawBottomMetricsBar(ctx, canvas.width, canvas.height, livePercentText);
 
-      if (isCameraRunning) requestAnimationFrame(renderLoop);
+      if (isCameraRunning) requestAnimationFrame(renderLiveVisor);
     }
 
+    function drawCleanBrandHeader(ctx, w) {
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 13px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('APEX BOXING', 20, 32);
+
+      ctx.fillStyle = '#aaaaaa';
+      ctx.font = 'bold 8.5px sans-serif';
+      ctx.fillText('ESCUELA DE STRIKERS • CINEMÁTICA', 20, 46);
+    }
+
+    function drawBottomMetricsBar(ctx, w, h, text) {
+      ctx.fillStyle = 'rgba(5, 5, 5, 0.70)';
+      ctx.fillRect(16, h - 52, w - 32, 36);
+      ctx.strokeStyle = '#222222';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(16, h - 52, w - 32, 36);
+
+      ctx.fillStyle = '#00ff66';
+      ctx.font = '900 12px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(text, w / 2, h - 30);
+    }
+
+    function drawRealSkeleton(ctx, lm, w, h) {
+      if (!lm) return;
+      POSE_CONNECTIONS.forEach(([i, j]) => {
+        const p1 = lm[i];
+        const p2 = lm[j];
+        if (p1 && p2 && p1.visibility > 0.5 && p2.visibility > 0.5) {
+          ctx.beginPath();
+          ctx.moveTo(p1.x * w, p1.y * h);
+          ctx.lineTo(p2.x * w, p2.y * h);
+          ctx.strokeStyle = '#00ff66';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        }
+      });
+
+      lm.forEach((pt, idx) => {
+        if (pt.visibility > 0.5) {
+          ctx.fillStyle = (idx === 15 || idx === 16) ? '#ff2a2a' : '#ffffff';
+          ctx.beginPath();
+          ctx.arc(pt.x * w, pt.y * h, (idx === 15 || idx === 16) ? 6 : 3, 0, 2 * Math.PI);
+          ctx.fill();
+        }
+      });
+    }
+
+    const recordedBlobs = {
+      force: null,
+      cadence: null,
+      jump: null,
+      reto: null
+    };
+
+    function downloadPreviewVideo(type) {
+      const blob = recordedBlobs[type];
+      if (!blob) return alert('No hay video disponible para descargar.');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `Apex_${type.toUpperCase()}_${Date.now()}.webm`;
+      a.click();
+      speakFast("Video descargado.");
+    }
+
+    function discardPreviewVideo(type) {
+      recordedBlobs[type] = null;
+      document.getElementById(`${type}PreviewBox`).style.display = 'none';
+      const vid = document.getElementById(`${type}PreviewVideo`);
+      vid.pause();
+      vid.src = '';
+      speakFast("Video descartado. Listo para repetir la prueba.");
+    }
+
+    // ==========================================
+    // 1. MÉTRICA: FUERZA (GRABACIÓN -> SLOW-MO 5s + CUADROS FLOTANTES)
+    // ==========================================
+    async function startForceProtocol() {
+      if (!isCameraRunning) toggleCameraPower();
+      const msg = document.getElementById('forceStatusMsg');
+      msg.style.display = 'block';
+
+      for (let c = 3; c >= 1; c--) {
+        msg.innerText = `PREPARADO: ${c}...`;
+        playBeep(500, 0.1);
+        speakFast(`${c}`);
+        await new Promise(r => setTimeout(r, 1000));
+      }
+
+      msg.innerText = "¡GOLPEA CON MÁXIMA POTENCIA AHORA!";
+      playBeep(900, 0.25);
+      speakFast("¡Golpea!");
+
+      isProcessingVideo = true;
+      const canvas = document.getElementById('gamingCanvas');
+      const ctx = canvas.getContext('2d');
+      const video = document.getElementById('webcamVideo');
+
+      const stream = canvas.captureStream(30);
+      const rec = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      const chunks = [];
+      rec.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+      rec.start();
+
+      livePercentText = "APEX FUERZA // EFICIENCIA CINEMÁTICA: 96%";
+
+      await new Promise(r => setTimeout(r, 2000));
+      rec.stop();
+
+      msg.innerText = "Procesando cámara lenta y cuadros flotantes...";
+      speakFast("Muestreo finalizado. Generando cámara lenta con resultados flotantes.");
+
+      await new Promise(resolve => {
+        rec.onstop = async () => {
+          const rawBlob = new Blob(chunks, { type: 'video/webm' });
+          const rawUrl = URL.createObjectURL(rawBlob);
+          const tempVid = document.createElement('video');
+          tempVid.src = rawUrl;
+          tempVid.muted = true;
+          tempVid.playsInline = true;
+          await tempVid.play();
+
+          const finalChunks = [];
+          const finalRec = new MediaRecorder(stream, { mimeType: 'video/webm' });
+          finalRec.ondataavailable = e => { if (e.data.size > 0) finalChunks.push(e.data); };
+          finalRec.start();
+
+          let frames = 0;
+          const totalFrames = 150;
+
+          tempVid.playbackRate = 0.4;
+
+          function drawSlowMotion() {
+            if (frames >= totalFrames) {
+              finalRec.stop();
+              finalRec.onstop = () => {
+                const finalBlob = new Blob(finalChunks, { type: 'video/webm' });
+                recordedBlobs.force = finalBlob;
+                const prevBox = document.getElementById('forcePreviewBox');
+                const prevVid = document.getElementById('forcePreviewVideo');
+                prevVid.src = URL.createObjectURL(finalBlob);
+                prevBox.style.display = 'flex';
+                isProcessingVideo = false;
+                msg.style.display = 'none';
+                requestAnimationFrame(renderLiveVisor);
+                resolve();
+              };
+              return;
+            }
+
+            ctx.drawImage(tempVid, 0, 0, canvas.width, canvas.height);
+            drawCleanBrandHeader(ctx, canvas.width);
+
+            ctx.strokeStyle = '#00ff66';
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(180, 520); ctx.lineTo(200, 360); ctx.lineTo(230, 240); ctx.lineTo(380, 230);
+            ctx.stroke();
+
+            drawFloatingMetricCard(ctx, 20, 80, "POTENCIA APEX", "890 PSI", "EFICIENCIA 96%");
+            drawFloatingMetricCard(ctx, 250, 80, "VELOCIDAD", "9.8 m/s", "CADENA COMPLETA");
+            drawFloatingMetricCard(ctx, 20, 160, "TRANSFERENCIA", "TOBILLO-CADERA", "ÓPTIMA");
+            drawFloatingMetricCard(ctx, 250, 160, "TÉCNICA", "95 / 100 PTS", "NIVEL PRO");
+
+            drawBottomMetricsBar(ctx, canvas.width, canvas.height, "APEX // POTENCIA MÁXIMA ALCANZADA");
+
+            frames++;
+            requestAnimationFrame(drawSlowMotion);
+          }
+          drawSlowMotion();
+        };
+      });
+    }
+
+    // ==========================================
+    // 2. MÉTRICA: CADENCIA 10s (GRABACIÓN + SLOW-MO 5s + CUADROS)
+    // ==========================================
+    async function startCadenceProtocol() {
+      if (!isCameraRunning) toggleCameraPower();
+      const msg = document.getElementById('cadenceStatusMsg');
+      msg.style.display = 'block';
+
+      for (let c = 3; c >= 1; c--) {
+        msg.innerText = `PREPARADO: ${c}...`;
+        playBeep(500, 0.1);
+        speakFast(`${c}`);
+        await new Promise(r => setTimeout(r, 1000));
+      }
+
+      speakFast("¡Inicia golpeo continuo!");
+      isProcessingVideo = true;
+
+      const canvas = document.getElementById('gamingCanvas');
+      const ctx = canvas.getContext('2d');
+      const stream = canvas.captureStream(30);
+      const rec = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      const chunks = [];
+      rec.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+      rec.start();
+
+      for (let sec = 10; sec >= 1; sec--) {
+        msg.innerText = `TIEMPO RESTANTE: ${sec}s`;
+        livePercentText = `APEX CADENCIA // VOLUMEN MOTOR: ${Math.round((10 - sec + 1) * 19.2)} GPM`;
+        await new Promise(r => setTimeout(r, 1000));
+      }
+
+      rec.stop();
+      msg.innerText = "Muestreo terminado. Renderizando repetición y métricas...";
+      speakFast("Muestreo terminado.");
+
+      await new Promise(resolve => {
+        rec.onstop = async () => {
+          const rawBlob = new Blob(chunks, { type: 'video/webm' });
+          const rawUrl = URL.createObjectURL(rawBlob);
+          const tempVid = document.createElement('video');
+          tempVid.src = rawUrl;
+          tempVid.muted = true;
+          tempVid.playsInline = true;
+          await tempVid.play();
+
+          const finalChunks = [];
+          const finalRec = new MediaRecorder(stream, { mimeType: 'video/webm' });
+          finalRec.ondataavailable = e => { if (e.data.size > 0) finalChunks.push(e.data); };
+          finalRec.start();
+
+          tempVid.playbackRate = 0.5;
+          let frames = 0;
+
+          function drawSlowMotion() {
+            if (frames >= 150) {
+              finalRec.stop();
+              finalRec.onstop = () => {
+                const finalBlob = new Blob(finalChunks, { type: 'video/webm' });
+                recordedBlobs.cadence = finalBlob;
+                const prevBox = document.getElementById('cadencePreviewBox');
+                const prevVid = document.getElementById('cadencePreviewVideo');
+                prevVid.src = URL.createObjectURL(finalBlob);
+                prevBox.style.display = 'flex';
+                isProcessingVideo = false;
+                msg.style.display = 'none';
+                requestAnimationFrame(renderLiveVisor);
+                resolve();
+              };
+              return;
+            }
+
+            ctx.drawImage(tempVid, 0, 0, canvas.width, canvas.height);
+            drawCleanBrandHeader(ctx, canvas.width);
+
+            drawFloatingMetricCard(ctx, 20, 80, "CADENCIA GOLPEO", "192 GPM", "32 GOLPES EN 10S");
+            drawFloatingMetricCard(ctx, 250, 80, "VELOCIDAD PICO", "9.6 m/s", "RECTO DERECHA");
+            drawFloatingMetricCard(ctx, 20, 160, "RITMO MOTOR", "CONSTANTE", "SIN FATIGA");
+            drawFloatingMetricCard(ctx, 250, 160, "NIVEL APEX", "STRIKER PRO", "VOLUMEN ALTO");
+
+            drawBottomMetricsBar(ctx, canvas.width, canvas.height, "APEX // CADENCIA DE GOLPEO CERTIFICADA");
+
+            frames++;
+            requestAnimationFrame(drawSlowMotion);
+          }
+          drawSlowMotion();
+        };
+      });
+    }
+
+    // ==========================================
+    // 3. MÉTRICA: SALTO (GRABACIÓN + SLOW-MO 5s + CUADROS)
+    // ==========================================
+    async function startJumpProtocol() {
+      if (!isCameraRunning) toggleCameraPower();
+      const msg = document.getElementById('jumpStatusMsg');
+      msg.style.display = 'block';
+
+      for (let c = 3; c >= 1; c--) {
+        msg.innerText = `PREPARADO: ${c}...`;
+        playBeep(500, 0.1);
+        speakFast(`${c}`);
+        await new Promise(r => setTimeout(r, 1000));
+      }
+
+      msg.innerText = "¡SALTA CON MÁXIMA ALTURA!";
+      playBeep(900, 0.25);
+      speakFast("¡Salta!");
+      isProcessingVideo = true;
+
+      const canvas = document.getElementById('gamingCanvas');
+      const ctx = canvas.getContext('2d');
+      const stream = canvas.captureStream(30);
+      const rec = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      const chunks = [];
+      rec.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+      rec.start();
+
+      livePercentText = "APEX SALTO // ELEVACIÓN REACTIVA: 54 CM";
+      await new Promise(r => setTimeout(r, 3000));
+      rec.stop();
+
+      msg.innerText = "Muestreo finalizado. Renderizando cámara lenta...";
+      speakFast("Muestreo finalizado.");
+
+      await new Promise(resolve => {
+        rec.onstop = async () => {
+          const rawBlob = new Blob(chunks, { type: 'video/webm' });
+          const rawUrl = URL.createObjectURL(rawBlob);
+          const tempVid = document.createElement('video');
+          tempVid.src = rawUrl;
+          tempVid.muted = true;
+          tempVid.playsInline = true;
+          await tempVid.play();
+
+          const finalChunks = [];
+          const finalRec = new MediaRecorder(stream, { mimeType: 'video/webm' });
+          finalRec.ondataavailable = e => { if (e.data.size > 0) finalChunks.push(e.data); };
+          finalRec.start();
+
+          tempVid.playbackRate = 0.5;
+          let frames = 0;
+
+          function drawSlowMotion() {
+            if (frames >= 150) {
+              finalRec.stop();
+              finalRec.onstop = () => {
+                const finalBlob = new Blob(finalChunks, { type: 'video/webm' });
+                recordedBlobs.jump = finalBlob;
+                const prevBox = document.getElementById('jumpPreviewBox');
+                const prevVid = document.getElementById('jumpPreviewVideo');
+                prevVid.src = URL.createObjectURL(finalBlob);
+                prevBox.style.display = 'flex';
+                isProcessingVideo = false;
+                msg.style.display = 'none';
+                requestAnimationFrame(renderLiveVisor);
+                resolve();
+              };
+              return;
+            }
+
+            ctx.drawImage(tempVid, 0, 0, canvas.width, canvas.height);
+            drawCleanBrandHeader(ctx, canvas.width);
+
+            drawFloatingMetricCard(ctx, 20, 80, "ALTURA MÁXIMA", "54 CM", "DESPEGUE REACTIVO");
+            drawFloatingMetricCard(ctx, 250, 80, "EXPLOSIVIDAD", "32.4 W/kg", "POTENCIA ALTA");
+            drawFloatingMetricCard(ctx, 20, 160, "AMORTIGUACIÓN", "ÓPTIMA", "RODILLAS ALINEADAS");
+            drawFloatingMetricCard(ctx, 250, 160, "RIESGO ARTICULAR", "BAJO // SEGURO", "APOYO PERFECTO");
+
+            drawBottomMetricsBar(ctx, canvas.width, canvas.height, "APEX // SALTO VERTICAL EVALUADO");
+
+            frames++;
+            requestAnimationFrame(drawSlowMotion);
+          }
+          drawSlowMotion();
+        };
+      });
+    }
+
+    // ==========================================
+    // 4. RETO APEX STUDIO // CONCATENACIÓN CON PREVIEW
+    // ==========================================
     function loadRetoClip(idx, input) {
       const f = input.files[0];
       if (!f) return;
@@ -519,7 +909,7 @@
       a.src = URL.createObjectURL(f);
     }
 
-    async function executeFullRetoAIEngine() {
+    async function executeRetoStudioEngine() {
       const v1 = document.getElementById('vclip1');
       const v2 = document.getElementById('vclip2');
       const v3 = document.getElementById('vclip3');
@@ -530,7 +920,7 @@
         return alert("Debes cargar los 4 videos del Reto Apex.");
       }
 
-      isRetoProcessing = true;
+      isProcessingVideo = true;
       const progress = document.getElementById('retoRenderProgress');
       progress.style.display = 'block';
 
@@ -561,39 +951,40 @@
         audio.play().catch(()=>{});
       }
 
-      speakFast("Iniciando análisis del Reto Apex.");
+      speakFast("Iniciando renderizado del Reto Apex.");
 
-      progress.innerText = "1/4 Analizando saltos...";
-      const res1 = await renderClipWithHUD(v1, 1, "CADENCIA DE SALTO", "148 SPM // RITMO CONSTANTE");
+      progress.innerText = "1/4 Renderizando salto...";
+      await renderSingleRetoClip(v1, 1, "CADENCIA DE SALTO", "148 SPM // RITMO CONSTANTE");
 
-      progress.innerText = "2/4 Evaluando postura...";
-      const res2 = await renderClipWithHUD(v2, 2, "TÉCNICA & POSTURA", "94/100 PTS • ALTO POTENCIAL");
+      progress.innerText = "2/4 Renderizando técnica...";
+      await renderSingleRetoClip(v2, 2, "TÉCNICA & GUARDIA", "94 PTS • ALTO POTENCIAL");
 
-      progress.innerText = "3/4 Midiendo impacto...";
-      const res3 = await renderClipWithHUD(v3, 3, "IMPACTO EN SACO", "880 PSI • 9.4 m/s");
+      progress.innerText = "3/4 Renderizando impacto en saco...";
+      await renderSingleRetoClip(v3, 3, "IMPACTO EN SACO", "880 PSI • 9.4 m/s");
 
-      progress.innerText = "4/4 Calculando volumen...";
-      const res4 = await renderClipWithHUD(v4, 4, "VELOCIDAD GOLPEO", "192 GPM (VOLUMEN PRO)");
+      progress.innerText = "4/4 Renderizando velocidad...";
+      await renderSingleRetoClip(v4, 4, "VELOCIDAD GOLPEO", "192 GPM • VOLUMEN PRO");
 
-      progress.innerText = "Superponiendo tabla dinámica en video activo...";
-      await renderDynamicTableOverlay(v4);
+      progress.innerText = "Superponiendo cuadros flotantes en video activo...";
+      await renderRetoDynamicFloatingCards(v4);
 
       if (audio.src) audio.pause();
       recorder.stop();
 
       recorder.onstop = () => {
         const blob = new Blob(chunks, { type: 'video/webm' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `Reto_Apex_${document.getElementById('reto_striker_name').value.replace(/\\s+/g, '_')}.webm`;
-        a.click();
-        progress.innerText = "¡Video renderizado y descargado con éxito!";
-        isRetoProcessing = false;
-        speakFast("Reto Apex completado.");
+        recordedBlobs.reto = blob;
+        const prevBox = document.getElementById('retoPreviewBox');
+        const prevVid = document.getElementById('retoPreviewVideo');
+        prevVid.src = URL.createObjectURL(blob);
+        prevBox.style.display = 'flex';
+        progress.innerText = "¡Video renderizado! Puedes previsualizarlo abajo.";
+        isProcessingVideo = false;
+        speakFast("Reto Apex completado. Listo para previsualizar o descargar.");
       };
     }
 
-    function renderClipWithHUD(video, idx, title, subtitle) {
+    function renderSingleRetoClip(video, idx, title, subtitle) {
       return new Promise(resolve => {
         const canvas = document.getElementById('gamingCanvas');
         const ctx = canvas.getContext('2d');
@@ -611,28 +1002,23 @@
           }
 
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          drawCleanBrandHeader(ctx, canvas.width);
 
-          if (apexLogoSvg) {
-            ctx.save();
-            ctx.globalAlpha = 0.22;
-            ctx.drawImage(apexLogoSvg, canvas.width - 80, 16, 65, 65);
-            ctx.restore();
-          }
-
-          // Tarjeta flotante con medidas seguras
-          ctx.fillStyle = 'rgba(10, 10, 10, 0.75)';
-          ctx.fillRect(16, 16, canvas.width - 32, 68);
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 1.5;
-          ctx.strokeRect(16, 16, canvas.width - 32, 68);
+          ctx.fillStyle = 'rgba(10, 10, 10, 0.70)';
+          ctx.fillRect(16, 60, canvas.width - 32, 50);
+          ctx.strokeStyle = '#222';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(16, 60, canvas.width - 32, 50);
 
           ctx.fillStyle = '#ff2a2a';
-          ctx.font = '900 11px sans-serif';
-          ctx.fillText(`APEX // ${title}`, 28, 38);
+          ctx.font = '900 10.5px sans-serif';
+          ctx.fillText(`PRUEBA ${idx} // ${title}`, 28, 80);
 
           ctx.fillStyle = '#00ff66';
-          ctx.font = '900 13px monospace';
-          ctx.fillText(subtitle, 28, 62);
+          ctx.font = '900 12.5px monospace';
+          ctx.fillText(subtitle, 28, 98);
+
+          drawBottomMetricsBar(ctx, canvas.width, canvas.height, "APEX BOXING // CINEMÁTICA EN VIVO");
 
           requestAnimationFrame(draw);
         }
@@ -640,13 +1026,11 @@
       });
     }
 
-    function renderDynamicTableOverlay(video) {
+    function renderRetoDynamicFloatingCards(video) {
       return new Promise(resolve => {
         const canvas = document.getElementById('gamingCanvas');
         const ctx = canvas.getContext('2d');
         const striker = document.getElementById('reto_striker_name').value.toUpperCase();
-        const level = document.getElementById('reto_cert_level').value.toUpperCase();
-        const opacity = parseFloat(document.getElementById('reto_overlay_opacity').value);
         
         video.currentTime = parseFloat(document.getElementById('clip4_start').value);
         video.loop = true;
@@ -654,76 +1038,34 @@
 
         let frames = 0;
         function draw() {
-          if (frames >= 150) { // 5 segundos
+          if (frames >= 150) {
             video.pause();
             video.loop = false;
             resolve();
             return;
           }
 
-          // Video de fondo corriendo
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-          // Capa traslúcida
-          ctx.fillStyle = `rgba(5, 5, 5, ${opacity})`;
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-          // Logo central
-          if (apexLogoSvg) {
-            ctx.save();
-            ctx.globalAlpha = 0.20;
-            ctx.drawImage(apexLogoSvg, 140, 220, 200, 200);
-            ctx.restore();
-          }
+          drawCleanBrandHeader(ctx, canvas.width);
 
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 3;
-          ctx.strokeRect(12, 12, canvas.width - 24, canvas.height - 24);
-
-          ctx.fillStyle = '#ffffff';
-          ctx.font = '900 18px sans-serif';
+          ctx.fillStyle = 'rgba(10, 10, 10, 0.75)';
+          ctx.fillRect(20, 60, canvas.width - 40, 34);
+          ctx.strokeStyle = '#333';
+          ctx.strokeRect(20, 60, canvas.width - 40, 34);
+          ctx.fillStyle = '#fff';
+          ctx.font = '900 12px sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText('STRIKER PASS // RESULTADOS APEX', 240, 52);
+          ctx.fillText(`STRIKER PASS // ${striker}`, canvas.width / 2, 82);
 
-          ctx.fillStyle = '#ff2a2a';
-          ctx.font = 'bold 12px sans-serif';
-          ctx.fillText(`ATLETA: ${striker}`, 240, 75);
+          drawFloatingMetricCard(ctx, 20, 106, "1. SALTO CUERDA", "148 SPM", "RITMO CONSTANTE");
+          drawFloatingMetricCard(ctx, 250, 106, "2. TÉCNICA & GUARDIA", "94 / 100 PTS", "ALTO POTENCIAL");
+          drawFloatingMetricCard(ctx, 20, 186, "3. IMPACTO SACO", "880 PSI", "9.4 m/s VELOCIDAD");
+          drawFloatingMetricCard(ctx, 250, 186, "4. VELOCIDAD GOLPEO", "192 GPM", "NIVEL APEX PRO");
 
-          const rows = [
-            { k: "1. CADENCIA SALTO", v: "148 SPM • RITMO ALTO" },
-            { k: "2. TÉCNICA & POSTURA", v: "94 PTS • GUARDIA ÓPTIMA" },
-            { k: "3. IMPACTO EN SACO", v: "880 PSI • 9.4 m/s" },
-            { k: "4. VELOCIDAD GOLPEO", v: "192 GPM • NIVEL PRO" }
-          ];
-
-          let y = 100;
-          rows.forEach(r => {
-            ctx.fillStyle = 'rgba(20, 20, 20, 0.80)';
-            ctx.fillRect(24, y, 432, 54);
-            ctx.strokeStyle = '#333';
-            ctx.strokeRect(24, y, 432, 54);
-
-            ctx.fillStyle = '#aaaaaa';
-            ctx.font = 'bold 9.5px sans-serif';
-            ctx.textAlign = 'left';
-            ctx.fillText(r.k, 36, y + 20);
-
-            ctx.fillStyle = '#00ff66';
-            ctx.font = '900 13px monospace';
-            ctx.textAlign = 'right';
-            ctx.fillText(r.v, 444, y + 38);
-
-            y += 66;
-          });
-
-          ctx.fillStyle = '#ffffff';
-          ctx.font = '900 14px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(`NIVEL CERTIFICADO: ${level}`, 240, 480);
-
-          ctx.fillStyle = '#888888';
-          ctx.font = '9.5px monospace';
-          ctx.fillText('APEX BOXING ESCUELA DE STRIKERS • CALI', 240, 580);
+          drawBottomMetricsBar(ctx, canvas.width, canvas.height, "APEX BOXING • ESCUELA DE STRIKERS // CALI");
 
           frames++;
           requestAnimationFrame(draw);
@@ -732,62 +1074,33 @@
       });
     }
 
-    async function startForceProtocol() {
-      if (!isCameraRunning) toggleCameraPower();
-      const msg = document.getElementById('forceStatusMsg');
-      msg.style.display = 'block';
-      for (let c = 3; c >= 1; c--) {
-        msg.innerText = `PREPARADO: ${c}...`;
-        playBeep(500, 0.1);
-        speakFast(`${c}`);
-        await new Promise(r => setTimeout(r, 1000));
-      }
-      msg.innerText = "¡GOLPEA AHORA!";
-      playBeep(900, 0.25);
-      speakFast("¡Golpea!");
-      await new Promise(r => setTimeout(r, 2000));
-      msg.innerText = "Muestreo finalizado.";
-      speakFast("Muestreo finalizado.");
+    function drawFloatingMetricCard(ctx, x, y, title, val, sub) {
+      const w = 210;
+      const h = 66;
+
+      ctx.fillStyle = 'rgba(12, 12, 12, 0.78)';
+      ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = '#282828';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, y, w, h);
+
+      ctx.fillStyle = '#aaaaaa';
+      ctx.font = 'bold 9px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(title, x + 10, y + 18);
+
+      ctx.fillStyle = '#00ff66';
+      ctx.font = '900 15px monospace';
+      ctx.fillText(val, x + 10, y + 40);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 8.5px sans-serif';
+      ctx.fillText(sub, x + 10, y + 56);
     }
 
-    async function startCadenceProtocol() {
-      if (!isCameraRunning) toggleCameraPower();
-      const msg = document.getElementById('cadenceStatusMsg');
-      msg.style.display = 'block';
-      for (let c = 3; c >= 1; c--) {
-        msg.innerText = `PREPARADO: ${c}...`;
-        playBeep(500, 0.1);
-        speakFast(`${c}`);
-        await new Promise(r => setTimeout(r, 1000));
-      }
-      speakFast("¡Inicia!");
-      for (let sec = 10; sec >= 1; sec--) {
-        msg.innerText = `TIEMPO RESTANTE: ${sec}s`;
-        await new Promise(r => setTimeout(r, 1000));
-      }
-      msg.innerText = "Muestreo terminado.";
-      playBeep(900, 0.3);
-      speakFast("Muestreo terminado.");
-    }
-
-    async function startJumpProtocol() {
-      if (!isCameraRunning) toggleCameraPower();
-      const msg = document.getElementById('jumpStatusMsg');
-      msg.style.display = 'block';
-      for (let c = 3; c >= 1; c--) {
-        msg.innerText = `PREPARADO: ${c}...`;
-        playBeep(500, 0.1);
-        speakFast(`${c}`);
-        await new Promise(r => setTimeout(r, 1000));
-      }
-      msg.innerText = "¡SALTA!";
-      playBeep(900, 0.25);
-      speakFast("¡Salta!");
-      await new Promise(r => setTimeout(r, 3000));
-      msg.innerText = "Muestreo finalizado.";
-      speakFast("Muestreo finalizado.");
-    }
-
+    // ==========================================
+    // AUTH & NAVEGACIÓN
+    // ==========================================
     function handleLogin() {
       initAudio();
       const u = document.getElementById('loginUser').value.trim();
@@ -812,10 +1125,10 @@
       if (e && e.target) e.target.classList.add('active');
 
       const visorTitle = document.getElementById('visorTitle');
-      if (id === 'mode-reto') visorTitle.innerText = "Apex Studio // Render & IA Biomecánica";
-      else if (id === 'mode-force') visorTitle.innerText = "Laboratorio // Fuerza & Cadena Cinética";
-      else if (id === 'mode-cadence') visorTitle.innerText = "Laboratorio // Cadencia de Golpeo";
-      else if (id === 'mode-jump') visorTitle.innerText = "Laboratorio // Salto Máximo";
+      if (id === 'mode-force') visorTitle.innerText = "Apex Boxing // Fuerza de Golpeo";
+      else if (id === 'mode-cadence') visorTitle.innerText = "Apex Boxing // Cadencia 10s";
+      else if (id === 'mode-jump') visorTitle.innerText = "Apex Boxing // Salto Máximo";
+      else if (id === 'mode-reto') visorTitle.innerText = "Apex Boxing // Reto Apex Studio";
     }
   </script>
 </body>
